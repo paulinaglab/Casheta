@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <color name="secondary_text">#b2ffffff</color>
+    <color name="separator">#1effffff</color>
+    
+    <color name="grid_item_text_bg">#66000000</color>
+
+    <color name="grid_placeholder_bg">#424242</color>
+
+    <color name="details_rate_not_initialized_bg">#424242</color>
+    <color name="details_title_not_initialized_bg">#616161</color>
+
+</resources>
