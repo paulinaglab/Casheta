@@ -3,8 +3,8 @@
     
     <color name="secondary_text">#b2ffffff</color>
     <color name="separator">#1effffff</color>
-    
-    <color name="grid_item_text_bg">#66000000</color>
+    <color name="main_toolbar_bg">#212121</color>
+    <color name="accent_color">#ffFFC400</color>
 
     <color name="grid_placeholder_bg">#424242</color>
 

@@ -1,7 +1,18 @@
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:name="com.shaftapps.pglab.popularmovies.MoviesGridFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.shaftapps.pglab.popularmovies.MoviesGridFragment" />
+    android:orientation="vertical"
+    tools:context="com.shaftapps.pglab.popularmovies.MainActivity">
 
+    <include layout="@layout/toolbar_main"/>
+
+    <fragment
+        android:id="@+id/fragment_movies"
+        android:name="com.shaftapps.pglab.popularmovies.MoviesFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout="@layout/fragment_movies" />
+
+</LinearLayout>

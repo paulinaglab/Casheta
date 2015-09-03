@@ -10,4 +10,9 @@
     <string name="details_overview_label">Overview</string>
     <string name="details_release_date_label">Release date: %s</string>
 
+    <string-array name="sorting_modes">
+        <item>Most popular</item>
+        <item>Highest rated</item>
+    </string-array>
+
 </resources>

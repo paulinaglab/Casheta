@@ -43,14 +43,18 @@ public class PosterRatioImageView extends ImageView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (fit.equals(Fit.WIDTH)) {
-            int heightPx = MeasureSpec.getSize(heightMeasureSpec);
-            int widthPx = (int) (heightPx * RATIO);
+            int heightPx = MeasureSpec.getSize(heightMeasureSpec)
+                    - getPaddingTop() - getPaddingBottom() ;
+            int widthPx = (int) (heightPx * RATIO)
+                    + getPaddingLeft() + getPaddingRight();
             super.onMeasure(
                     MeasureSpec.makeMeasureSpec(widthPx, MeasureSpec.EXACTLY),
                     heightMeasureSpec);
         } else {
-            int widthPx = MeasureSpec.getSize(widthMeasureSpec);
-            int heightPx = (int) (widthPx / RATIO);
+            int widthPx = MeasureSpec.getSize(widthMeasureSpec)
+                    - getPaddingLeft() - getPaddingRight();
+            int heightPx = (int) (widthPx / RATIO)
+                    + getPaddingTop() + getPaddingBottom();
             super.onMeasure(
                     widthMeasureSpec,
                     MeasureSpec.makeMeasureSpec(heightPx, MeasureSpec.EXACTLY));

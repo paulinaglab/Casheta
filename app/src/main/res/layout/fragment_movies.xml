@@ -5,5 +5,5 @@
     android:layout_height="match_parent"
     android:padding="2dp"
     android:clipToPadding="false"
-    tools:context="com.shaftapps.pglab.popularmovies.MoviesGridFragment"
-    tools:listitem="@layout/film_grid_item" />
+    tools:context="com.shaftapps.pglab.popularmovies.MoviesFragment"
+    tools:listitem="@layout/movie_grid_item" />

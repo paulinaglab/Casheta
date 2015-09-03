@@ -6,9 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+
+import java.util.ArrayList;
 
 /**
  * Created by Paulina on 2015-08-28.
@@ -16,15 +17,15 @@ import com.bumptech.glide.Glide;
 public class MoviesGridAdapter extends RecyclerView.Adapter {
 
     private Context context;
-    private MovieData[] movieDatas;
+    private ArrayList<MovieData> movieDatas;
     private OnItemClickListener onItemClickListener;
 
-    public MoviesGridAdapter(Context context, MovieData[] movieDatas) {
+    public MoviesGridAdapter(Context context, ArrayList<MovieData> movieDatas) {
         this.context = context;
         this.movieDatas = movieDatas;
     }
 
-    public void setMovieDatas(MovieData[] movieDatas) {
+    public void setMovieDatas(ArrayList<MovieData> movieDatas) {
         this.movieDatas = movieDatas;
     }
 
@@ -34,7 +35,7 @@ public class MoviesGridAdapter extends RecyclerView.Adapter {
 
     public void itemClicked(int clickedPos){
        if (onItemClickListener != null)
-           onItemClickListener.onItemClicked(movieDatas[clickedPos]);
+           onItemClickListener.onItemClicked(movieDatas.get(clickedPos));
     }
 
     @Override
@@ -54,7 +55,7 @@ public class MoviesGridAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         MovieItemViewHolder movieItemViewHolder = (MovieItemViewHolder) holder;
         Glide.with(context)
-                .load(movieDatas[position].posterUrl)
+                .load(movieDatas.get(position).posterUrl)
                 .fitCenter()
                 .placeholder(R.color.grid_placeholder_bg)
                 .into(movieItemViewHolder.poster);
@@ -62,7 +63,7 @@ public class MoviesGridAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return movieDatas.length;
+        return movieDatas.size();
     }
 
     public class MovieItemViewHolder extends RecyclerView.ViewHolder {

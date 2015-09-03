@@ -10,12 +10,14 @@
         android:orientation="vertical">
 
         <RelativeLayout
+            android:id="@+id/detail_ratio_wrapper"
             android:layout_width="match_parent"
-            android:layout_height="320dp">
+            android:layout_height="295dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:clipToPadding="false"
                 android:orientation="vertical">
 
                 <ImageView
@@ -42,21 +44,28 @@
                     android:layout_height="0dp"
                     android:layout_weight="12"
                     android:background="@color/details_title_not_initialized_bg"
+                    android:clipToPadding="false"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp">
 
                     <TextView
                         android:id="@+id/detail_movie_title"
+                        style="@style/TextAppearance.AppCompat.Title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="24sp"
+                        android:ellipsize="end"
+                        android:singleLine="true"
                         tools:text="Movie title" />
 
                     <TextView
                         android:id="@+id/detail_movie_original_title"
+                        style="@style/TextAppearance.AppCompat.Caption"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:singleLine="true"
                         tools:text="Movie original title" />
 
                 </LinearLayout>
@@ -70,14 +79,16 @@
                 android:orientation="vertical"
                 android:weightSum="2">
 
-                <ImageView
+                <com.shaftapps.pglab.popularmovies.PosterRatioImageView
+                    xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:id="@+id/detail_poster_image"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:adjustViewBounds="true"
                     android:padding="16dp"
-                    android:scaleType="centerInside"
+                    android:scaleType="centerCrop"
+                    app:fitToRatio="width"
                     tools:src="@drawable/sample_photo_vertical" />
 
             </LinearLayout>
@@ -90,25 +101,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:textSize="14sp"
-            android:text="@string/details_release_date_label"/>
+            android:text="@string/details_release_date_label"
+            android:textSize="14sp" />
 
-        <View style="@style/AppTheme.Separator"/>
+        <View style="@style/AppTheme.Separator" />
 
         <TextView
-            style="@style/AppTheme.Subheader"
+            style="@style/TextAppearance.AppCompat.Body2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:padding="16dp"
             android:text="@string/details_overview_label"
-            android:layout_marginTop="4dp"/>
+            android:textColor="?android:textColorSecondary"/>
 
         <TextView
             android:id="@+id/detail_overview"
+            style="@style/TextAppearance.AppCompat.Body1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:lineSpacingMultiplier="1.5"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:textSize="14sp"
             tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur." />
 
 

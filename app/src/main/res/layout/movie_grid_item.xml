@@ -12,7 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:src="@drawable/sample_photo_vertical"
-        app:fitToRatio="height"/>
+        app:fitToRatio="height"
+        android:scaleType="centerCrop"/>
 
     <!-- Favorite state icon -->
     <!-- ... -->
