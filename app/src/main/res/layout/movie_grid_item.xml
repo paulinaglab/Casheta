@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="2dp">
+    android:layout_margin="2dp"
+    android:foreground="?android:attr/selectableItemBackground">
 
     <!-- Poster -->
     <com.shaftapps.pglab.popularmovies.PosterRatioImageView
         android:id="@+id/poster_image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:src="@drawable/sample_photo_vertical"
+        android:scaleType="centerCrop"
         app:fitToRatio="height"
-        android:scaleType="centerCrop"/>
+        tools:src="@drawable/sample_photo_vertical" />
 
     <!-- Favorite state icon -->
     <!-- ... -->
 
-</RelativeLayout>
+</FrameLayout>

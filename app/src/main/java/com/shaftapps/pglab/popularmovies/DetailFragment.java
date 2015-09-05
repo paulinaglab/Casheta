@@ -1,19 +1,30 @@
 package com.shaftapps.pglab.popularmovies;
 
 
+import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.graphics.Palette;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.GlideBitmapDrawable;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 
 /**
  * Created by Paulina on 2015-08-30.
@@ -21,6 +32,13 @@ import com.bumptech.glide.Glide;
 public class DetailFragment extends Fragment {
 
     private MovieData movieData;
+
+    private OnScrollListener onScrollListener;
+
+    private ViewGroup ratioWrapper;
+    private View titlesWrapper;
+    private View rateWrapper;
+    private NotifyingScrollView notifyingScrollView;
     private TextView titleTextView;
     private TextView originalTitleTextView;
     private TextView rateTextView;
@@ -29,33 +47,46 @@ public class DetailFragment extends Fragment {
     private ImageView posterImageView;
     private ImageView photoImageView;
 
+    private int generatedColor;
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View fragmentView = inflater.inflate(R.layout.fragment_detail, container, false);
 
-        // Setting height to layout wrapper
-        final ViewGroup wrapper = (ViewGroup) fragmentView.findViewById(R.id.detail_ratio_wrapper);
-        ViewTreeObserver viewTreeObserver = wrapper.getViewTreeObserver();
-        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-
-                if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    wrapper.setLayoutParams(new LinearLayout.LayoutParams(wrapper.getWidth(), wrapper.getWidth()));
-//                    wrapper.invalidate();
-                }
-
-                ViewTreeObserver viewTreeObserver = wrapper.getViewTreeObserver();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    viewTreeObserver.removeOnGlobalLayoutListener(this);
-                } else {
-                    viewTreeObserver.removeGlobalOnLayoutListener(this);
-                }
-            }
-        });
-
         // Fields initialization
+        initFields(fragmentView);
+
+        // Setting height to layout ratioWrapper
+        fitRatioWrapperHeight();
+
+        // Setting data from arguments
+        insertDataIntoUI();
+
+        // Setting ScrollView listener
+        initScrollViewListener();
+
+        return fragmentView;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            onScrollListener = (OnScrollListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnScrollListener");
+        }
+    }
+
+    private void initFields(View fragmentView) {
+        ratioWrapper = (ViewGroup) fragmentView.findViewById(R.id.detail_ratio_wrapper);
+        titlesWrapper = fragmentView.findViewById(R.id.detail_titles_wrapper);
+        rateWrapper = fragmentView.findViewById(R.id.detail_rate_wrapper);
+        notifyingScrollView = (NotifyingScrollView)
+                fragmentView.findViewById(R.id.detail_notifying_scroll_view);
         titleTextView = (TextView) fragmentView.findViewById(R.id.detail_movie_title);
         originalTitleTextView = (TextView) fragmentView.findViewById(R.id.detail_movie_original_title);
         rateTextView = (TextView) fragmentView.findViewById(R.id.detail_rate_text_view);
@@ -63,32 +94,97 @@ public class DetailFragment extends Fragment {
         releaseDate = (TextView) fragmentView.findViewById(R.id.detail_release_date);
         posterImageView = (ImageView) fragmentView.findViewById(R.id.detail_poster_image);
         photoImageView = (ImageView) fragmentView.findViewById(R.id.detail_photo_image);
+    }
 
+
+    private void fitRatioWrapperHeight() {
+        ViewTreeObserver viewTreeObserver = ratioWrapper.getViewTreeObserver();
+        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+
+                if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    ratioWrapper.setLayoutParams(new LinearLayout.LayoutParams(ratioWrapper.getWidth(), ratioWrapper.getWidth()));
+                }
+
+                ViewTreeObserver viewTreeObserver = ratioWrapper.getViewTreeObserver();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    viewTreeObserver.removeOnGlobalLayoutListener(this);
+                } else {
+                    viewTreeObserver.removeGlobalOnLayoutListener(this);
+                }
+            }
+        });
+    }
+
+    private void initScrollViewListener() {
+        notifyingScrollView.setOnScrollChangedListener(new NotifyingScrollView.OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged(ScrollView scrollView, int l, int t, int oldl, int oldt) {
+                if (onScrollListener != null) {
+                    onScrollListener.onScrollChanged(ratioWrapper.getHeight(), generatedColor, t);
+                }
+            }
+        });
+    }
+
+
+    private void insertDataIntoUI() {
         Bundle arguments = getArguments();
         if (arguments != null) {
             movieData = arguments.getParcelable(MovieData.EXTRA_KEY);
 
-            Glide.with(getActivity())
-                    .load(movieData.posterUrl)
-                    .fitCenter()
-                    .placeholder(R.color.grid_placeholder_bg)
-                    .into(posterImageView);
-
-            Glide.with(getActivity())
-                    .load(movieData.photoUrl)
-                    .fitCenter()
-                    .into(photoImageView);
-
+            // Setting text data
             titleTextView.setText(movieData.title);
             originalTitleTextView.setText(movieData.originalTitle);
-            rateTextView.setText(
-                    getString(R.string.details_rate_format, movieData.averageRate));
+            rateTextView.setText(getString(R.string.details_rate_format, movieData.averageRate));
             overviewTextView.setText(movieData.overview);
-            releaseDate.setText(
-                    getString(R.string.details_release_date_label, movieData.releaseDate));
-        }
+            releaseDate.setText(getString(R.string.details_release_date_label, movieData.releaseDate));
 
-        return fragmentView;
+            // Loading images and color generation
+            loadImagesAndColors();
+        }
+    }
+
+    private void loadImagesAndColors() {
+        // Creating listener for palette
+        final Palette.PaletteAsyncListener paletteAsyncListener = new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                generatedColor = palette.getDarkVibrantColor(
+                        ContextCompat.getColor(getActivity(), R.color.details_rate_not_initialized_bg));
+                titlesWrapper.setBackgroundColor(generatedColor);
+
+                rateWrapper.setBackgroundColor(
+                        ColorUtils.getColorWithTranslateBrightness(generatedColor, -20));
+            }
+        };
+
+        // Creating Glide's object, which allows starting Palette generation when the image is loaded
+        GlideDrawableImageViewTarget posterGlideDrawable = new GlideDrawableImageViewTarget(posterImageView) {
+            @Override
+            public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> animation) {
+                super.onResourceReady(resource, animation);
+                Palette.from(((GlideBitmapDrawable) resource).getBitmap()).generate(paletteAsyncListener);
+            }
+        };
+
+        // Poster loading
+        Glide.with(getActivity())
+                .load(movieData.posterUrl)
+                .fitCenter()
+                .placeholder(R.color.grid_placeholder_bg)
+                .into(posterGlideDrawable);
+
+        // Background photo (backdrop) loading
+        Glide.with(getActivity())
+                .load(movieData.photoUrl)
+                .fitCenter()
+                .into(photoImageView);
+    }
+
+    public interface OnScrollListener {
+        void onScrollChanged(int range, int color, int scrollPosition);
     }
 
 }

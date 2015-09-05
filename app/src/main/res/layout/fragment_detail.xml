@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.shaftapps.pglab.popularmovies.NotifyingScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/detail_notifying_scroll_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -29,17 +30,28 @@
                     android:scaleType="centerCrop"
                     tools:src="@drawable/sample_photo_horizontal" />
 
-                <TextView
-                    android:id="@+id/detail_rate_text_view"
+                <FrameLayout
+                    android:id="@+id/detail_rate_wrapper"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="4"
-                    android:background="@color/details_rate_not_initialized_bg"
-                    android:gravity="center_vertical|right"
-                    android:paddingRight="16dp"
-                    tools:text="7.5/10" />
+                    android:background="@color/details_rate_not_initialized_bg">
+
+                    <TextView
+                        android:id="@+id/detail_rate_text_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="right"
+                        android:drawableLeft="@drawable/ic_rate_star"
+                        android:drawablePadding="4dp"
+                        android:gravity="center_vertical"
+                        android:paddingRight="16dp"
+                        tools:text="7.5/10" />
+
+                </FrameLayout>
 
                 <LinearLayout
+                    android:id="@+id/detail_titles_wrapper"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
                     android:layout_weight="12"
@@ -79,8 +91,7 @@
                 android:orientation="vertical"
                 android:weightSum="2">
 
-                <com.shaftapps.pglab.popularmovies.PosterRatioImageView
-                    xmlns:app="http://schemas.android.com/apk/res-auto"
+                <com.shaftapps.pglab.popularmovies.PosterRatioImageView xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:id="@+id/detail_poster_image"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
@@ -113,7 +124,7 @@
             android:layout_marginTop="4dp"
             android:padding="16dp"
             android:text="@string/details_overview_label"
-            android:textColor="?android:textColorSecondary"/>
+            android:textColor="?android:textColorSecondary" />
 
         <TextView
             android:id="@+id/detail_overview"
@@ -129,4 +140,4 @@
 
     </LinearLayout>
 
-</ScrollView>
+</com.shaftapps.pglab.popularmovies.NotifyingScrollView>

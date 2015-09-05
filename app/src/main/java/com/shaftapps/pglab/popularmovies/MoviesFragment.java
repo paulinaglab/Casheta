@@ -117,7 +117,6 @@ public class MoviesFragment extends Fragment {
     }
 
     public interface OnMovieSelectListener {
-
         void onMovieSelect(MovieData selected);
     }
 
