@@ -33,9 +33,9 @@ public class MoviesGridAdapter extends RecyclerView.Adapter {
         this.onItemClickListener = onItemClickListener;
     }
 
-    public void itemClicked(int clickedPos){
-       if (onItemClickListener != null)
-           onItemClickListener.onItemClicked(movieDatas.get(clickedPos));
+    public void itemClicked(int clickedPos) {
+        if (onItemClickListener != null)
+            onItemClickListener.onItemClicked(movieDatas.get(clickedPos));
     }
 
     @Override
@@ -77,6 +77,6 @@ public class MoviesGridAdapter extends RecyclerView.Adapter {
     }
 
     public interface OnItemClickListener {
-        public void onItemClicked(MovieData clicked);
+        void onItemClicked(MovieData clicked);
     }
 }

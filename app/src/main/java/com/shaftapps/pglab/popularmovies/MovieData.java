@@ -3,9 +3,9 @@ package com.shaftapps.pglab.popularmovies;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.io.Serializable;
-
 /**
+ * Class reflecting movie object got from themoviedb.org.
+ *
  * Created by Paulina on 2015-08-28.
  */
 public class MovieData implements Parcelable {

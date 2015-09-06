@@ -1,12 +1,10 @@
 package com.shaftapps.pglab.popularmovies;
 
 
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.graphics.Palette;
@@ -14,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -27,13 +24,15 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 
 /**
+ * Fragment with details of specific movie.
+ *
  * Created by Paulina on 2015-08-30.
  */
 public class DetailFragment extends Fragment {
 
     private MovieData movieData;
 
-    private OnScrollListener onScrollListener;
+    private OnScrollChangedListener onScrollChangedListener;
 
     private ViewGroup ratioWrapper;
     private View titlesWrapper;
@@ -74,10 +73,10 @@ public class DetailFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            onScrollListener = (OnScrollListener) activity;
+            onScrollChangedListener = (OnScrollChangedListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement OnScrollListener");
+                    + " must implement OnScrollChangedListener");
         }
     }
 
@@ -97,12 +96,16 @@ public class DetailFragment extends Fragment {
     }
 
 
+    /**
+     * This method fits height of top part layout (with title, poster and backdrop).
+     * Will be improved with Stage 2 & tablet optimization.
+     */
+    // TODO: handle tablets
     private void fitRatioWrapperHeight() {
         ViewTreeObserver viewTreeObserver = ratioWrapper.getViewTreeObserver();
         viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-
                 if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
                     ratioWrapper.setLayoutParams(new LinearLayout.LayoutParams(ratioWrapper.getWidth(), ratioWrapper.getWidth()));
                 }
@@ -121,8 +124,8 @@ public class DetailFragment extends Fragment {
         notifyingScrollView.setOnScrollChangedListener(new NotifyingScrollView.OnScrollChangedListener() {
             @Override
             public void onScrollChanged(ScrollView scrollView, int l, int t, int oldl, int oldt) {
-                if (onScrollListener != null) {
-                    onScrollListener.onScrollChanged(ratioWrapper.getHeight(), generatedColor, t);
+                if (onScrollChangedListener != null) {
+                    onScrollChangedListener.onScrollChanged(ratioWrapper.getHeight(), generatedColor, t);
                 }
             }
         });
@@ -183,8 +186,17 @@ public class DetailFragment extends Fragment {
                 .into(photoImageView);
     }
 
-    public interface OnScrollListener {
-        void onScrollChanged(int range, int color, int scrollPosition);
+    /**
+     * DetailFragment's scroll listener.
+     */
+    public interface OnScrollChangedListener {
+        /**
+         * Called when scroll position is changed
+         * @param ratioWrapperHeight top part layout (ratio wrapper) height
+         * @param color color generated based on poster image
+         * @param scrollPosition current scroll position
+         */
+        void onScrollChanged(int ratioWrapperHeight, int color, int scrollPosition);
     }
 
 }

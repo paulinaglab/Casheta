@@ -7,6 +7,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 /**
+ * Utility class parsing JSON response to list of MovieData.
+ *
  * Created by Paulina on 2015-08-29.
  */
 public class MovieDataParser {

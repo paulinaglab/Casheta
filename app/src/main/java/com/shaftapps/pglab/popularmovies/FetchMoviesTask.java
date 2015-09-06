@@ -1,5 +1,6 @@
 package com.shaftapps.pglab.popularmovies;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -14,11 +15,21 @@ import java.net.URL;
 import java.util.ArrayList;
 
 /**
+ * Base class for movies fetching AsyncTasks.
+ * <p/>
  * Created by Paulina on 2015-09-01.
  */
 public abstract class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<MovieData>> {
 
-    private static final String API_KEY = "";
+    private static final String SCHEME = "https";
+    private static final String AUTHORITY = "api.themoviedb.org";
+    private static final String API_VERSION = "3";
+    private static final String SEARCH_METHOD = "discover";
+    private static final String TYPE = "movie";
+    private static final String API_KEY = "api_key";
+
+    // Enter your API key here
+    private static final String API_KEY_VALUE = "";
 
     @Override
     protected ArrayList<MovieData> doInBackground(String[] params) {
@@ -27,7 +38,7 @@ public abstract class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<
         String moviesJsonStr = null;
 
         try {
-            URL url = new URL(String.format(getUrl(), API_KEY));
+            URL url = new URL(getUrl());
 
             // Create the request and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
@@ -81,6 +92,20 @@ public abstract class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<
         }
     }
 
+    /**
+     * Method returning url with query to the API.
+     *
+     * @return specific url query
+     */
     protected abstract String getUrl();
+
+    protected Uri.Builder getUriBuilder() {
+        return new Uri.Builder().scheme(SCHEME)
+                .authority(AUTHORITY)
+                .appendPath(API_VERSION)
+                .appendPath(SEARCH_METHOD)
+                .appendPath(TYPE)
+                .appendQueryParameter(API_KEY, API_KEY_VALUE);
+    }
 
 }

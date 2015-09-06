@@ -1,17 +1,17 @@
 package com.shaftapps.pglab.popularmovies;
 
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 /**
+ * Activity showing details of specific movie.
+ *
  * Created by Paulina on 2015-08-30.
  */
-public class DetailActivity extends AppCompatActivity implements DetailFragment.OnScrollListener {
+public class DetailActivity extends AppCompatActivity implements DetailFragment.OnScrollChangedListener {
 
     private Toolbar toolbar;
     private String title;
@@ -33,6 +33,7 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
             }
         });
 
+        // Getting data from Intent
         MovieData movieData = getIntent().getParcelableExtra(MovieData.EXTRA_KEY);
         title = movieData.title;
 
@@ -51,22 +52,20 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
     }
 
     @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-    }
-
-    @Override
-    public void onScrollChanged(int range, int color, int scrollPosition) {
-        // Paint Toolbar background
-        float changingDistance = range - toolbar.getHeight();
+    public void onScrollChanged(int ratioWrapperHeight, int color, int scrollPosition) {
+        // Paint Toolbar background.
+        // Alpha of the color depends on DetailFragment's scroll position - start as transparent
+        // and ends as opaque.
+        float changingDistance = ratioWrapperHeight - toolbar.getHeight();
         float progress = Math.min(Math.max(scrollPosition, 0), changingDistance)
                 / changingDistance;
-        color = Color.argb((int) (255 * progress),
+        int currentColor = Color.argb((int) (255 * progress),
                 Color.red(color),
                 Color.green(color),
                 Color.blue(color));
-        toolbar.setBackgroundColor(color);
+        toolbar.setBackgroundColor(currentColor);
 
+        // Show title on toolbar when background is opaque.
         if (progress == 1)
             toolbar.setTitle(title);
         else toolbar.setTitle("");
