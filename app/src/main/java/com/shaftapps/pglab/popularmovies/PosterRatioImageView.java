@@ -6,11 +6,14 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 /**
+ * Custom ImageView, which can keep ratio 2:3 fitting one of its side.
+ * <p/>
  * Created by Paulina on 2015-08-31.
  */
 public class PosterRatioImageView extends ImageView {
 
     private static final float RATIO = 2f / 3f;   // width:height
+
     private Fit fit;
 
     public PosterRatioImageView(Context context) {
@@ -40,11 +43,12 @@ public class PosterRatioImageView extends ImageView {
         }
     }
 
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (fit.equals(Fit.WIDTH)) {
             int heightPx = MeasureSpec.getSize(heightMeasureSpec)
-                    - getPaddingTop() - getPaddingBottom() ;
+                    - getPaddingTop() - getPaddingBottom();
             int widthPx = (int) (heightPx * RATIO)
                     + getPaddingLeft() + getPaddingRight();
             super.onMeasure(
@@ -62,6 +66,9 @@ public class PosterRatioImageView extends ImageView {
 
     }
 
+    /**
+     * Custom attribute specifying, which side should be changed to keep ratio.
+     */
     public enum Fit {
         WIDTH, HEIGHT
     }

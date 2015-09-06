@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -25,7 +24,7 @@ import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 
 /**
  * Fragment with details of specific movie.
- *
+ * <p/>
  * Created by Paulina on 2015-08-30.
  */
 public class DetailFragment extends Fragment {
@@ -123,7 +122,7 @@ public class DetailFragment extends Fragment {
     private void initScrollViewListener() {
         notifyingScrollView.setOnScrollChangedListener(new NotifyingScrollView.OnScrollChangedListener() {
             @Override
-            public void onScrollChanged(ScrollView scrollView, int l, int t, int oldl, int oldt) {
+            public void onScrollChanged(int l, int t, int oldl, int oldt) {
                 if (onScrollChangedListener != null) {
                     onScrollChangedListener.onScrollChanged(ratioWrapper.getHeight(), generatedColor, t);
                 }
@@ -192,9 +191,10 @@ public class DetailFragment extends Fragment {
     public interface OnScrollChangedListener {
         /**
          * Called when scroll position is changed
+         *
          * @param ratioWrapperHeight top part layout (ratio wrapper) height
-         * @param color color generated based on poster image
-         * @param scrollPosition current scroll position
+         * @param color              color generated based on poster image
+         * @param scrollPosition     current scroll position
          */
         void onScrollChanged(int ratioWrapperHeight, int color, int scrollPosition);
     }

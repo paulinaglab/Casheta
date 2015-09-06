@@ -50,7 +50,7 @@ public abstract class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
                 // Nothing to do.
-                moviesJsonStr = null;
+                return null;
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
 

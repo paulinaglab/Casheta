@@ -12,6 +12,8 @@ import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 
 /**
+ * Adapter class of grid with movies.
+ *
  * Created by Paulina on 2015-08-28.
  */
 public class MoviesGridAdapter extends RecyclerView.Adapter {
@@ -33,6 +35,11 @@ public class MoviesGridAdapter extends RecyclerView.Adapter {
         this.onItemClickListener = onItemClickListener;
     }
 
+    /**
+     * Method called when any item has been clicked.
+     *
+     * @param clickedPos clicked item position
+     */
     public void itemClicked(int clickedPos) {
         if (onItemClickListener != null)
             onItemClickListener.onItemClicked(movieDatas.get(clickedPos));
@@ -42,6 +49,7 @@ public class MoviesGridAdapter extends RecyclerView.Adapter {
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.movie_grid_item, parent, false);
         final MovieItemViewHolder movieItemViewHolder = new MovieItemViewHolder(view);
+        // Setting listener for item view
         movieItemViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,6 +74,7 @@ public class MoviesGridAdapter extends RecyclerView.Adapter {
         return movieDatas.size();
     }
 
+
     public class MovieItemViewHolder extends RecyclerView.ViewHolder {
 
         public ImageView poster;
@@ -76,7 +85,16 @@ public class MoviesGridAdapter extends RecyclerView.Adapter {
         }
     }
 
+
+    /**
+     * Listener for item (movie) selection.
+     */
     public interface OnItemClickListener {
+        /**
+         * Triggered when user click an item from grid.
+         *
+         * @param clicked movie clicked by user
+         */
         void onItemClicked(MovieData clicked);
     }
 }

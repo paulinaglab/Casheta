@@ -1,7 +1,6 @@
 package com.shaftapps.pglab.popularmovies;
 
 import android.app.Activity;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -9,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.io.Serializable;
@@ -30,6 +30,7 @@ public class MoviesFragment extends Fragment {
     private OnMovieSelectListener movieSelectListener;
     private RecyclerView recyclerView;
     private MoviesGridAdapter adapter;
+    private ProgressBar progressBar;
 
 
     @Override
@@ -58,6 +59,9 @@ public class MoviesFragment extends Fragment {
                 (RecyclerView) fragmentView.findViewById(R.id.movies_recycler_view);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
+
+        // ProgressBar initialization
+        progressBar = (ProgressBar) fragmentView.findViewById(R.id.movies_progress_bar);
 
         return fragmentView;
     }
@@ -154,12 +158,14 @@ public class MoviesFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
+            progressBar.setVisibility(View.VISIBLE);
             adapter.setMovieDatas(new ArrayList<MovieData>());
             updateGrid(false);
         }
 
         @Override
         protected void onPostExecute(ArrayList<MovieData> movieDatas) {
+            progressBar.setVisibility(View.GONE);
             if (movieDatas == null)
                 Toast.makeText(getActivity(), R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
             else {
@@ -193,12 +199,14 @@ public class MoviesFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
+            progressBar.setVisibility(View.VISIBLE);
             adapter.setMovieDatas(new ArrayList<MovieData>());
             updateGrid(false);
         }
 
         @Override
         protected void onPostExecute(ArrayList<MovieData> movieDatas) {
+            progressBar.setVisibility(View.GONE);
             if (movieDatas == null)
                 Toast.makeText(getActivity(), R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
             else {

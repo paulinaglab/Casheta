@@ -5,6 +5,8 @@ import android.util.AttributeSet;
 import android.widget.ScrollView;
 
 /**
+ * Custom ScrollView notifying that scrolling has occurred.
+ *
  * Created by Paulina on 2015-09-05.
  */
 public class NotifyingScrollView extends ScrollView {
@@ -27,7 +29,7 @@ public class NotifyingScrollView extends ScrollView {
     protected void onScrollChanged(int l, int t, int oldl, int oldt) {
         super.onScrollChanged(l, t, oldl, oldt);
         if (onScrollChangedListener != null) {
-            onScrollChangedListener.onScrollChanged(this, l, t, oldl, oldt);
+            onScrollChangedListener.onScrollChanged(l, t, oldl, oldt);
         }
     }
 
@@ -35,7 +37,18 @@ public class NotifyingScrollView extends ScrollView {
         onScrollChangedListener = listener;
     }
 
+    /**
+     * Listener for scrolling.
+     */
     public interface OnScrollChangedListener {
-        void onScrollChanged(ScrollView scrollView, int l, int t, int oldl, int oldt);
+        /**
+         * Triggered when scrolling has occurred.
+         *
+         * @param l current horizontal scroll origin
+         * @param t current vertical scroll origin
+         * @param oldl previous horizontal scroll origin
+         * @param oldt previous vertical scroll origin
+         */
+        void onScrollChanged(int l, int t, int oldl, int oldt);
     }
 }

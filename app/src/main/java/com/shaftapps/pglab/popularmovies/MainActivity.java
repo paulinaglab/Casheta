@@ -2,10 +2,8 @@ package com.shaftapps.pglab.popularmovies;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -45,13 +43,12 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
                 getSupportFragmentManager().findFragmentById(R.id.fragment_movies);
 
         // Setting default (first) option of sorting movies if there is no saved data
+        // or loading saved one.
         if (savedInstanceState == null) {
             sortingMode = MoviesFragment.SortingMode.MOST_POPULAR;
-            Log.d(getClass().getSimpleName() + "sortMode: empty", sortingMode.name());
             notifySortingModeSet(false);
         } else {
             sortingMode = (MoviesFragment.SortingMode) savedInstanceState.getSerializable(SORTING_MODE_KEY);
-            Log.d(getClass().getSimpleName() + "sortMode: saved", sortingMode.name());
             notifySortingModeSet(false);
         }
     }
@@ -59,7 +56,6 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putSerializable(SORTING_MODE_KEY, sortingMode);
-        Log.d(getClass().getSimpleName() + " sortMode: saving state", sortingMode.name());
         super.onSaveInstanceState(outState);
     }
 
@@ -74,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
     }
 
     /**
-     * Method called when a sorting mode should be applied.
+     * Method called when a selected sorting mode should be applied.
      */
     private void notifySortingModeSet(boolean scrollTop) {
         moviesFragment.loadRequiredMovies(sortingMode, scrollTop);
@@ -92,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         if (sortModeSpinner == parent) {
             if (position != sortingMode.ordinal()) {
-                Log.d(getClass().getSimpleName(), "Position: " + position + " on item selected");
                 sortingMode = MoviesFragment.SortingMode.values()[position];
                 notifySortingModeSet(true);
             }
