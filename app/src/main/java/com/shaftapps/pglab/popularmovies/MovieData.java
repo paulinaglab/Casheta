@@ -12,6 +12,7 @@ public class MovieData implements Parcelable {
 
     public static final String EXTRA_KEY = MovieData.class.getName();
 
+    public long apiId;
     public String title;
     public String originalTitle;
     public String posterUrl;
@@ -25,6 +26,7 @@ public class MovieData implements Parcelable {
     }
 
     protected MovieData(Parcel in) {
+        apiId = in.readLong();
         title = in.readString();
         originalTitle = in.readString();
         posterUrl = in.readString();
@@ -41,6 +43,7 @@ public class MovieData implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(apiId);
         dest.writeString(title);
         dest.writeString(originalTitle);
         dest.writeString(posterUrl);

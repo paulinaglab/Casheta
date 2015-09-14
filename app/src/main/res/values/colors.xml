@@ -8,7 +8,9 @@
 
     <color name="grid_placeholder_bg">#424242</color>
 
-    <color name="details_rate_not_initialized_bg">#424242</color>
+    <color name="details_rate_not_initialized_bg">#4e4e4e</color>
     <color name="details_title_not_initialized_bg">#616161</color>
+
+    <color name="details_card_view_bg">#424242</color>
 
 </resources>

@@ -29,6 +29,7 @@ public class MovieDataParser {
         for (int i = 0; i < resultsArray.length(); i++) {
             JSONObject movieObject = resultsArray.getJSONObject(i);
             movie = new MovieData();
+            movie.apiId = movieObject.getLong("id");
             movie.title = movieObject.getString("title");
             movie.originalTitle = movieObject.getString("original_title");
             movie.posterUrl = POSTER_BASE_URL + POSTER_WIDTH + movieObject.getString("poster_path");

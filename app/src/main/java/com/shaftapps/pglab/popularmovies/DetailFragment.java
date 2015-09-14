@@ -190,7 +190,7 @@ public class DetailFragment extends Fragment {
      */
     public interface OnScrollChangedListener {
         /**
-         * Called when scroll position is changed
+         * Called when scroll position is changed.
          *
          * @param ratioWrapperHeight top part layout (ratio wrapper) height
          * @param color              color generated based on poster image

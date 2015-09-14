@@ -15,14 +15,16 @@ import android.widget.Spinner;
  * Created by Paulina on 2015-08-30.
  */
 public class MainActivity extends AppCompatActivity implements MoviesFragment.OnMovieSelectListener,
-        AdapterView.OnItemSelectedListener {
+        AdapterView.OnItemSelectedListener, DetailFragment.OnScrollChangedListener {
 
     private static final String SORTING_MODE_KEY = "sorting_mode_key";
+    private static final String DETAIL_FRAGMENT_TAG = "detail_fragment_tag";
 
     private Spinner sortModeSpinner;
     private Toolbar toolbar;
     private MoviesFragment moviesFragment;
     private MoviesFragment.SortingMode sortingMode;
+    private boolean twoPane;
 
 
     @Override
@@ -51,6 +53,17 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
             sortingMode = (MoviesFragment.SortingMode) savedInstanceState.getSerializable(SORTING_MODE_KEY);
             notifySortingModeSet(false);
         }
+
+        // Checking MainActivity is two pain layout or not
+        if (findViewById(R.id.movie_detail_container) != null) {
+            twoPane = true;
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.movie_detail_container, new DetailFragment(), DETAIL_FRAGMENT_TAG)
+                        .commit();
+            }
+        } else
+            twoPane = false;
     }
 
     @Override
@@ -79,9 +92,11 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
 
     @Override
     public void onMovieSelect(MovieData selected) {
-        // Opening new activity with details of selected movie.
-        Intent intent = new Intent(this, DetailActivity.class).putExtra(MovieData.EXTRA_KEY, selected);
-        startActivity(intent);
+        if (!twoPane) {
+            // Opening new activity with details of selected movie.
+            Intent intent = new Intent(this, DetailActivity.class).putExtra(MovieData.EXTRA_KEY, selected);
+            startActivity(intent);
+        }
     }
 
     @Override
@@ -96,5 +111,18 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
+    }
+
+    /**
+     * NOTE: This method is called only if MainActivity's layout is two pane.
+     * Called when scroll position in DetailFragment is changed.
+     *
+     * @param ratioWrapperHeight top part layout (ratio wrapper) height
+     * @param color              color generated based on poster image
+     * @param scrollPosition     current scroll position
+     */
+    @Override
+    public void onScrollChanged(int ratioWrapperHeight, int color, int scrollPosition) {
+
     }
 }

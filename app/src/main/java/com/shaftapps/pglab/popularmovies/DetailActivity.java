@@ -1,20 +1,27 @@
 package com.shaftapps.pglab.popularmovies;
 
+import android.content.ContentValues;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+
+import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
 /**
  * Activity showing details of specific movie.
- *
+ * <p/>
  * Created by Paulina on 2015-08-30.
  */
 public class DetailActivity extends AppCompatActivity implements DetailFragment.OnScrollChangedListener {
 
     private Toolbar toolbar;
     private String title;
+    private MovieData movieData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +41,7 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
         });
 
         // Getting data from Intent
-        MovieData movieData = getIntent().getParcelableExtra(MovieData.EXTRA_KEY);
+        movieData = getIntent().getParcelableExtra(MovieData.EXTRA_KEY);
         title = movieData.title;
 
         // Loading saved state
@@ -69,5 +76,52 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
         if (progress == 1)
             toolbar.setTitle(title);
         else toolbar.setTitle("");
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.detail, menu);
+        //TODO: is it favorite? - set proper icon
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_favorite) {
+            item.setChecked(!item.isChecked());
+            if (item.isChecked()) {
+                item.setIcon(R.drawable.ic_favorite_on);
+            } else {
+                item.setIcon(R.drawable.ic_favorite_off);
+            }
+            Log.i(getClass().getSimpleName(), "Fav icon clicked! Now is set to " + item.isChecked());
+            markAsFavorite(item.isChecked());
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void markAsFavorite(boolean favorite) {
+        if (favorite) {
+            // Add movie to favorites
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_API_ID, movieData.apiId);
+            contentValues.put(MovieContract.MovieEntry.COLUMN_TITLE, movieData.title);
+            contentValues.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, movieData.originalTitle);
+            contentValues.put(MovieContract.MovieEntry.COLUMN_POSTER_URL, movieData.posterUrl);
+            contentValues.put(MovieContract.MovieEntry.COLUMN_BACKDROP_URL, movieData.photoUrl);
+            contentValues.put(MovieContract.MovieEntry.COLUMN_AVERAGE_RATE, movieData.averageRate);
+            contentValues.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, movieData.overview);
+            contentValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, movieData.releaseDate);
+            contentValues.put(MovieContract.MovieEntry.COLUMN_FAVORITE, true);
+            getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, contentValues);
+        } else {
+            // Remove movie from favorites
+            getContentResolver().delete(
+                    MovieContract.MovieEntry.CONTENT_URI,
+                    MovieContract.MovieEntry.COLUMN_MOVIE_API_ID + "=?",
+                    new String[]{Long.toString(movieData.apiId)});
+        }
     }
 }

@@ -10,6 +10,11 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
 
+        <provider
+            android:authorities="@string/authority"
+            android:name=".data.MovieProvider"
+            android:exported="false"/>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >

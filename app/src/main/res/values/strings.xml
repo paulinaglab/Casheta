@@ -1,18 +1,20 @@
 <resources>
     <string name="app_name">Popular Movies</string>
 
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-
     <string name="error_fetching_movies">Failed to download</string>
 
     <string name="details_rate_format" translatable="false">%.1f/10</string>
     <string name="details_overview_label">Overview</string>
     <string name="details_release_date_label">Release date: %s</string>
 
+    <string name="action_favorite">Favorite</string>
+
     <string-array name="sorting_modes">
         <item>Most popular</item>
         <item>Highest rated</item>
+        <item>Favorites</item>
     </string-array>
+
+    <string name="authority" translatable="false">com.shaftapps.pglab.popularmovies</string>
 
 </resources>

@@ -117,6 +117,8 @@ public class MoviesFragment extends Fragment {
                     updateGrid(scrollTop);
                 }
                 break;
+            case FAVORITES:
+
         }
     }
 
@@ -218,7 +220,7 @@ public class MoviesFragment extends Fragment {
     }
 
     public enum SortingMode implements Serializable {
-        MOST_POPULAR, HIGHEST_RATED
+        MOST_POPULAR, HIGHEST_RATED, FAVORITES
     }
 
 }
