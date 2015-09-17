@@ -1,4 +1,6 @@
-package com.shaftapps.pglab.popularmovies;
+package com.shaftapps.pglab.popularmovies.util;
+
+import com.shaftapps.pglab.popularmovies.MovieData;
 
 import org.json.JSONArray;
 import org.json.JSONException;

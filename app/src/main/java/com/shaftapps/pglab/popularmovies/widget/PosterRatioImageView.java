@@ -1,9 +1,11 @@
-package com.shaftapps.pglab.popularmovies;
+package com.shaftapps.pglab.popularmovies.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.widget.ImageView;
+
+import com.shaftapps.pglab.popularmovies.R;
 
 /**
  * Custom ImageView, which can keep ratio 2:3 fitting one of its side.

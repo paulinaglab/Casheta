@@ -10,8 +10,6 @@ import android.os.Parcelable;
  */
 public class MovieData implements Parcelable {
 
-    public static final String EXTRA_KEY = MovieData.class.getName();
-
     public long apiId;
     public String title;
     public String originalTitle;

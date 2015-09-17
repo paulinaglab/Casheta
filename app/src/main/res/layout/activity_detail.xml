@@ -7,7 +7,7 @@
         android:id="@+id/movie_detail_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.shaftapps.pglab.popularmovies.DetailActivity" />
+        tools:context="com.shaftapps.pglab.popularmovies.activity.DetailActivity" />
 
     <include layout="@layout/toolbar_detail" />
 

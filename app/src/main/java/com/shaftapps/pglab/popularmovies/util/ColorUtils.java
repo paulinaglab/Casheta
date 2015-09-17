@@ -1,4 +1,4 @@
-package com.shaftapps.pglab.popularmovies;
+package com.shaftapps.pglab.popularmovies.util;
 
 import android.graphics.Color;
 

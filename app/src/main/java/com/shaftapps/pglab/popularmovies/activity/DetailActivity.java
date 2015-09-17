@@ -1,4 +1,4 @@
-package com.shaftapps.pglab.popularmovies;
+package com.shaftapps.pglab.popularmovies.activity;
 
 import android.content.ContentValues;
 import android.graphics.Color;
@@ -10,6 +10,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.shaftapps.pglab.popularmovies.Keys;
+import com.shaftapps.pglab.popularmovies.fragment.DetailFragment;
+import com.shaftapps.pglab.popularmovies.MovieData;
+import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
 /**
@@ -41,13 +45,13 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
         });
 
         // Getting data from Intent
-        movieData = getIntent().getParcelableExtra(MovieData.EXTRA_KEY);
+        movieData = getIntent().getParcelableExtra(Keys.SELECTED_MOVIE_DATA_EXTRA);
         title = movieData.title;
 
         // Loading saved state
         if (savedInstanceState == null) {
             Bundle arguments = new Bundle();
-            arguments.putParcelable(MovieData.EXTRA_KEY, movieData);
+            arguments.putParcelable(Keys.SELECTED_MOVIE_DATA_EXTRA, movieData);
 
             DetailFragment fragment = new DetailFragment();
             fragment.setArguments(arguments);

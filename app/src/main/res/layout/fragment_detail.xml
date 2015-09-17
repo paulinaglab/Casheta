@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.shaftapps.pglab.popularmovies.NotifyingScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.shaftapps.pglab.popularmovies.widget.NotifyingScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/detail_notifying_scroll_view"
@@ -93,7 +93,7 @@
                 android:orientation="vertical"
                 android:weightSum="2">
 
-                <com.shaftapps.pglab.popularmovies.PosterRatioImageView
+                <com.shaftapps.pglab.popularmovies.widget.PosterRatioImageView
                     android:id="@+id/detail_poster_image"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
@@ -142,4 +142,4 @@
 
     </LinearLayout>
 
-</com.shaftapps.pglab.popularmovies.NotifyingScrollView>
+</com.shaftapps.pglab.popularmovies.widget.NotifyingScrollView>

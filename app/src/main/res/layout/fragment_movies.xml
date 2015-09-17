@@ -8,7 +8,7 @@
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:padding="2dp"
-        tools:context="com.shaftapps.pglab.popularmovies.MoviesFragment"
+        tools:context="com.shaftapps.pglab.popularmovies.fragment.MoviesFragment"
         tools:listitem="@layout/movie_grid_item" />
 
     <ProgressBar

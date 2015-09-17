@@ -1,8 +1,13 @@
-package com.shaftapps.pglab.popularmovies;
+package com.shaftapps.pglab.popularmovies.fragment;
 
 import android.app.Activity;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,6 +15,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.shaftapps.pglab.popularmovies.FetchMoviesTask;
+import com.shaftapps.pglab.popularmovies.MovieData;
+import com.shaftapps.pglab.popularmovies.R;
+import com.shaftapps.pglab.popularmovies.adapter.FavoriteMoviesAdapter;
+import com.shaftapps.pglab.popularmovies.adapter.SimpleMoviesAdapter;
+import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,7 +31,9 @@ import java.util.ArrayList;
  * <p/>
  * Created by Paulina on 2015-08-30.
  */
-public class MoviesFragment extends Fragment {
+public class MoviesFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int FAVORITE_LOADER_ID = 1;
 
     private static final String MOST_POPULAR_KEY = "most_popular";
     private static final String HIGHEST_RATED_KEY = "highest_rated";
@@ -29,7 +43,8 @@ public class MoviesFragment extends Fragment {
 
     private OnMovieSelectListener movieSelectListener;
     private RecyclerView recyclerView;
-    private MoviesGridAdapter adapter;
+    private SimpleMoviesAdapter simpleMoviesAdapter;
+    private FavoriteMoviesAdapter favoriteMoviesAdapter;
     private ProgressBar progressBar;
 
 
@@ -45,11 +60,19 @@ public class MoviesFragment extends Fragment {
         View fragmentView = inflater.inflate(R.layout.fragment_movies, container, false);
 
         // RecyclerView initialization
-        adapter = new MoviesGridAdapter(getActivity(), new ArrayList<MovieData>());
-        adapter.setOnItemClickListener(new MoviesGridAdapter.OnItemClickListener() {
+        simpleMoviesAdapter = new SimpleMoviesAdapter(getActivity(), new ArrayList<MovieData>());
+        simpleMoviesAdapter.setOnItemClickListener(new SimpleMoviesAdapter.OnItemClickListener() {
             @Override
-            public void onItemClicked(MovieData clicked) {
-                movieSelected(clicked);
+            public void onItemClicked(MovieData clickedMovieData) {
+                movieSelected(clickedMovieData);
+            }
+        });
+
+        favoriteMoviesAdapter = new FavoriteMoviesAdapter(getActivity());
+        favoriteMoviesAdapter.setOnItemClickListener(new FavoriteMoviesAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClicked(Uri uri) {
+                movieSelected(uri);
             }
         });
 
@@ -58,7 +81,7 @@ public class MoviesFragment extends Fragment {
         recyclerView =
                 (RecyclerView) fragmentView.findViewById(R.id.movies_recycler_view);
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(adapter);
+        recyclerView.setAdapter(simpleMoviesAdapter);
 
         // ProgressBar initialization
         progressBar = (ProgressBar) fragmentView.findViewById(R.id.movies_progress_bar);
@@ -85,26 +108,39 @@ public class MoviesFragment extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getLoaderManager().initLoader(FAVORITE_LOADER_ID, null, this);
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         movieSelectListener = null;
     }
 
 
-    public void movieSelected(MovieData selected) {
+    public void movieSelected(MovieData movieData) {
         if (movieSelectListener != null) {
-            movieSelectListener.onMovieSelect(selected);
+            movieSelectListener.onMovieSelect(movieData);
+        }
+    }
+
+    public void movieSelected(Uri uri) {
+        if (movieSelectListener != null) {
+            movieSelectListener.onMovieSelect(uri);
         }
     }
 
     public void loadRequiredMovies(SortingMode sortingMode, boolean scrollTop) {
+        switchAdapter(sortingMode);
         switch (sortingMode) {
             case MOST_POPULAR:
                 if (mostPopularMovies == null) {
                     FetchMoviesTask fetchMoviesTask = new FetchMostPopularTask();
                     fetchMoviesTask.execute();
                 } else {
-                    adapter.setMovieDatas(mostPopularMovies);
+                    simpleMoviesAdapter.setMovieDatas(mostPopularMovies);
                     updateGrid(scrollTop);
                 }
                 break;
@@ -113,19 +149,52 @@ public class MoviesFragment extends Fragment {
                     FetchMoviesTask fetchMoviesTask = new FetchHighestRatedTask();
                     fetchMoviesTask.execute();
                 } else {
-                    adapter.setMovieDatas(highestRatedMovies);
+                    simpleMoviesAdapter.setMovieDatas(highestRatedMovies);
                     updateGrid(scrollTop);
                 }
                 break;
-            case FAVORITES:
-
         }
     }
 
-    private void updateGrid(boolean scrollTop){
-        adapter.notifyDataSetChanged();
+    private void switchAdapter(SortingMode sortingMode) {
+        switch (sortingMode) {
+            case MOST_POPULAR:
+            case HIGHEST_RATED:
+                if (recyclerView.getAdapter() != simpleMoviesAdapter)
+                    recyclerView.setAdapter(simpleMoviesAdapter);
+                break;
+            case FAVORITES:
+                if (recyclerView.getAdapter() != favoriteMoviesAdapter)
+                    recyclerView.setAdapter(favoriteMoviesAdapter);
+                break;
+        }
+    }
+
+    private void updateGrid(boolean scrollTop) {
+        simpleMoviesAdapter.notifyDataSetChanged();
         if (scrollTop)
             recyclerView.smoothScrollToPosition(0);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(
+                getActivity(),
+                MovieContract.MovieEntry.CONTENT_URI,
+                null,
+                MovieContract.MovieEntry.COLUMN_FAVORITE + "=?",
+                new String[]{Integer.toString(1)},
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        favoriteMoviesAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        favoriteMoviesAdapter.swapCursor(null);
     }
 
 
@@ -136,9 +205,16 @@ public class MoviesFragment extends Fragment {
         /**
          * Triggered when user selects a movie from grid.
          *
-         * @param selected selected movie
+         * @param movieData data of selected movie
          */
-        void onMovieSelect(MovieData selected);
+        void onMovieSelect(MovieData movieData);
+
+        /**
+         * Triggered when user selects a movie from grid.
+         *
+         * @param uri uri of selected movie
+         */
+        void onMovieSelect(Uri uri);
     }
 
 
@@ -161,7 +237,7 @@ public class MoviesFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             progressBar.setVisibility(View.VISIBLE);
-            adapter.setMovieDatas(new ArrayList<MovieData>());
+            simpleMoviesAdapter.setMovieDatas(new ArrayList<MovieData>());
             updateGrid(false);
         }
 
@@ -172,7 +248,7 @@ public class MoviesFragment extends Fragment {
                 Toast.makeText(getActivity(), R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
             else {
                 mostPopularMovies = movieDatas;
-                adapter.setMovieDatas(movieDatas);
+                simpleMoviesAdapter.setMovieDatas(movieDatas);
                 updateGrid(true);
             }
         }
@@ -202,7 +278,7 @@ public class MoviesFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             progressBar.setVisibility(View.VISIBLE);
-            adapter.setMovieDatas(new ArrayList<MovieData>());
+            simpleMoviesAdapter.setMovieDatas(new ArrayList<MovieData>());
             updateGrid(false);
         }
 
@@ -213,7 +289,7 @@ public class MoviesFragment extends Fragment {
                 Toast.makeText(getActivity(), R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
             else {
                 highestRatedMovies = movieDatas;
-                adapter.setMovieDatas(movieDatas);
+                simpleMoviesAdapter.setMovieDatas(movieDatas);
                 updateGrid(true);
             }
         }

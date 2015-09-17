@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.shaftapps.pglab.popularmovies.util.MovieDataParser;
+
 import org.json.JSONException;
 
 import java.io.BufferedReader;

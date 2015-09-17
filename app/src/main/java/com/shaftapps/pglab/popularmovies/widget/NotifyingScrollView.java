@@ -1,4 +1,4 @@
-package com.shaftapps.pglab.popularmovies;
+package com.shaftapps.pglab.popularmovies.widget;
 
 import android.content.Context;
 import android.util.AttributeSet;

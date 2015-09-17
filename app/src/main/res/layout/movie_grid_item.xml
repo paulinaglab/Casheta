@@ -8,7 +8,7 @@
     android:foreground="?android:attr/selectableItemBackground">
 
     <!-- Poster -->
-    <com.shaftapps.pglab.popularmovies.PosterRatioImageView
+    <com.shaftapps.pglab.popularmovies.widget.PosterRatioImageView
         android:id="@+id/poster_image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

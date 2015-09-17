@@ -1,6 +1,7 @@
-package com.shaftapps.pglab.popularmovies;
+package com.shaftapps.pglab.popularmovies.activity;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -8,6 +9,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+
+import com.shaftapps.pglab.popularmovies.Keys;
+import com.shaftapps.pglab.popularmovies.fragment.DetailFragment;
+import com.shaftapps.pglab.popularmovies.MovieData;
+import com.shaftapps.pglab.popularmovies.fragment.MoviesFragment;
+import com.shaftapps.pglab.popularmovies.R;
 
 /**
  * Application's main activity and entry point.
@@ -91,10 +98,21 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
 
 
     @Override
-    public void onMovieSelect(MovieData selected) {
+    public void onMovieSelect(MovieData movieData) {
         if (!twoPane) {
             // Opening new activity with details of selected movie.
-            Intent intent = new Intent(this, DetailActivity.class).putExtra(MovieData.EXTRA_KEY, selected);
+            Intent intent = new Intent(this, DetailActivity.class)
+                    .putExtra(Keys.SELECTED_MOVIE_DATA_EXTRA, movieData);
+            startActivity(intent);
+        }
+    }
+
+    @Override
+    public void onMovieSelect(Uri uri) {
+        if (!twoPane) {
+            // Opening new activity with uri of selected movie.
+            Intent intent = new Intent(this, DetailActivity.class)
+                    .putExtra(Keys.SELECTED_MOVIE_URI_EXTRA, uri);
             startActivity(intent);
         }
     }

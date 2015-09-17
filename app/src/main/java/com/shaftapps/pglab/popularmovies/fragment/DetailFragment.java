@@ -1,4 +1,4 @@
-package com.shaftapps.pglab.popularmovies;
+package com.shaftapps.pglab.popularmovies.fragment;
 
 
 import android.app.Activity;
@@ -21,6 +21,11 @@ import com.bumptech.glide.load.resource.bitmap.GlideBitmapDrawable;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
+import com.shaftapps.pglab.popularmovies.Keys;
+import com.shaftapps.pglab.popularmovies.MovieData;
+import com.shaftapps.pglab.popularmovies.R;
+import com.shaftapps.pglab.popularmovies.util.ColorUtils;
+import com.shaftapps.pglab.popularmovies.widget.NotifyingScrollView;
 
 /**
  * Fragment with details of specific movie.
@@ -134,7 +139,7 @@ public class DetailFragment extends Fragment {
     private void insertDataIntoUI() {
         Bundle arguments = getArguments();
         if (arguments != null) {
-            movieData = arguments.getParcelable(MovieData.EXTRA_KEY);
+            movieData = arguments.getParcelable(Keys.SELECTED_MOVIE_DATA_EXTRA);
 
             // Setting text data
             titleTextView.setText(movieData.title);
