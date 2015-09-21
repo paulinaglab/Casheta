@@ -25,7 +25,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_MOVIE_TABLE =
                 "CREATE TABLE " + MovieEntry.TABLE_NAME + " (" +
                         MovieEntry._ID + " INTEGER PRIMARY KEY," +
-                        MovieEntry.COLUMN_MOVIE_API_ID + " INTEGER UNIQUE NOT NULL, " +
                         MovieEntry.COLUMN_TITLE + " TEXT NOT NULL, " +
                         MovieEntry.COLUMN_ORIGINAL_TITLE + " TEXT NOT NULL, " +
                         MovieEntry.COLUMN_POSTER_URL + " TEXT, " +
@@ -33,18 +32,20 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                         MovieEntry.COLUMN_AVERAGE_RATE + " REAL, " +
                         MovieEntry.COLUMN_OVERVIEW + " TEXT NOT NULL, " +
                         MovieEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
-                        MovieEntry.COLUMN_FAVORITE + " INTEGER NOT NULL" +
+                        MovieEntry.COLUMN_FAVORITE + " INTEGER, " +
+                        MovieEntry.COLUMN_MOST_POPULAR + " REAL, " +
+                        MovieEntry.COLUMN_HIGHEST_RATED + " INTEGER" +
                         " )";
         db.execSQL(SQL_CREATE_MOVIE_TABLE);
 
         final String SQL_CREATE_REVIEW_TABLE =
                 "CREATE TABLE " + ReviewEntry.TABLE_NAME + " (" +
                         ReviewEntry._ID + " INTEGER PRIMARY KEY," +
-                        ReviewEntry.COLUMN_MOVIE_API_ID + " INTEGER NOT NULL, " +
+                        ReviewEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL, " +
                         ReviewEntry.COLUMN_REVIEW_API_ID + " TEXT UNIQUE NOT NULL, " +
                         ReviewEntry.COLUMN_AUTHOR + " TEXT NOT NULL, " +
                         ReviewEntry.COLUMN_CONTENT + " TEXT NOT NULL, " +
-                        "FOREIGN KEY (" + ReviewEntry.COLUMN_MOVIE_API_ID + ") REFERENCES " +
+                        "FOREIGN KEY (" + ReviewEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
                         MovieEntry.TABLE_NAME + " (" + MovieEntry._ID + " ) ON DELETE CASCADE)";
         db.execSQL(SQL_CREATE_REVIEW_TABLE);
 
@@ -52,12 +53,12 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 "CREATE TABLE " + VideoEntry.TABLE_NAME + " (" +
                         VideoEntry._ID + " INTEGER PRIMARY KEY," +
                         VideoEntry.COLUMN_VIDEO_API_ID + " TEXT UNIQUE NOT NULL, " +
-                        VideoEntry.COLUMN_MOVIE_API_ID + " INTEGER NOT NULL, " +
+                        VideoEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL, " +
                         VideoEntry.COLUMN_NAME + " TEXT NOT NULL, " +
                         VideoEntry.COLUMN_SITE + " TEXT NOT NULL, " +
                         VideoEntry.COLUMN_KEY + " TEXT NOT NULL, " +
                         VideoEntry.COLUMN_TYPE + " TEXT NOT NULL, "  +
-                        "FOREIGN KEY (" + VideoEntry.COLUMN_MOVIE_API_ID + ") REFERENCES " +
+                        "FOREIGN KEY (" + VideoEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
                         MovieEntry.TABLE_NAME + " (" + MovieEntry._ID + " ) ON DELETE CASCADE)";
         db.execSQL(SQL_CREATE_VIDEO_TABLE);
     }

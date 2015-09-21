@@ -1,6 +1,7 @@
 package com.shaftapps.pglab.popularmovies.fragment;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,10 +18,8 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.shaftapps.pglab.popularmovies.FetchMoviesTask;
-import com.shaftapps.pglab.popularmovies.MovieData;
 import com.shaftapps.pglab.popularmovies.R;
-import com.shaftapps.pglab.popularmovies.adapter.FavoriteMoviesAdapter;
-import com.shaftapps.pglab.popularmovies.adapter.SimpleMoviesAdapter;
+import com.shaftapps.pglab.popularmovies.CursorMoviesAdapter;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
 import java.io.Serializable;
@@ -31,45 +30,33 @@ import java.util.ArrayList;
  * <p/>
  * Created by Paulina on 2015-08-30.
  */
-public class MoviesFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class MoviesFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>,
+        FetchMoviesTask.DurationListener{
 
-    private static final int FAVORITE_LOADER_ID = 1;
-
-    private static final String MOST_POPULAR_KEY = "most_popular";
-    private static final String HIGHEST_RATED_KEY = "highest_rated";
-
-    private ArrayList<MovieData> mostPopularMovies;
-    private ArrayList<MovieData> highestRatedMovies;
+    private static final int MOST_POPULAR_LOADER_ID = 1;
+    private static final int HIGHEST_RATED_LOADER_ID = 2;
+    private static final int FAVORITE_LOADER_ID = 3;
 
     private OnMovieSelectListener movieSelectListener;
     private RecyclerView recyclerView;
-    private SimpleMoviesAdapter simpleMoviesAdapter;
-    private FavoriteMoviesAdapter favoriteMoviesAdapter;
+    private CursorMoviesAdapter cursorMoviesAdapter;
     private ProgressBar progressBar;
+    private SortingMode sortingMode;
+
+    private Cursor mostPopularCursor;
+    private Cursor highestRatedCursor;
+    private Cursor favoriteCursor;
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Restoring previously loaded movies (if it is possible).
-        if (savedInstanceState != null) {
-            mostPopularMovies = savedInstanceState.getParcelableArrayList(MOST_POPULAR_KEY);
-            highestRatedMovies = savedInstanceState.getParcelableArrayList(HIGHEST_RATED_KEY);
-        }
 
         View fragmentView = inflater.inflate(R.layout.fragment_movies, container, false);
 
         // RecyclerView initialization
-        simpleMoviesAdapter = new SimpleMoviesAdapter(getActivity(), new ArrayList<MovieData>());
-        simpleMoviesAdapter.setOnItemClickListener(new SimpleMoviesAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClicked(MovieData clickedMovieData) {
-                movieSelected(clickedMovieData);
-            }
-        });
-
-        favoriteMoviesAdapter = new FavoriteMoviesAdapter(getActivity());
-        favoriteMoviesAdapter.setOnItemClickListener(new FavoriteMoviesAdapter.OnItemClickListener() {
+        cursorMoviesAdapter = new CursorMoviesAdapter(getActivity());
+        cursorMoviesAdapter.setOnItemClickListener(new CursorMoviesAdapter.OnItemClickListener() {
             @Override
             public void onItemClicked(Uri uri) {
                 movieSelected(uri);
@@ -81,19 +68,12 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
         recyclerView =
                 (RecyclerView) fragmentView.findViewById(R.id.movies_recycler_view);
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(simpleMoviesAdapter);
+        recyclerView.setAdapter(cursorMoviesAdapter);
 
         // ProgressBar initialization
         progressBar = (ProgressBar) fragmentView.findViewById(R.id.movies_progress_bar);
 
         return fragmentView;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelableArrayList(MOST_POPULAR_KEY, mostPopularMovies);
-        outState.putParcelableArrayList(HIGHEST_RATED_KEY, highestRatedMovies);
-        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -110,6 +90,8 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        getLoaderManager().initLoader(MOST_POPULAR_LOADER_ID, null, this);
+        getLoaderManager().initLoader(HIGHEST_RATED_LOADER_ID, null, this);
         getLoaderManager().initLoader(FAVORITE_LOADER_ID, null, this);
     }
 
@@ -119,13 +101,6 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
         movieSelectListener = null;
     }
 
-
-    public void movieSelected(MovieData movieData) {
-        if (movieSelectListener != null) {
-            movieSelectListener.onMovieSelect(movieData);
-        }
-    }
-
     public void movieSelected(Uri uri) {
         if (movieSelectListener != null) {
             movieSelectListener.onMovieSelect(uri);
@@ -133,68 +108,117 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     public void loadRequiredMovies(SortingMode sortingMode, boolean scrollTop) {
-        switchAdapter(sortingMode);
+        this.sortingMode = sortingMode;
         switch (sortingMode) {
             case MOST_POPULAR:
-                if (mostPopularMovies == null) {
-                    FetchMoviesTask fetchMoviesTask = new FetchMostPopularTask();
-                    fetchMoviesTask.execute();
+                if (mostPopularCursor == null || !mostPopularCursor.moveToFirst()) {
+                    FetchMoviesTask task = new FetchMoviesTask(getActivity(),
+                            FetchMoviesTask.QueryType.MOST_POPULAR);
+                    task.setDurationListener(this);
+                    task.execute();
                 } else {
-                    simpleMoviesAdapter.setMovieDatas(mostPopularMovies);
+                    cursorMoviesAdapter.swapCursor(mostPopularCursor);
                     updateGrid(scrollTop);
                 }
                 break;
             case HIGHEST_RATED:
-                if (highestRatedMovies == null) {
-                    FetchMoviesTask fetchMoviesTask = new FetchHighestRatedTask();
-                    fetchMoviesTask.execute();
+                if (highestRatedCursor == null || !highestRatedCursor.moveToFirst()) {
+                    FetchMoviesTask task = new FetchMoviesTask(getActivity(),
+                            FetchMoviesTask.QueryType.HIGHEST_RATED);
+                    task.setDurationListener(this);
+                    task.execute();
                 } else {
-                    simpleMoviesAdapter.setMovieDatas(highestRatedMovies);
+                    cursorMoviesAdapter.swapCursor(highestRatedCursor);
                     updateGrid(scrollTop);
                 }
-                break;
-        }
-    }
-
-    private void switchAdapter(SortingMode sortingMode) {
-        switch (sortingMode) {
-            case MOST_POPULAR:
-            case HIGHEST_RATED:
-                if (recyclerView.getAdapter() != simpleMoviesAdapter)
-                    recyclerView.setAdapter(simpleMoviesAdapter);
                 break;
             case FAVORITES:
-                if (recyclerView.getAdapter() != favoriteMoviesAdapter)
-                    recyclerView.setAdapter(favoriteMoviesAdapter);
+                cursorMoviesAdapter.swapCursor(favoriteCursor);
+                updateGrid(scrollTop);
                 break;
         }
     }
 
     private void updateGrid(boolean scrollTop) {
-        simpleMoviesAdapter.notifyDataSetChanged();
+        cursorMoviesAdapter.notifyDataSetChanged();
         if (scrollTop)
             recyclerView.smoothScrollToPosition(0);
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(
-                getActivity(),
-                MovieContract.MovieEntry.CONTENT_URI,
-                null,
-                MovieContract.MovieEntry.COLUMN_FAVORITE + "=?",
-                new String[]{Integer.toString(1)},
-                null);
+        switch (id) {
+            case MOST_POPULAR_LOADER_ID:
+                return new CursorLoader(
+                        getActivity(),
+                        MovieContract.MovieEntry.CONTENT_URI,
+                        null,
+                        MovieContract.MovieEntry.COLUMN_MOST_POPULAR + "<>?",
+                        new String[]{"NULL"},
+                        MovieContract.MovieEntry.COLUMN_MOST_POPULAR + " DESC");
+            case HIGHEST_RATED_LOADER_ID:
+                return new CursorLoader(
+                        getActivity(),
+                        MovieContract.MovieEntry.CONTENT_URI,
+                        null,
+                        MovieContract.MovieEntry.COLUMN_HIGHEST_RATED + "<>?",
+                        new String[]{"NULL"},
+                        MovieContract.MovieEntry.COLUMN_HIGHEST_RATED + " ASC");
+            case FAVORITE_LOADER_ID:
+                return new CursorLoader(
+                        getActivity(),
+                        MovieContract.MovieEntry.CONTENT_URI,
+                        null,
+                        MovieContract.MovieEntry.COLUMN_FAVORITE + "=?",
+                        new String[]{Integer.toString(1)},
+                        null);
+            default:
+                throw new UnsupportedOperationException("Unknown loader id: " + id);
+        }
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        favoriteMoviesAdapter.swapCursor(data);
+        updateCursor(loader.getId(), data);
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        favoriteMoviesAdapter.swapCursor(null);
+        updateCursor(loader.getId(), null);
+    }
+
+    private void updateCursor(int loaderId, Cursor data) {
+        switch (loaderId) {
+            case MOST_POPULAR_LOADER_ID:
+                mostPopularCursor = data;
+                if (sortingMode.equals(SortingMode.MOST_POPULAR))
+                    cursorMoviesAdapter.swapCursor(mostPopularCursor);
+                break;
+            case HIGHEST_RATED_LOADER_ID:
+                highestRatedCursor = data;
+                if (sortingMode.equals(SortingMode.HIGHEST_RATED))
+                    cursorMoviesAdapter.swapCursor(highestRatedCursor);
+                break;
+            case FAVORITE_LOADER_ID:
+                favoriteCursor = data;
+                if (sortingMode.equals(SortingMode.FAVORITES))
+                    cursorMoviesAdapter.swapCursor(favoriteCursor);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown loader id: " + loaderId);
+        }
+    }
+
+    @Override
+    public void onTaskStart() {
+        progressBar.setVisibility(View.VISIBLE);
+        cursorMoviesAdapter.swapCursor(null);
+        updateGrid(false);
+    }
+
+    @Override
+    public void onTaskEnd() {
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
 
@@ -205,95 +229,11 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
         /**
          * Triggered when user selects a movie from grid.
          *
-         * @param movieData data of selected movie
-         */
-        void onMovieSelect(MovieData movieData);
-
-        /**
-         * Triggered when user selects a movie from grid.
-         *
          * @param uri uri of selected movie
          */
         void onMovieSelect(Uri uri);
     }
 
-
-    /**
-     * Class used to get most popular movies from themoviedb.org.
-     */
-    public class FetchMostPopularTask extends FetchMoviesTask {
-
-        private static final String SORT_BY = "sort_by";
-        private static final String POPULARITY = "popularity.desc";
-
-        @Override
-        protected String getUrl() {
-            return getUriBuilder()
-                    .appendQueryParameter(SORT_BY, POPULARITY)
-                    .build()
-                    .toString();
-        }
-
-        @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-            simpleMoviesAdapter.setMovieDatas(new ArrayList<MovieData>());
-            updateGrid(false);
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<MovieData> movieDatas) {
-            progressBar.setVisibility(View.GONE);
-            if (movieDatas == null)
-                Toast.makeText(getActivity(), R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
-            else {
-                mostPopularMovies = movieDatas;
-                simpleMoviesAdapter.setMovieDatas(movieDatas);
-                updateGrid(true);
-            }
-        }
-    }
-
-
-    /**
-     * Class used to get highest rated movies from themoviedb.org.
-     */
-    public class FetchHighestRatedTask extends FetchMoviesTask {
-
-        private static final String SORT_BY = "sort_by";
-        private static final String VOTE_AVERAGE = "vote_average.desc";
-        private static final String VOTE_MIN = "vote_count.gte";
-        private static final String VOTE_MIN_VALUE = "1000";
-
-
-        @Override
-        protected String getUrl() {
-            return getUriBuilder()
-                    .appendQueryParameter(SORT_BY, VOTE_AVERAGE)
-                    .appendQueryParameter(VOTE_MIN, VOTE_MIN_VALUE)
-                    .build()
-                    .toString();
-        }
-
-        @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-            simpleMoviesAdapter.setMovieDatas(new ArrayList<MovieData>());
-            updateGrid(false);
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<MovieData> movieDatas) {
-            progressBar.setVisibility(View.GONE);
-            if (movieDatas == null)
-                Toast.makeText(getActivity(), R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
-            else {
-                highestRatedMovies = movieDatas;
-                simpleMoviesAdapter.setMovieDatas(movieDatas);
-                updateGrid(true);
-            }
-        }
-    }
 
     public enum SortingMode implements Serializable {
         MOST_POPULAR, HIGHEST_RATED, FAVORITES

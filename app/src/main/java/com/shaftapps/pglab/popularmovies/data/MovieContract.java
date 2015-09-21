@@ -37,7 +37,6 @@ public class MovieContract {
 
 
         // Columns declaration
-        public static final String COLUMN_MOVIE_API_ID = "movie_api_id";
         public static final String COLUMN_TITLE = "title";
         public static final String COLUMN_ORIGINAL_TITLE = "original_title";
         public static final String COLUMN_POSTER_URL = "poster_url";
@@ -46,6 +45,12 @@ public class MovieContract {
         public static final String COLUMN_OVERVIEW = "overview";
         public static final String COLUMN_RELEASE_DATE = "release_date";
         public static final String COLUMN_FAVORITE = "favorite";
+        // This column specify movie is most popular by "popularity" value from API
+        // or NULL if is not.
+        public static final String COLUMN_MOST_POPULAR = "most_popular";
+        // This column specify movie is one of the highest rated by index (its position on highest
+        // rated list) or NULL if is not.
+        public static final String COLUMN_HIGHEST_RATED = "highest_rated";
 
 
         public static Uri buildUri(long id){
@@ -70,7 +75,7 @@ public class MovieContract {
 
         // Columns declaration
         public static final String COLUMN_REVIEW_API_ID = "review_api_id";
-        public static final String COLUMN_MOVIE_API_ID = "movie_api_id";
+        public static final String COLUMN_MOVIE_ID = "movie_id";
         public static final String COLUMN_AUTHOR = "author";
         public static final String COLUMN_CONTENT = "content";
 
@@ -102,7 +107,7 @@ public class MovieContract {
 
         // Columns declaration
         public static final String COLUMN_VIDEO_API_ID = "video_api_id";
-        public static final String COLUMN_MOVIE_API_ID = "movie_api_id";
+        public static final String COLUMN_MOVIE_ID = "movie_id";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_SITE = "site";
         public static final String COLUMN_KEY = "key";

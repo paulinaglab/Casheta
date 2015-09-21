@@ -1,8 +1,14 @@
 package com.shaftapps.pglab.popularmovies.activity;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -12,7 +18,6 @@ import android.view.View;
 
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.fragment.DetailFragment;
-import com.shaftapps.pglab.popularmovies.MovieData;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
@@ -21,11 +26,12 @@ import com.shaftapps.pglab.popularmovies.data.MovieContract;
  * <p/>
  * Created by Paulina on 2015-08-30.
  */
-public class DetailActivity extends AppCompatActivity implements DetailFragment.OnScrollChangedListener {
+public class DetailActivity extends AppCompatActivity implements DetailFragment.OnScrollChangedListener, LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final int MOVIE_LOADER_ID = 1;
 
     private Toolbar toolbar;
     private String title;
-    private MovieData movieData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,14 +50,13 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
             }
         });
 
-        // Getting data from Intent
-        movieData = getIntent().getParcelableExtra(Keys.SELECTED_MOVIE_DATA_EXTRA);
-        title = movieData.title;
+        // Getting movie title
+        getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
 
         // Loading saved state
         if (savedInstanceState == null) {
             Bundle arguments = new Bundle();
-            arguments.putParcelable(Keys.SELECTED_MOVIE_DATA_EXTRA, movieData);
+            arguments.putParcelable(Keys.SELECTED_MOVIE_URI, getIntent().getData());
 
             DetailFragment fragment = new DetailFragment();
             fragment.setArguments(arguments);
@@ -76,8 +81,13 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
                 Color.blue(color));
         toolbar.setBackgroundColor(currentColor);
 
+        updateTitle();
+    }
+
+    private void updateTitle() {
         // Show title on toolbar when background is opaque.
-        if (progress == 1)
+        if ((toolbar.getBackground() instanceof ColorDrawable) &&
+                Color.alpha(((ColorDrawable) toolbar.getBackground()).getColor()) == 255)
             toolbar.setTitle(title);
         else toolbar.setTitle("");
     }
@@ -85,47 +95,95 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.detail, menu);
-        //TODO: is it favorite? - set proper icon
+
+        initFavoriteMenuItem(menu);
+
         return true;
+    }
+
+    private void initFavoriteMenuItem(Menu menu) {
+        // Is this movie favorite?
+        Cursor cursor = getContentResolver().query(
+                getIntent().getData(),
+                new String[]{MovieContract.MovieEntry.COLUMN_FAVORITE},
+                null,
+                null,
+                null);
+        int columnIndex = cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_FAVORITE);
+        cursor.moveToFirst();
+        boolean favorite = cursor.getInt(columnIndex) == 1;
+        cursor.close();
+
+        // Show adequate menu item
+        MenuItem item = menu.findItem(R.id.action_favorite);
+        setFavoriteItemChecked(item, favorite);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_favorite) {
-            item.setChecked(!item.isChecked());
-            if (item.isChecked()) {
-                item.setIcon(R.drawable.ic_favorite_on);
-            } else {
-                item.setIcon(R.drawable.ic_favorite_off);
-            }
+            setFavoriteItemChecked(item, !item.isChecked());
+            updateMovie(item.isChecked());
             Log.i(getClass().getSimpleName(), "Fav icon clicked! Now is set to " + item.isChecked());
-            markAsFavorite(item.isChecked());
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void markAsFavorite(boolean favorite) {
+    private void setFavoriteItemChecked(MenuItem item, boolean checked) {
+        item.setChecked(checked);
+        if (checked) {
+            item.setIcon(R.drawable.ic_favorite_on);
+        } else {
+            item.setIcon(R.drawable.ic_favorite_off);
+        }
+    }
+
+    private void updateMovie(boolean favorite) {
         if (favorite) {
             // Add movie to favorites
             ContentValues contentValues = new ContentValues();
-            contentValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_API_ID, movieData.apiId);
-            contentValues.put(MovieContract.MovieEntry.COLUMN_TITLE, movieData.title);
-            contentValues.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, movieData.originalTitle);
-            contentValues.put(MovieContract.MovieEntry.COLUMN_POSTER_URL, movieData.posterUrl);
-            contentValues.put(MovieContract.MovieEntry.COLUMN_BACKDROP_URL, movieData.photoUrl);
-            contentValues.put(MovieContract.MovieEntry.COLUMN_AVERAGE_RATE, movieData.averageRate);
-            contentValues.put(MovieContract.MovieEntry.COLUMN_OVERVIEW, movieData.overview);
-            contentValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, movieData.releaseDate);
             contentValues.put(MovieContract.MovieEntry.COLUMN_FAVORITE, true);
-            getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, contentValues);
+            getContentResolver().update(
+                    MovieContract.MovieEntry.CONTENT_URI,
+                    contentValues,
+                    MovieContract.MovieEntry._ID + "=?",
+                    new String[]{Long.toString(ContentUris.parseId(getIntent().getData()))});
         } else {
             // Remove movie from favorites
-            getContentResolver().delete(
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MovieContract.MovieEntry.COLUMN_FAVORITE, false);
+            getContentResolver().update(
                     MovieContract.MovieEntry.CONTENT_URI,
-                    MovieContract.MovieEntry.COLUMN_MOVIE_API_ID + "=?",
-                    new String[]{Long.toString(movieData.apiId)});
+                    contentValues,
+                    MovieContract.MovieEntry._ID + "=?",
+                    new String[]{Long.toString(ContentUris.parseId(getIntent().getData()))});
+            //TODO: undo snackbar
+            //TODO: highest rated/most popular ?: flag remove on exit
         }
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(
+                this,
+                getIntent().getData(),
+                new String[]{MovieContract.MovieEntry.COLUMN_TITLE},
+                null,
+                null,
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        data.moveToFirst();
+        title = data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE));
+        updateTitle();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

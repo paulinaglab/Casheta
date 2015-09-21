@@ -3,10 +3,15 @@ package com.shaftapps.pglab.popularmovies.fragment;
 
 import android.app.Activity;
 import android.content.res.Configuration;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.graphics.Palette;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,8 +27,8 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.shaftapps.pglab.popularmovies.Keys;
-import com.shaftapps.pglab.popularmovies.MovieData;
 import com.shaftapps.pglab.popularmovies.R;
+import com.shaftapps.pglab.popularmovies.data.MovieContract;
 import com.shaftapps.pglab.popularmovies.util.ColorUtils;
 import com.shaftapps.pglab.popularmovies.widget.NotifyingScrollView;
 
@@ -32,9 +37,20 @@ import com.shaftapps.pglab.popularmovies.widget.NotifyingScrollView;
  * <p/>
  * Created by Paulina on 2015-08-30.
  */
-public class DetailFragment extends Fragment {
+public class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private MovieData movieData;
+    public static final int MOVIE_LOADER_ID = 1;
+
+    private static final String[] MOVIE_PROJECTION = new String[]{
+            MovieContract.MovieEntry.COLUMN_TITLE,
+            MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE,
+            MovieContract.MovieEntry.COLUMN_AVERAGE_RATE,
+            MovieContract.MovieEntry.COLUMN_OVERVIEW,
+            MovieContract.MovieEntry.COLUMN_RELEASE_DATE,
+            MovieContract.MovieEntry.COLUMN_POSTER_URL,
+            MovieContract.MovieEntry.COLUMN_BACKDROP_URL};
+
+    private Cursor movieCursor;
 
     private OnScrollChangedListener onScrollChangedListener;
 
@@ -71,6 +87,12 @@ public class DetailFragment extends Fragment {
         initScrollViewListener();
 
         return fragmentView;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        getLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
     }
 
     @Override
@@ -135,18 +157,24 @@ public class DetailFragment extends Fragment {
         });
     }
 
-
     private void insertDataIntoUI() {
-        Bundle arguments = getArguments();
-        if (arguments != null) {
-            movieData = arguments.getParcelable(Keys.SELECTED_MOVIE_DATA_EXTRA);
+        if (movieCursor != null && movieCursor.moveToFirst()) {
 
             // Setting text data
-            titleTextView.setText(movieData.title);
-            originalTitleTextView.setText(movieData.originalTitle);
-            rateTextView.setText(getString(R.string.details_rate_format, movieData.averageRate));
-            overviewTextView.setText(movieData.overview);
-            releaseDate.setText(getString(R.string.details_release_date_label, movieData.releaseDate));
+            titleTextView.setText(
+                    movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
+
+            originalTitleTextView.setText(
+                    movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE)));
+
+            rateTextView.setText(getString(R.string.details_rate_format,
+                    movieCursor.getDouble(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_AVERAGE_RATE))));
+
+            overviewTextView.setText(
+                    movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)));
+
+            releaseDate.setText(getString(R.string.details_release_date_label,
+                    movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE))));
 
             // Loading images and color generation
             loadImagesAndColors();
@@ -178,16 +206,39 @@ public class DetailFragment extends Fragment {
 
         // Poster loading
         Glide.with(getActivity())
-                .load(movieData.posterUrl)
+                .load(movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_URL)))
                 .fitCenter()
                 .placeholder(R.color.grid_placeholder_bg)
                 .into(posterGlideDrawable);
 
         // Background photo (backdrop) loading
         Glide.with(getActivity())
-                .load(movieData.photoUrl)
+                .load(movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_URL)))
                 .fitCenter()
                 .into(photoImageView);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(
+                getActivity(),
+                (Uri) getArguments().getParcelable(Keys.SELECTED_MOVIE_URI),
+                MOVIE_PROJECTION,
+                null,
+                null,
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        data.moveToFirst();
+        movieCursor = data;
+        insertDataIntoUI();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 
     /**

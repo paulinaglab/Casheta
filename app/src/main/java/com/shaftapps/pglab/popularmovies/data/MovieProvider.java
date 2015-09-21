@@ -69,7 +69,7 @@ public class MovieProvider extends ContentProvider {
 
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(MovieContract.MovieEntry.TABLE_NAME);
-        queryBuilder.appendWhere(MovieContract.MovieEntry.COLUMN_MOVIE_API_ID + "=" +
+        queryBuilder.appendWhere(MovieContract.MovieEntry._ID + "=" +
                 ContentUris.parseId(uri));
 
         return queryBuilder.query(movieDbHelper.getReadableDatabase(),
@@ -82,7 +82,7 @@ public class MovieProvider extends ContentProvider {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(MovieContract.ReviewEntry.TABLE_NAME);
         queryBuilder.appendWhere(
-                MovieContract.ReviewEntry.COLUMN_MOVIE_API_ID + "=" +
+                MovieContract.ReviewEntry.COLUMN_MOVIE_ID + "=" +
                         uri.getPathSegments().get(MovieContract.PATH_REVIEW_MOVIE_ID_INDEX));
 
         return queryBuilder.query(movieDbHelper.getReadableDatabase(), projection, selection,
@@ -95,7 +95,7 @@ public class MovieProvider extends ContentProvider {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(MovieContract.VideoEntry.TABLE_NAME);
         queryBuilder.appendWhere(
-                MovieContract.VideoEntry.COLUMN_MOVIE_API_ID + "=" +
+                MovieContract.VideoEntry.COLUMN_MOVIE_ID + "=" +
                         uri.getPathSegments().get(MovieContract.PATH_VIDEO_MOVIE_ID_INDEX));
 
         return queryBuilder.query(movieDbHelper.getReadableDatabase(), projection, selection,
@@ -126,31 +126,32 @@ public class MovieProvider extends ContentProvider {
 
         switch (uriMatcher.match(uri)) {
             case CODE_MOVIE: {
-                long _id = database.insert(MovieContract.MovieEntry.TABLE_NAME, null, values);
-                if (_id > 0)
+                try {
+                    long _id = database.insertOrThrow(MovieContract.MovieEntry.TABLE_NAME, null, values);
                     returnUri = MovieContract.MovieEntry.buildUri(_id);
-                else
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                } catch (SQLException e) {
+                    return null;
+                }
                 break;
             }
             case CODE_REVIEW: {
                 long _id = database.insert(MovieContract.ReviewEntry.TABLE_NAME, null, values);
                 if (_id > 0) {
-                    long movieApiId = Long.parseLong(
+                    long movieId = Long.parseLong(
                             uri.getPathSegments().get(MovieContract.PATH_REVIEW_MOVIE_ID_INDEX));
-                    returnUri = MovieContract.ReviewEntry.buildUri(movieApiId, _id);
+                    returnUri = MovieContract.ReviewEntry.buildUri(movieId, _id);
                 } else
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                    return null;
                 break;
             }
             case CODE_VIDEO: {
                 long _id = database.insert(MovieContract.VideoEntry.TABLE_NAME, null, values);
                 if (_id > 0) {
-                    long movieApiId = Long.parseLong(
+                    long movieId = Long.parseLong(
                             uri.getPathSegments().get(MovieContract.PATH_VIDEO_MOVIE_ID_INDEX));
-                    returnUri = MovieContract.VideoEntry.buildUri(movieApiId, _id);
+                    returnUri = MovieContract.VideoEntry.buildUri(movieId, _id);
                 } else
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                    return null;
                 break;
             }
             default:
@@ -201,7 +202,6 @@ public class MovieProvider extends ContentProvider {
                 rowsUpdated = database.update(
                         MovieContract.MovieEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
-
             case CODE_REVIEW:
                 rowsUpdated = database.update(
                         MovieContract.ReviewEntry.TABLE_NAME, values, selection, selectionArgs);

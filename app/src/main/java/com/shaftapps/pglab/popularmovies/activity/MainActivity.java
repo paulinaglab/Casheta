@@ -10,9 +10,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
-import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.fragment.DetailFragment;
-import com.shaftapps.pglab.popularmovies.MovieData;
 import com.shaftapps.pglab.popularmovies.fragment.MoviesFragment;
 import com.shaftapps.pglab.popularmovies.R;
 
@@ -96,23 +94,12 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
         moviesFragment.loadRequiredMovies(sortingMode, scrollTop);
     }
 
-
-    @Override
-    public void onMovieSelect(MovieData movieData) {
-        if (!twoPane) {
-            // Opening new activity with details of selected movie.
-            Intent intent = new Intent(this, DetailActivity.class)
-                    .putExtra(Keys.SELECTED_MOVIE_DATA_EXTRA, movieData);
-            startActivity(intent);
-        }
-    }
-
     @Override
     public void onMovieSelect(Uri uri) {
         if (!twoPane) {
             // Opening new activity with uri of selected movie.
             Intent intent = new Intent(this, DetailActivity.class)
-                    .putExtra(Keys.SELECTED_MOVIE_URI_EXTRA, uri);
+                    .setData(uri);
             startActivity(intent);
         }
     }
