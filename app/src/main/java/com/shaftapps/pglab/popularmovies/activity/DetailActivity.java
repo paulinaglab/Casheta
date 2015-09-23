@@ -20,6 +20,7 @@ import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.fragment.DetailFragment;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
+import com.shaftapps.pglab.popularmovies.util.ColorUtils;
 
 /**
  * Activity showing details of specific movie.
@@ -39,7 +40,7 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
         setContentView(R.layout.activity_detail);
 
         // Toolbar initialization
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         toolbar.setTitle("");
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(R.drawable.ic_action_back);
@@ -73,12 +74,8 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
         // Alpha of the color depends on DetailFragment's scroll position - start as transparent
         // and ends as opaque.
         float changingDistance = ratioWrapperHeight - toolbar.getHeight();
-        float progress = Math.min(Math.max(scrollPosition, 0), changingDistance)
-                / changingDistance;
-        int currentColor = Color.argb((int) (255 * progress),
-                Color.red(color),
-                Color.green(color),
-                Color.blue(color));
+        int currentColor = ColorUtils.getColorWithProportionalAlpha(
+                color, changingDistance, scrollPosition);
         toolbar.setBackgroundColor(currentColor);
 
         updateTitle();

@@ -50,6 +50,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             MovieContract.MovieEntry.COLUMN_POSTER_URL,
             MovieContract.MovieEntry.COLUMN_BACKDROP_URL};
 
+    private Uri uri;
+
     private Cursor movieCursor;
 
     private OnScrollChangedListener onScrollChangedListener;
@@ -72,6 +74,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        if (getArguments() != null)
+            uri = getArguments().getParcelable(Keys.SELECTED_MOVIE_URI);
+
         View fragmentView = inflater.inflate(R.layout.fragment_detail, container, false);
 
         // Fields initialization
@@ -124,17 +129,17 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     /**
      * This method fits height of top part layout (with title, poster and backdrop).
-     * Will be improved with Stage 2 & tablet optimization.
      */
-    // TODO: handle tablets
     private void fitRatioWrapperHeight() {
         ViewTreeObserver viewTreeObserver = ratioWrapper.getViewTreeObserver();
         viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                if (getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    ratioWrapper.setLayoutParams(new LinearLayout.LayoutParams(ratioWrapper.getWidth(), ratioWrapper.getWidth()));
-                }
+                int screenHeight = getResources().getDisplayMetrics().heightPixels -
+                        getResources().getDimensionPixelSize(R.dimen.status_bar_height);
+                ratioWrapper.setLayoutParams(new LinearLayout.LayoutParams(
+                        ratioWrapper.getWidth(),
+                        Math.min(ratioWrapper.getWidth(), screenHeight)));
 
                 ViewTreeObserver viewTreeObserver = ratioWrapper.getViewTreeObserver();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -220,13 +225,16 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(
-                getActivity(),
-                (Uri) getArguments().getParcelable(Keys.SELECTED_MOVIE_URI),
-                MOVIE_PROJECTION,
-                null,
-                null,
-                null);
+        if (uri != null)
+            return new CursorLoader(
+                    getActivity(),
+                    uri,
+                    MOVIE_PROJECTION,
+                    null,
+                    null,
+                    null);
+        else
+            return null;
     }
 
     @Override

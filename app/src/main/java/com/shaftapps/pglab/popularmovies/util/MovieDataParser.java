@@ -23,7 +23,7 @@ public class MovieDataParser {
 
     private static final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/";
     private static final String POSTER_WIDTH = "w342"; //One of the following: "w92", "w154", "w185", "w342", "w500", "w780", or "original".
-    private static final String PHOTO_WIDTH = "w780";
+    private static final String BACKDROP_WIDTH = "w780";
 
 
     public static ArrayList<ContentValues> getMoviesFromJson(
@@ -50,7 +50,7 @@ public class MovieDataParser {
             movie.put(MovieEntry.COLUMN_POSTER_URL,
                     POSTER_BASE_URL + POSTER_WIDTH + movieObject.getString("poster_path"));
             movie.put(MovieEntry.COLUMN_BACKDROP_URL,
-                    POSTER_BASE_URL + PHOTO_WIDTH + movieObject.getString("backdrop_path"));
+                    POSTER_BASE_URL + BACKDROP_WIDTH + movieObject.getString("backdrop_path"));
             movie.put(MovieEntry.COLUMN_AVERAGE_RATE,
                     movieObject.getDouble("vote_average"));
             movie.put(MovieEntry.COLUMN_OVERVIEW,

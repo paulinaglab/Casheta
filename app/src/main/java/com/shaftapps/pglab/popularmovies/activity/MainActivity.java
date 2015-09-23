@@ -1,6 +1,7 @@
 package com.shaftapps.pglab.popularmovies.activity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,9 +11,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
+import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.fragment.DetailFragment;
 import com.shaftapps.pglab.popularmovies.fragment.MoviesFragment;
 import com.shaftapps.pglab.popularmovies.R;
+import com.shaftapps.pglab.popularmovies.util.ColorUtils;
 
 /**
  * Application's main activity and entry point.
@@ -30,6 +33,9 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
     private MoviesFragment moviesFragment;
     private MoviesFragment.SortingMode sortingMode;
     private boolean twoPane;
+    // Only if two pane
+    private Toolbar detailSubToolbar;
+    private Toolbar detailSubToolbarTitle;
 
 
     @Override
@@ -67,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
                         .replace(R.id.movie_detail_container, new DetailFragment(), DETAIL_FRAGMENT_TAG)
                         .commit();
             }
+            detailSubToolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         } else
             twoPane = false;
     }
@@ -96,7 +103,21 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
 
     @Override
     public void onMovieSelect(Uri uri) {
-        if (!twoPane) {
+        if (twoPane) {
+            // Putting uri to arguments
+            Bundle args = new Bundle();
+            args.putParcelable(Keys.SELECTED_MOVIE_URI, uri);
+
+            DetailFragment fragment = new DetailFragment();
+            fragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, fragment, DETAIL_FRAGMENT_TAG)
+                    .commit();
+
+            // reset subtoolbar color
+            detailSubToolbar.setBackgroundColor(Color.TRANSPARENT);
+        } else {
             // Opening new activity with uri of selected movie.
             Intent intent = new Intent(this, DetailActivity.class)
                     .setData(uri);
@@ -128,6 +149,12 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
      */
     @Override
     public void onScrollChanged(int ratioWrapperHeight, int color, int scrollPosition) {
-
+        // Paint Toolbar background.
+        // Alpha of the color depends on DetailFragment's scroll position - start as transparent
+        // and ends as opaque.
+        float changingDistance = ratioWrapperHeight - detailSubToolbar.getHeight();
+        int currentColor = ColorUtils.getColorWithProportionalAlpha(
+                color, changingDistance, scrollPosition);
+        detailSubToolbar.setBackgroundColor(currentColor);
     }
 }
