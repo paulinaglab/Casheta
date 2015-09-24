@@ -68,16 +68,6 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
         moviesFragment = (MoviesFragment)
                 getSupportFragmentManager().findFragmentById(R.id.fragment_movies);
 
-        // Setting default (first) option of sorting movies if there is no saved data
-        // or loading saved one.
-        if (savedInstanceState == null) {
-            sortingMode = MoviesFragment.SortingMode.MOST_POPULAR;
-            notifySortingModeSet(false);
-        } else {
-            sortingMode = (MoviesFragment.SortingMode) savedInstanceState.getSerializable(SORTING_MODE_KEY);
-            notifySortingModeSet(false);
-        }
-
         // Checking MainActivity is two pain layout or not
         if (findViewById(R.id.movie_detail_container) != null) {
             twoPane = true;
@@ -89,6 +79,20 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
             detailSubToolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         } else
             twoPane = false;
+    }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Setting default (first) option of sorting movies if there is no saved data
+        // or loading saved one.
+        if (savedInstanceState == null) {
+            sortingMode = MoviesFragment.SortingMode.MOST_POPULAR;
+            notifySortingModeSet(false);
+        } else {
+            sortingMode = (MoviesFragment.SortingMode) savedInstanceState.getSerializable(SORTING_MODE_KEY);
+            notifySortingModeSet(false);
+        }
     }
 
     @Override

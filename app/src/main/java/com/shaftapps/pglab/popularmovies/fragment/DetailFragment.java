@@ -4,9 +4,9 @@ package com.shaftapps.pglab.popularmovies.fragment;
 import android.app.Activity;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -72,8 +72,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private TextView overviewTextView;
     private TextView releaseDate;
     private ImageView posterImageView;
-    private ImageView photoImageView;
+    private ImageView backdropImageView;
 
+    private ViewTreeObserver.OnGlobalLayoutListener ratioWrapperOnGlobalLayoutListener;
     private int generatedColor;
 
 
@@ -123,6 +124,19 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         }
     }
 
+    @Override
+    public void onDestroyView() {
+        if (ratioWrapperOnGlobalLayoutListener != null)
+            //TODO: remove it in a method
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                ratioWrapper.getViewTreeObserver()
+                        .removeOnGlobalLayoutListener(ratioWrapperOnGlobalLayoutListener);
+            } else {
+                ratioWrapper.getViewTreeObserver()
+                        .removeGlobalOnLayoutListener(ratioWrapperOnGlobalLayoutListener);
+            }
+        super.onDestroyView();
+    }
 
     //
     //  OPTION MENU METHODS
@@ -220,7 +234,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         overviewTextView = (TextView) fragmentView.findViewById(R.id.detail_overview);
         releaseDate = (TextView) fragmentView.findViewById(R.id.detail_release_date);
         posterImageView = (ImageView) fragmentView.findViewById(R.id.detail_poster_image);
-        photoImageView = (ImageView) fragmentView.findViewById(R.id.detail_photo_image);
+        backdropImageView = (ImageView) fragmentView.findViewById(R.id.detail_photo_image);
     }
 
 
@@ -228,8 +242,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
      * This method fits height of top part layout (with title, poster and backdrop).
      */
     private void fitRatioWrapperHeight() {
-        ViewTreeObserver viewTreeObserver = ratioWrapper.getViewTreeObserver();
-        viewTreeObserver.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        ViewTreeObserver ratioWrapperTreeObserver = ratioWrapper.getViewTreeObserver();
+        ratioWrapperOnGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
                 int screenHeight = getResources().getDisplayMetrics().heightPixels -
@@ -244,8 +258,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 } else {
                     viewTreeObserver.removeGlobalOnLayoutListener(this);
                 }
+                ratioWrapperOnGlobalLayoutListener = null;
             }
-        });
+        };
+        ratioWrapperTreeObserver.addOnGlobalLayoutListener(ratioWrapperOnGlobalLayoutListener);
     }
 
     private void initScrollViewListener() {
@@ -288,12 +304,16 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         final Palette.PaletteAsyncListener paletteAsyncListener = new Palette.PaletteAsyncListener() {
             @Override
             public void onGenerated(Palette palette) {
+                if (getActivity() == null)
+                    return;
+
                 generatedColor = palette.getDarkVibrantColor(
                         ContextCompat.getColor(getActivity(), R.color.details_rate_not_initialized_bg));
+
                 titlesWrapper.setBackgroundColor(generatedColor);
 
                 rateWrapper.setBackgroundColor(
-                        ColorUtils.getColorWithTranslateBrightness(generatedColor, -20));
+                        ColorUtils.getColorWithTranslateBrightness(generatedColor, -10));
             }
         };
 
@@ -317,7 +337,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         Glide.with(getActivity())
                 .load(movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_URL)))
                 .fitCenter()
-                .into(photoImageView);
+                .into(backdropImageView);
     }
 
 

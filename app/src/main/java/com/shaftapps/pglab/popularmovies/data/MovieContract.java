@@ -48,8 +48,8 @@ public class MovieContract {
         // This column specify movie is most popular by "popularity" value from API
         // or NULL if is not.
         public static final String COLUMN_MOST_POPULAR = "most_popular";
-        // This column specify movie is one of the highest rated by index (its position on highest
-        // rated list) or NULL if is not.
+        // This column specify movie is one of the highest rated by index (order/its position on
+        // highest rated list) or NULL if is not.
         public static final String COLUMN_HIGHEST_RATED = "highest_rated";
 
 

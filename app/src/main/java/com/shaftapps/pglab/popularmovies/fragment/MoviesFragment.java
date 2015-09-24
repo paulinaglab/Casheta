@@ -31,7 +31,7 @@ import java.util.ArrayList;
  * Created by Paulina on 2015-08-30.
  */
 public class MoviesFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>,
-        FetchMoviesTask.DurationListener{
+        FetchMoviesTask.DurationListener {
 
     private static final int MOST_POPULAR_LOADER_ID = 1;
     private static final int HIGHEST_RATED_LOADER_ID = 2;
@@ -90,8 +90,11 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        getLoaderManager().initLoader(MOST_POPULAR_LOADER_ID, null, this);
-        getLoaderManager().initLoader(HIGHEST_RATED_LOADER_ID, null, this);
+        // Don't show data if the API query has not finished yet for the first time running app.
+        if (savedInstanceState != null) {
+            getLoaderManager().initLoader(MOST_POPULAR_LOADER_ID, null, this);
+            getLoaderManager().initLoader(HIGHEST_RATED_LOADER_ID, null, this);
+        }
         getLoaderManager().initLoader(FAVORITE_LOADER_ID, null, this);
     }
 
@@ -136,6 +139,9 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
                 cursorMoviesAdapter.swapCursor(favoriteCursor);
                 updateGrid(scrollTop);
                 break;
+            default:
+                throw new UnsupportedOperationException(
+                        "Unknown movies sorting mode: " + sortingMode.name());
         }
     }
 
@@ -217,8 +223,16 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Override
-    public void onTaskEnd() {
+    public void onTaskEnd(FetchMoviesTask.QueryType queryType) {
         progressBar.setVisibility(View.INVISIBLE);
+        switch (queryType) {
+            case MOST_POPULAR:
+                getLoaderManager().initLoader(MOST_POPULAR_LOADER_ID, null, this);
+                break;
+            case HIGHEST_RATED:
+                getLoaderManager().initLoader(HIGHEST_RATED_LOADER_ID, null, this);
+                break;
+        }
     }
 
 

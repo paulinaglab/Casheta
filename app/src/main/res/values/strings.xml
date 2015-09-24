@@ -6,6 +6,7 @@
     <string name="details_rate_format" translatable="false">%.1f/10</string>
     <string name="details_overview_label">Overview</string>
     <string name="details_release_date_label">Release date: %s</string>
+    <string name="details_reviews_label">Reviews</string>
 
     <string name="action_favorite">Favorite</string>
 

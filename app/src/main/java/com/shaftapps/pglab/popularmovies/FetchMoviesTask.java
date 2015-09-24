@@ -62,6 +62,8 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<ContentVa
 
     @Override
     protected ArrayList<ContentValues> doInBackground(String[] params) {
+        clearCachedMovies();
+
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String moviesJsonStr = null;
@@ -124,20 +126,18 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<ContentVa
     @Override
     protected void onPostExecute(ArrayList<ContentValues> movieValues) {
         if (durationListener != null)
-            durationListener.onTaskEnd();
+            durationListener.onTaskEnd(queryType);
 
         if (movieValues == null)
             Toast.makeText(context, R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
         else {
-            // TODO:
-            // insert new data from API to database or
+            // Insert new data from API to database or
             // update if they're used by another category and
-            // delete cached data
             for (ContentValues movie : movieValues) {
-                Uri uri = context.getContentResolver().insert(
+                Uri insertUri = context.getContentResolver().insert(
                         MovieContract.MovieEntry.CONTENT_URI,
                         movie);
-                if (uri == null) {
+                if (insertUri == null) {
                     context.getContentResolver().update(
                             MovieContract.MovieEntry.CONTENT_URI,
                             movie,
@@ -147,6 +147,49 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<ContentVa
             }
         }
     }
+
+    private void clearCachedMovies() {
+        switch (queryType) {
+            case MOST_POPULAR: {
+                // Delete all movies, which are in database only because they're most popular.
+                context.getContentResolver().delete(
+                        MovieContract.MovieEntry.CONTENT_URI,
+                        MovieContract.MovieEntry.COLUMN_HIGHEST_RATED + "=? AND " +
+                                MovieContract.MovieEntry.COLUMN_FAVORITE + "=?",
+                        new String[]{"NULL", "NULL"});
+                // Overwrite (reset) popularity in remaining movies.
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(MovieContract.MovieEntry.COLUMN_MOST_POPULAR, "NULL");
+                context.getContentResolver().update(
+                        MovieContract.MovieEntry.CONTENT_URI,
+                        contentValues,
+                        null,
+                        null);
+                break;
+            }
+            case HIGHEST_RATED: {
+                // Delete all movies, which are in database only because they're highest rated.
+                context.getContentResolver().delete(
+                        MovieContract.MovieEntry.CONTENT_URI,
+                        MovieContract.MovieEntry.COLUMN_MOST_POPULAR + "=? AND " +
+                                MovieContract.MovieEntry.COLUMN_FAVORITE + "=?",
+                        new String[]{"NULL", "NULL"});
+                // Overwrite (reset) highest rated order value in remaining movies.
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(MovieContract.MovieEntry.COLUMN_HIGHEST_RATED, "NULL");
+                context.getContentResolver().update(
+                        MovieContract.MovieEntry.CONTENT_URI,
+                        contentValues,
+                        null,
+                        null);
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException(
+                        "Unsupported query type: " + queryType.name());
+        }
+    }
+
 
     /**
      * Method returning url with query to the API.
@@ -195,7 +238,7 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<ContentVa
 
         void onTaskStart();
 
-        void onTaskEnd();
+        void onTaskEnd(QueryType queryType);
     }
 
 }
