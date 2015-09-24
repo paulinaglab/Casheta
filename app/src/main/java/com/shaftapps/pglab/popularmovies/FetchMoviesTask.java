@@ -56,7 +56,8 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<ContentVa
 
     @Override
     protected void onPreExecute() {
-        durationListener.onTaskStart();
+        if (durationListener != null)
+            durationListener.onTaskStart();
     }
 
     @Override
@@ -122,7 +123,8 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<ContentVa
 
     @Override
     protected void onPostExecute(ArrayList<ContentValues> movieValues) {
-        durationListener.onTaskEnd();
+        if (durationListener != null)
+            durationListener.onTaskEnd();
 
         if (movieValues == null)
             Toast.makeText(context, R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();

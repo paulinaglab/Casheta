@@ -2,6 +2,8 @@ package com.shaftapps.pglab.popularmovies.fragment;
 
 
 import android.app.Activity;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
@@ -13,7 +15,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.graphics.Palette;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -71,6 +77,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private int generatedColor;
 
 
+    //
+    //  FRAGMENT LIFECYCLE METHODS
+    //
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -90,6 +100,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
         // Setting ScrollView listener
         initScrollViewListener();
+
+        setHasOptionsMenu(true);
 
         return fragmentView;
     }
@@ -111,6 +123,90 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         }
     }
 
+
+    //
+    //  OPTION MENU METHODS
+    //
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        Log.d(getClass().getSimpleName(), "Fragment's onCreateOptionsMenu: " + menu);
+        inflater.inflate(R.menu.detailfragment, menu);
+        initFavoriteMenuItem(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_favorite) {
+            setFavoriteItemChecked(item, !item.isChecked());
+            updateMovie(item.isChecked());
+            Log.i(getClass().getSimpleName(), "Fav icon clicked! Now is set to " + item.isChecked());
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void initFavoriteMenuItem(Menu menu) {
+        // Is this movie favorite?
+        if (uri != null) {
+            Cursor cursor = getActivity().getContentResolver().query(
+                    uri,
+                    new String[]{MovieContract.MovieEntry.COLUMN_FAVORITE},
+                    null,
+                    null,
+                    null);
+            int columnIndex = cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_FAVORITE);
+            cursor.moveToFirst();
+            boolean favorite = cursor.getInt(columnIndex) == 1;
+            cursor.close();
+
+            // Show adequate menu item
+            MenuItem item = menu.findItem(R.id.action_favorite);
+            setFavoriteItemChecked(item, favorite);
+        }
+    }
+
+    private void setFavoriteItemChecked(MenuItem item, boolean checked) {
+        item.setChecked(checked);
+        if (checked) {
+            item.setIcon(R.drawable.ic_favorite_on);
+        } else {
+            item.setIcon(R.drawable.ic_favorite_off);
+        }
+    }
+
+    private void updateMovie(boolean favorite) {
+        if (uri != null) {
+            if (favorite) {
+                // Add movie to favorites
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(MovieContract.MovieEntry.COLUMN_FAVORITE, true);
+                getActivity().getContentResolver().update(
+                        MovieContract.MovieEntry.CONTENT_URI,
+                        contentValues,
+                        MovieContract.MovieEntry._ID + "=?",
+                        new String[]{Long.toString(ContentUris.parseId(uri))});
+            } else {
+                // Remove movie from favorites
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(MovieContract.MovieEntry.COLUMN_FAVORITE, false);
+                getActivity().getContentResolver().update(
+                        MovieContract.MovieEntry.CONTENT_URI,
+                        contentValues,
+                        MovieContract.MovieEntry._ID + "=?",
+                        new String[]{Long.toString(ContentUris.parseId(uri))});
+                //TODO: undo snackbar
+                //TODO: highest rated/most popular ?: flag remove on exit
+            }
+        }
+    }
+
+
+    //
+    //  INITIALIZATION HELPER METHODS
+    //
+
     private void initFields(View fragmentView) {
         ratioWrapper = (ViewGroup) fragmentView.findViewById(R.id.detail_ratio_wrapper);
         titlesWrapper = fragmentView.findViewById(R.id.detail_titles_wrapper);
@@ -118,7 +214,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         notifyingScrollView = (NotifyingScrollView)
                 fragmentView.findViewById(R.id.detail_notifying_scroll_view);
         titleTextView = (TextView) fragmentView.findViewById(R.id.detail_movie_title);
-        originalTitleTextView = (TextView) fragmentView.findViewById(R.id.detail_movie_original_title);
+        originalTitleTextView = (TextView)
+                fragmentView.findViewById(R.id.detail_movie_original_title);
         rateTextView = (TextView) fragmentView.findViewById(R.id.detail_rate_text_view);
         overviewTextView = (TextView) fragmentView.findViewById(R.id.detail_overview);
         releaseDate = (TextView) fragmentView.findViewById(R.id.detail_release_date);
@@ -223,6 +320,11 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 .into(photoImageView);
     }
 
+
+    //
+    //  LOADER CALLBACKS
+    //
+
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         if (uri != null)
@@ -248,6 +350,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onLoaderReset(Loader<Cursor> loader) {
 
     }
+
 
     /**
      * DetailFragment's scroll listener.

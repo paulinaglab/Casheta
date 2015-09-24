@@ -1,21 +1,30 @@
 package com.shaftapps.pglab.popularmovies.activity;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ActionMenuPresenter;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.shaftapps.pglab.popularmovies.Keys;
+import com.shaftapps.pglab.popularmovies.data.MovieContract;
 import com.shaftapps.pglab.popularmovies.fragment.DetailFragment;
 import com.shaftapps.pglab.popularmovies.fragment.MoviesFragment;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.util.ColorUtils;
+import com.shaftapps.pglab.popularmovies.util.ToolbarUtils;
 
 /**
  * Application's main activity and entry point.
@@ -35,8 +44,12 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
     private boolean twoPane;
     // Only if two pane
     private Toolbar detailSubToolbar;
-    private Toolbar detailSubToolbarTitle;
+    private String detailSubToolbarTitle;
 
+
+    //
+    //  ACTIVITY LIFECYCLE METHODS
+    //
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +97,31 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
         super.onSaveInstanceState(outState);
     }
 
+
+    //
+    // OPTION MENU METHODS
+    //
+
+    @Override
+    public boolean onCreatePanelMenu(int featureId, Menu menu) {
+        if (twoPane) {
+            detailSubToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    return getSupportFragmentManager().findFragmentById(R.id.movie_detail_container).onOptionsItemSelected(item);
+                }
+            });
+            detailSubToolbar.getMenu().clear();
+            return super.onCreatePanelMenu(featureId, detailSubToolbar.getMenu());
+        } else {
+            return super.onCreatePanelMenu(featureId, menu);
+        }
+    }
+
+    //
+    //  INITIALIZATION HELPER METHODS
+    //
+
     private void initSpinner() {
         sortModeSpinner = (Spinner) toolbar.findViewById(R.id.sort_mode_spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -94,12 +132,23 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
         sortModeSpinner.setOnItemSelectedListener(this);
     }
 
+
+    //
+    //  OTHER HELPER METHODS
+    //
+
     /**
      * Method called when a selected sorting mode should be applied.
      */
     private void notifySortingModeSet(boolean scrollTop) {
         moviesFragment.loadRequiredMovies(sortingMode, scrollTop);
     }
+
+
+    //
+    //  INTERFACE METHODS:
+    //  OnMovieSelectListener
+    //
 
     @Override
     public void onMovieSelect(Uri uri) {
@@ -115,8 +164,20 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
                     .replace(R.id.movie_detail_container, fragment, DETAIL_FRAGMENT_TAG)
                     .commit();
 
-            // reset subtoolbar color
+            // Reset subtoolbar color
             detailSubToolbar.setBackgroundColor(Color.TRANSPARENT);
+            // Load current selected movie's title
+            Cursor cursor = getContentResolver().query(
+                    uri,
+                    new String[]{MovieContract.MovieEntry.COLUMN_TITLE},
+                    null,
+                    null,
+                    null);
+            int columnIndex = cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE);
+            cursor.moveToFirst();
+            detailSubToolbarTitle = cursor.getString(columnIndex);
+            cursor.close();
+
         } else {
             // Opening new activity with uri of selected movie.
             Intent intent = new Intent(this, DetailActivity.class)
@@ -124,6 +185,12 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
             startActivity(intent);
         }
     }
+
+
+    //
+    //  INTERFACE METHODS:
+    //  OnItemSelectedListener (Spinner)
+    //
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -138,6 +205,12 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
     @Override
     public void onNothingSelected(AdapterView<?> parent) {
     }
+
+
+    //
+    //  INTERFACE METHODS:
+    //  OnScrollChangedListener (DetailFragment's ScrollView & 'subtoolbar')
+    //
 
     /**
      * NOTE: This method is called only if MainActivity's layout is two pane.
@@ -156,5 +229,7 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
         int currentColor = ColorUtils.getColorWithProportionalAlpha(
                 color, changingDistance, scrollPosition);
         detailSubToolbar.setBackgroundColor(currentColor);
+
+        ToolbarUtils.showTitleIfOpaque(detailSubToolbar, detailSubToolbarTitle);
     }
 }
