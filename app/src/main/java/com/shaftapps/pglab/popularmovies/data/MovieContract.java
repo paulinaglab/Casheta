@@ -14,11 +14,11 @@ public class MovieContract {
 
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
-    public static final String PATH_MOVIE = "movie";
-    public static final String PATH_REVIEW = "review";
-    public static final String PATH_VIDEO = "video";
-    public static final int PATH_REVIEW_MOVIE_ID_INDEX = 1;
-    public static final int PATH_VIDEO_MOVIE_ID_INDEX = 1;
+    public static final String PATH_MOVIE = "movies";
+    public static final String PATH_REVIEW = "reviews";
+    public static final String PATH_VIDEO = "videos";
+    public static final int PATH_REVIEW_MOVIE_ID_INDEX = 2;
+    public static final int PATH_VIDEO_MOVIE_ID_INDEX = 2;
 
 
     public static final class MovieEntry implements BaseColumns {
@@ -53,7 +53,7 @@ public class MovieContract {
         public static final String COLUMN_HIGHEST_RATED = "highest_rated";
 
 
-        public static Uri buildUri(long id){
+        public static Uri buildUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }
@@ -66,8 +66,6 @@ public class MovieContract {
 
         public static final String CONTENT_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REVIEW;
-        public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REVIEW;
 
         // Table name
         public static final String TABLE_NAME = "review";
@@ -80,12 +78,15 @@ public class MovieContract {
         public static final String COLUMN_CONTENT = "content";
 
 
-        public static Uri buildUri(long movieApiId, long id){
-            return MovieEntry
-                    .buildUri(movieApiId)
+        public static Uri buildUriById(long reviewId) {
+            return ContentUris.withAppendedId(CONTENT_URI, reviewId);
+        }
+
+        public static Uri buildUriByMovieId(long movieId) {
+            return CONTENT_URI
                     .buildUpon()
-                    .appendPath(PATH_REVIEW)
-                    .appendPath(Long.toString(id))
+                    .appendPath(PATH_MOVIE)
+                    .appendPath(Long.toString(movieId))
                     .build();
         }
     }
@@ -98,8 +99,6 @@ public class MovieContract {
 
         public static final String CONTENT_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_VIDEO;
-        public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_VIDEO;
 
         // Table name
         public static final String TABLE_NAME = "video";
@@ -114,12 +113,11 @@ public class MovieContract {
         public static final String COLUMN_TYPE = "type";
 
 
-        public static Uri buildUri(long movieApiId, long id){
-            return MovieEntry
-                    .buildUri(movieApiId)
+        public static Uri buildUriByMovieId(long movieId) {
+            return CONTENT_URI
                     .buildUpon()
-                    .appendPath(PATH_VIDEO)
-                    .appendPath(Long.toString(id))
+                    .appendPath(PATH_MOVIE)
+                    .appendPath(Long.toString(movieId))
                     .build();
         }
     }

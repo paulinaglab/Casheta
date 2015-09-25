@@ -18,10 +18,10 @@ public class MovieProvider extends ContentProvider {
     private static final UriMatcher uriMatcher = buildUriMatcher();
     private MovieDbHelper movieDbHelper;
 
-    static final int CODE_MOVIE = 100;
+    static final int CODE_MOVIES = 100;
     static final int CODE_MOVIE_ITEM = 101;
-    static final int CODE_REVIEW = 200;
-    static final int CODE_VIDEO = 300;
+    static final int CODE_REVIEWS_OF_MOVIE = 201;
+    static final int CODE_VIDEOS_OF_MOVIE = 301;
 
     @Override
     public boolean onCreate() {
@@ -33,16 +33,16 @@ public class MovieProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Cursor cursor;
         switch (uriMatcher.match(uri)) {
-            case CODE_MOVIE:
+            case CODE_MOVIES:
                 cursor = getMovies(projection, selection, selectionArgs, sortOrder);
                 break;
             case CODE_MOVIE_ITEM:
                 cursor = getMovieItem(uri, projection, selection, selectionArgs, sortOrder);
                 break;
-            case CODE_REVIEW:
+            case CODE_REVIEWS_OF_MOVIE:
                 cursor = getReviews(uri, projection, selection, selectionArgs, sortOrder);
                 break;
-            case CODE_VIDEO:
+            case CODE_VIDEOS_OF_MOVIE:
                 cursor = getVideos(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             default:
@@ -106,13 +106,13 @@ public class MovieProvider extends ContentProvider {
     public String getType(Uri uri) {
         int match = uriMatcher.match(uri);
         switch (match) {
-            case CODE_MOVIE:
+            case CODE_MOVIES:
                 return MovieContract.MovieEntry.CONTENT_TYPE;
             case CODE_MOVIE_ITEM:
                 return MovieContract.MovieEntry.CONTENT_ITEM_TYPE;
-            case CODE_REVIEW:
+            case CODE_REVIEWS_OF_MOVIE:
                 return MovieContract.ReviewEntry.CONTENT_TYPE;
-            case CODE_VIDEO:
+            case CODE_VIDEOS_OF_MOVIE:
                 return MovieContract.VideoEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Undefined URI code: " + uri);
@@ -125,7 +125,7 @@ public class MovieProvider extends ContentProvider {
         Uri returnUri;
 
         switch (uriMatcher.match(uri)) {
-            case CODE_MOVIE: {
+            case CODE_MOVIES: {
                 try {
                     long _id = database.insertOrThrow(MovieContract.MovieEntry.TABLE_NAME, null, values);
                     returnUri = MovieContract.MovieEntry.buildUri(_id);
@@ -134,22 +134,22 @@ public class MovieProvider extends ContentProvider {
                 }
                 break;
             }
-            case CODE_REVIEW: {
+            case CODE_REVIEWS_OF_MOVIE: {
                 long _id = database.insert(MovieContract.ReviewEntry.TABLE_NAME, null, values);
                 if (_id > 0) {
                     long movieId = Long.parseLong(
                             uri.getPathSegments().get(MovieContract.PATH_REVIEW_MOVIE_ID_INDEX));
-                    returnUri = MovieContract.ReviewEntry.buildUri(movieId, _id);
+                    returnUri = MovieContract.ReviewEntry.buildUriByMovieId(movieId);
                 } else
                     return null;
                 break;
             }
-            case CODE_VIDEO: {
+            case CODE_VIDEOS_OF_MOVIE: {
                 long _id = database.insert(MovieContract.VideoEntry.TABLE_NAME, null, values);
                 if (_id > 0) {
                     long movieId = Long.parseLong(
                             uri.getPathSegments().get(MovieContract.PATH_VIDEO_MOVIE_ID_INDEX));
-                    returnUri = MovieContract.VideoEntry.buildUri(movieId, _id);
+                    returnUri = MovieContract.VideoEntry.buildUriByMovieId(movieId);
                 } else
                     return null;
                 break;
@@ -168,16 +168,16 @@ public class MovieProvider extends ContentProvider {
         int rowsDeleted;
 
         switch (uriMatcher.match(uri)) {
-            case CODE_MOVIE:
+            case CODE_MOVIES:
                 rowsDeleted = database.delete(
                         MovieContract.MovieEntry.TABLE_NAME, selection, selectionArgs);
                 break;
 
-            case CODE_REVIEW:
+            case CODE_REVIEWS_OF_MOVIE:
                 rowsDeleted = database.delete(
                         MovieContract.ReviewEntry.TABLE_NAME, selection, selectionArgs);
                 break;
-            case CODE_VIDEO:
+            case CODE_VIDEOS_OF_MOVIE:
                 rowsDeleted = database.delete(
                         MovieContract.VideoEntry.TABLE_NAME, selection, selectionArgs);
                 break;
@@ -198,15 +198,15 @@ public class MovieProvider extends ContentProvider {
         int rowsUpdated;
 
         switch (uriMatcher.match(uri)) {
-            case CODE_MOVIE:
+            case CODE_MOVIES:
                 rowsUpdated = database.update(
                         MovieContract.MovieEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
-            case CODE_REVIEW:
+            case CODE_REVIEWS_OF_MOVIE:
                 rowsUpdated = database.update(
                         MovieContract.ReviewEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
-            case CODE_VIDEO:
+            case CODE_VIDEOS_OF_MOVIE:
                 rowsUpdated = database.update(
                         MovieContract.VideoEntry.TABLE_NAME, values, selection, selectionArgs);
                 break;
@@ -224,17 +224,15 @@ public class MovieProvider extends ContentProvider {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
 
         matcher.addURI(MovieContract.CONTENT_AUTHORITY,
-                MovieContract.PATH_MOVIE,
-                CODE_MOVIE);
+                MovieContract.PATH_MOVIE, CODE_MOVIES);
         matcher.addURI(MovieContract.CONTENT_AUTHORITY,
-                MovieContract.PATH_MOVIE + "/#",
-                CODE_MOVIE_ITEM);
+                MovieContract.PATH_MOVIE + "/#", CODE_MOVIE_ITEM);
         matcher.addURI(MovieContract.CONTENT_AUTHORITY,
-                MovieContract.PATH_MOVIE + "/#/" + MovieContract.PATH_REVIEW,
-                CODE_REVIEW);
+                MovieContract.PATH_REVIEW + "/" +
+                        MovieContract.PATH_MOVIE + "/#", CODE_REVIEWS_OF_MOVIE);
         matcher.addURI(MovieContract.CONTENT_AUTHORITY,
-                MovieContract.PATH_MOVIE + "/#/" + MovieContract.PATH_VIDEO,
-                CODE_VIDEO);
+                MovieContract.PATH_VIDEO + "/" +
+                        MovieContract.PATH_MOVIE + "/#", CODE_VIDEOS_OF_MOVIE);
 
         return matcher;
     }

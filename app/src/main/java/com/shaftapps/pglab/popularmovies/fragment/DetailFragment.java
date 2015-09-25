@@ -6,7 +6,6 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -23,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -34,6 +34,7 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.R;
+import com.shaftapps.pglab.popularmovies.asynctask.FetchReviewsTask;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 import com.shaftapps.pglab.popularmovies.util.ColorUtils;
 import com.shaftapps.pglab.popularmovies.widget.NotifyingScrollView;
@@ -45,7 +46,8 @@ import com.shaftapps.pglab.popularmovies.widget.NotifyingScrollView;
  */
 public class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    public static final int MOVIE_LOADER_ID = 1;
+    private static final int MOVIE_LOADER_ID = 1;
+    private static final int REVIEW_LOADER_ID = 2;
 
     private static final String[] MOVIE_PROJECTION = new String[]{
             MovieContract.MovieEntry.COLUMN_TITLE,
@@ -56,9 +58,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             MovieContract.MovieEntry.COLUMN_POSTER_URL,
             MovieContract.MovieEntry.COLUMN_BACKDROP_URL};
 
-    private Uri uri;
+    private Uri movieUri;
 
     private Cursor movieCursor;
+    private Cursor reviewsCursor;
 
     private OnScrollChangedListener onScrollChangedListener;
 
@@ -73,6 +76,13 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private TextView releaseDate;
     private ImageView posterImageView;
     private ImageView backdropImageView;
+    // Review section
+    private TextView reviewSubheaderTextView;
+    private View reviewEmptyStateView;
+    private View reviewItemLayout;
+    private TextView reviewAuthorNameTextView;
+    private TextView reviewContentTextView;
+    private Button reviewShowMoreButton;
 
     private ViewTreeObserver.OnGlobalLayoutListener ratioWrapperOnGlobalLayoutListener;
     private int generatedColor;
@@ -86,7 +96,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if (getArguments() != null)
-            uri = getArguments().getParcelable(Keys.SELECTED_MOVIE_URI);
+            movieUri = getArguments().getParcelable(Keys.SELECTED_MOVIE_URI);
 
         View fragmentView = inflater.inflate(R.layout.fragment_detail, container, false);
 
@@ -111,6 +121,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         getLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
+        getLoaderManager().initLoader(REVIEW_LOADER_ID, null, this);
     }
 
     @Override
@@ -121,6 +132,17 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnScrollChangedListener");
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (movieUri != null) {
+            FetchReviewsTask fetchReviewsTask =
+                    new FetchReviewsTask(getActivity(), ContentUris.parseId(movieUri));
+            //TODO: fetchReviewsTask.setDurationListener(this);
+            fetchReviewsTask.execute();
         }
     }
 
@@ -163,9 +185,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     private void initFavoriteMenuItem(Menu menu) {
         // Is this movie favorite?
-        if (uri != null) {
+        if (movieUri != null) {
             Cursor cursor = getActivity().getContentResolver().query(
-                    uri,
+                    movieUri,
                     new String[]{MovieContract.MovieEntry.COLUMN_FAVORITE},
                     null,
                     null,
@@ -191,7 +213,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     private void updateMovie(boolean favorite) {
-        if (uri != null) {
+        if (movieUri != null) {
             if (favorite) {
                 // Add movie to favorites
                 ContentValues contentValues = new ContentValues();
@@ -200,7 +222,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                         MovieContract.MovieEntry.CONTENT_URI,
                         contentValues,
                         MovieContract.MovieEntry._ID + "=?",
-                        new String[]{Long.toString(ContentUris.parseId(uri))});
+                        new String[]{Long.toString(ContentUris.parseId(movieUri))});
             } else {
                 // Remove movie from favorites
                 ContentValues contentValues = new ContentValues();
@@ -209,7 +231,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                         MovieContract.MovieEntry.CONTENT_URI,
                         contentValues,
                         MovieContract.MovieEntry._ID + "=?",
-                        new String[]{Long.toString(ContentUris.parseId(uri))});
+                        new String[]{Long.toString(ContentUris.parseId(movieUri))});
                 //TODO: undo snackbar
                 //TODO: highest rated/most popular ?: flag remove on exit
             }
@@ -235,6 +257,13 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         releaseDate = (TextView) fragmentView.findViewById(R.id.detail_release_date);
         posterImageView = (ImageView) fragmentView.findViewById(R.id.detail_poster_image);
         backdropImageView = (ImageView) fragmentView.findViewById(R.id.detail_photo_image);
+        // Review section
+        reviewSubheaderTextView = (TextView) fragmentView.findViewById(R.id.detail_review_subheader_text_view);
+        reviewEmptyStateView = fragmentView.findViewById(R.id.detail_review_empty_state_view);
+        reviewItemLayout = fragmentView.findViewById(R.id.detail_review_item_view);
+        reviewAuthorNameTextView = (TextView) reviewItemLayout.findViewById(R.id.review_author_name_view);
+        reviewContentTextView = (TextView) reviewItemLayout.findViewById(R.id.review_content_view);
+        reviewShowMoreButton = (Button) fragmentView.findViewById(R.id.detail_reviews_show_more_button);
     }
 
 
@@ -279,20 +308,20 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         if (movieCursor != null && movieCursor.moveToFirst()) {
 
             // Setting text data
-            titleTextView.setText(
-                    movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
+            titleTextView.setText(movieCursor.getString(
+                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
 
-            originalTitleTextView.setText(
-                    movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE)));
+            originalTitleTextView.setText(movieCursor.getString(
+                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE)));
 
-            rateTextView.setText(getString(R.string.details_rate_format,
-                    movieCursor.getDouble(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_AVERAGE_RATE))));
+            rateTextView.setText(getString(R.string.details_rate_format, movieCursor.getDouble(
+                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_AVERAGE_RATE))));
 
-            overviewTextView.setText(
-                    movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)));
+            overviewTextView.setText(movieCursor.getString(
+                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)));
 
-            releaseDate.setText(getString(R.string.details_release_date_label,
-                    movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE))));
+            releaseDate.setText(getString(R.string.details_release_date_label, movieCursor.getString(
+                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE))));
 
             // Loading images and color generation
             loadImagesAndColors();
@@ -340,6 +369,33 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 .into(backdropImageView);
     }
 
+    private void insertReview() {
+        if (reviewsCursor != null && reviewsCursor.moveToFirst()) {
+            reviewSubheaderTextView.setText(getString(R.string.details_reviews_label,
+                    reviewsCursor.getCount()));
+
+            reviewAuthorNameTextView.setText(reviewsCursor.getString(
+                    reviewsCursor.getColumnIndex(MovieContract.ReviewEntry.COLUMN_AUTHOR)));
+
+            reviewContentTextView.setText(reviewsCursor.getString(
+                    reviewsCursor.getColumnIndex(MovieContract.ReviewEntry.COLUMN_CONTENT)));
+
+            reviewEmptyStateView.setVisibility(View.GONE);
+            reviewItemLayout.setVisibility(View.VISIBLE);
+            // Button 'show more' should be visible only if there are more then one (shown) review.
+            if (reviewsCursor.moveToNext())
+                reviewShowMoreButton.setVisibility(View.VISIBLE);
+            else
+                reviewShowMoreButton.setVisibility(View.GONE);
+
+        } else {
+            reviewSubheaderTextView.setText(getString(R.string.details_reviews_label, 0));
+            reviewEmptyStateView.setVisibility(View.VISIBLE);
+            reviewItemLayout.setVisibility(View.GONE);
+            reviewShowMoreButton.setVisibility(View.GONE);
+        }
+    }
+
 
     //
     //  LOADER CALLBACKS
@@ -347,28 +403,60 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        if (uri != null)
-            return new CursorLoader(
-                    getActivity(),
-                    uri,
-                    MOVIE_PROJECTION,
-                    null,
-                    null,
-                    null);
-        else
+        if (movieUri != null) {
+            switch (id) {
+                case MOVIE_LOADER_ID:
+                    return new CursorLoader(
+                            getActivity(),
+                            movieUri,
+                            MOVIE_PROJECTION,
+                            null,
+                            null,
+                            null);
+                case REVIEW_LOADER_ID:
+                    return new CursorLoader(
+                            getActivity(),
+                            MovieContract.ReviewEntry.buildUriByMovieId(ContentUris.parseId(movieUri)),
+                            null,
+                            null,
+                            null,
+                            null);
+                default:
+                    throw new UnsupportedOperationException("Unknown loader id: " + id);
+            }
+        } else
             return null;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        data.moveToFirst();
-        movieCursor = data;
-        insertDataIntoUI();
+        switch (loader.getId()) {
+            case MOVIE_LOADER_ID:
+                data.moveToFirst();
+                movieCursor = data;
+                insertDataIntoUI();
+                break;
+            case REVIEW_LOADER_ID:
+                reviewsCursor = data;
+                insertReview();
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown loader id: " + loader.getId());
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        switch (loader.getId()) {
+            case MOVIE_LOADER_ID:
+                movieCursor = null;
+                break;
+            case REVIEW_LOADER_ID:
+                reviewsCursor = null;
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown loader id: " + loader.getId());
+        }
     }
 
 

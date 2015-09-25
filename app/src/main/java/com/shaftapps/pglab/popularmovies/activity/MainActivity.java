@@ -181,6 +181,8 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
             cursor.moveToFirst();
             detailSubToolbarTitle = cursor.getString(columnIndex);
             cursor.close();
+            // Reset title on subtoolbar
+            ToolbarUtils.showTitleIfOpaque(detailSubToolbar, detailSubToolbarTitle);
 
         } else {
             // Opening new activity with uri of selected movie.

@@ -1,24 +1,17 @@
-package com.shaftapps.pglab.popularmovies;
+package com.shaftapps.pglab.popularmovies.asynctask;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
+import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
-import com.shaftapps.pglab.popularmovies.util.MovieDataParser;
+import com.shaftapps.pglab.popularmovies.util.MovieDBResponseParser;
 
 import org.json.JSONException;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -26,23 +19,16 @@ import java.util.ArrayList;
  * <p/>
  * Created by Paulina on 2015-09-01.
  */
-public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<ContentValues>> {
+public class FetchMoviesTask extends BaseMovieDBTask {
 
     // URL constant parts
-    private static final String SCHEME = "https";
-    private static final String AUTHORITY = "api.themoviedb.org";
-    private static final String API_VERSION = "3";
     private static final String SEARCH_METHOD = "discover";
-    private static final String TYPE = "movie";
-    private static final String API_KEY = "api_key";
+    private static final String MOVIE = "movie";
     private static final String SORT_BY = "sort_by";
     private static final String POPULARITY = "popularity.desc";
     private static final String VOTE_AVERAGE = "vote_average.desc";
     private static final String VOTE_MIN = "vote_count.gte";
     private static final String VOTE_MIN_VALUE = "1000";
-
-    // Enter your API key here
-    private static final String API_KEY_VALUE = "";
 
     private Context context;
     private DurationListener durationListener;
@@ -54,6 +40,11 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<ContentVa
         this.queryType = queryType;
     }
 
+
+    //
+    //  ASYNC TASK METHODS
+    //
+
     @Override
     protected void onPreExecute() {
         if (durationListener != null)
@@ -61,92 +52,25 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<ContentVa
     }
 
     @Override
-    protected ArrayList<ContentValues> doInBackground(String[] params) {
+    protected Boolean doInBackground(String[] params) {
         clearCachedMovies();
 
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-        String moviesJsonStr = null;
-
-        try {
-            URL url = new URL(getUrl());
-
-            // Create the request and open the connection
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
-                // Nothing to do.
-                return null;
-            }
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Make JSON easier to read
-                buffer.append(line + "\n");
-            }
-
-            if (buffer.length() == 0) {
-                // Stream was empty.  No point in parsing.
-                moviesJsonStr = null;
-            }
-
-            moviesJsonStr = buffer.toString();
-
-        } catch (IOException e) {
-            Log.e(this.getClass().getName(), "Error ", e);
-            return null;
-
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(this.getClass().getName(), "Error closing stream", e);
-                }
-            }
-        }
-
-        try {
-            return MovieDataParser.getMoviesFromJson(moviesJsonStr, queryType);
-        } catch (JSONException e) {
-            Log.e(this.getClass().getName(), "Error parsing JSON", e);
-            return null;
-        }
+        return super.doInBackground(params);
     }
 
     @Override
-    protected void onPostExecute(ArrayList<ContentValues> movieValues) {
+    protected void onPostExecute(Boolean success) {
         if (durationListener != null)
             durationListener.onTaskEnd(queryType);
 
-        if (movieValues == null)
+        if (success == null || !success)
             Toast.makeText(context, R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
-        else {
-            // Insert new data from API to database or
-            // update if they're used by another category and
-            for (ContentValues movie : movieValues) {
-                Uri insertUri = context.getContentResolver().insert(
-                        MovieContract.MovieEntry.CONTENT_URI,
-                        movie);
-                if (insertUri == null) {
-                    context.getContentResolver().update(
-                            MovieContract.MovieEntry.CONTENT_URI,
-                            movie,
-                            MovieContract.MovieEntry._ID + "=?",
-                            new String[]{movie.getAsString(MovieContract.MovieEntry._ID)});
-                }
-            }
-        }
     }
+
+
+    //
+    //  HELPER METHODS
+    //
 
     private void clearCachedMovies() {
         switch (queryType) {
@@ -216,12 +140,37 @@ public class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<ContentVa
     }
 
     protected Uri.Builder getUriBuilder() {
-        return new Uri.Builder().scheme(SCHEME)
-                .authority(AUTHORITY)
-                .appendPath(API_VERSION)
+        return super.getUriBuilder()
                 .appendPath(SEARCH_METHOD)
-                .appendPath(TYPE)
-                .appendQueryParameter(API_KEY, API_KEY_VALUE);
+                .appendPath(MOVIE);
+    }
+
+    @Override
+    protected ArrayList<ContentValues> getParsedData(String json) {
+        try {
+            return MovieDBResponseParser.getMoviesFromJson(json, queryType);
+        } catch (JSONException e) {
+            Log.e(this.getClass().getName(), "Error parsing JSON", e);
+            return null;
+        }
+    }
+
+    @Override
+    protected void saveToDatabase(ArrayList<ContentValues> contentValues) {
+        // Insert new data from API to database or
+        // update if they're used by another category
+        for (ContentValues movie : contentValues) {
+            Uri insertUri = context.getContentResolver().insert(
+                    MovieContract.MovieEntry.CONTENT_URI,
+                    movie);
+            if (insertUri == null) {
+                context.getContentResolver().update(
+                        MovieContract.MovieEntry.CONTENT_URI,
+                        movie,
+                        MovieContract.MovieEntry._ID + "=?",
+                        new String[]{movie.getAsString(MovieContract.MovieEntry._ID)});
+            }
+        }
     }
 
     public void setDurationListener(DurationListener listener) {

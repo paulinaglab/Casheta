@@ -9,7 +9,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingBottom="8dp">
 
         <RelativeLayout
             android:id="@+id/detail_ratio_wrapper"
@@ -47,6 +48,7 @@
                         android:drawablePadding="4dp"
                         android:gravity="center_vertical"
                         android:paddingRight="16dp"
+                        android:textColor="?android:textColorPrimary"
                         tools:text="7.5/10" />
 
                 </FrameLayout>
@@ -121,45 +123,92 @@
         <View style="@style/AppTheme.Separator" />
 
 
+        <!-- OVERVIEW -->
+
         <TextView
-            style="@style/TextAppearance.AppCompat.Body2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/AppTheme.TextView.Subheader"
             android:layout_marginTop="4dp"
-            android:padding="16dp"
-            android:text="@string/details_overview_label"
-            android:textColor="?android:textColorSecondary" />
+            android:text="@string/details_overview_label" />
 
         <TextView
             android:id="@+id/detail_overview"
-            style="@style/TextAppearance.AppCompat.Body1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            style="@style/AppTheme.TextView.LongText"
             android:layout_marginBottom="16dp"
-            android:lineSpacingMultiplier="1.5"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur." />
 
 
-        <View
-            style="@style/AppTheme.Separator"
-            android:layout_marginTop="8dp" />
-
-        <TextView
-            style="@style/TextAppearance.AppCompat.Body2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:padding="16dp"
-            android:text="@string/details_reviews_label"
-            android:textColor="?android:textColorSecondary" />
+        <!-- VIDEOS -->
 
         <LinearLayout
-            android:id="@+id/detail_reviews_layout"
+            android:id="@+id/detail_video_section"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical">
+
+            <View
+                style="@style/AppTheme.Separator"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                style="@style/AppTheme.TextView.Subheader"
+                android:layout_marginTop="4dp"
+                android:text="@string/details_video_label" />
+
+            <!-- Videos go here -->
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="144dp"
+                android:background="#11ffffff" />
+
+        </LinearLayout>
+
+
+        <!-- REVIEWS -->
+
+        <LinearLayout
+            android:id="@+id/detail_reviews_section"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <View
+                style="@style/AppTheme.Separator"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:id="@+id/detail_review_subheader_text_view"
+                style="@style/AppTheme.TextView.Subheader"
+                android:layout_marginTop="4dp"
+                android:text="@string/details_reviews_label" />
+
+            <TextView
+                android:id="@+id/detail_review_empty_state_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="8dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:paddingTop="8dp"
+                android:text="@string/details_reviews_empty_label"
+                android:alpha="?android:disabledAlpha"/>
+
+            <include
+                android:id="@+id/detail_review_item_view"
+                layout="@layout/review_item" />
+
+            <Button
+                android:id="@+id/detail_reviews_show_more_button"
+                style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/details_reviews_show_more_label"
+                android:textColor="@color/accent_color" />
+
+        </LinearLayout>
+
 
     </LinearLayout>
 

@@ -2,7 +2,7 @@ package com.shaftapps.pglab.popularmovies.util;
 
 import android.content.ContentValues;
 
-import com.shaftapps.pglab.popularmovies.FetchMoviesTask;
+import com.shaftapps.pglab.popularmovies.asynctask.FetchMoviesTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,7 +17,7 @@ import static com.shaftapps.pglab.popularmovies.data.MovieContract.*;
  * <p/>
  * Created by Paulina on 2015-08-29.
  */
-public class MovieDataParser {
+public class MovieDBResponseParser {
 
     private static final int PAGE_LENGTH = 20;
 
@@ -74,5 +74,30 @@ public class MovieDataParser {
         }
 
         return movieValues;
+    }
+
+    public static ArrayList<ContentValues> getReviewsFromJson(String reviewJsonStr)
+            throws JSONException {
+
+        JSONObject jsonObject = new JSONObject(reviewJsonStr);
+        long movieId = jsonObject.getLong("id");
+        JSONArray resultsArray = jsonObject.getJSONArray("results");
+
+        ArrayList<ContentValues> reviewValues = new ArrayList<>();
+        ContentValues review;
+
+        for (int i = 0; i < resultsArray.length(); i++) {
+            JSONObject reviewObject = resultsArray.getJSONObject(i);
+            review = new ContentValues();
+
+            review.put(ReviewEntry.COLUMN_MOVIE_ID, movieId);
+            review.put(ReviewEntry.COLUMN_REVIEW_API_ID, reviewObject.getString("id"));
+            review.put(ReviewEntry.COLUMN_AUTHOR, reviewObject.getString("author"));
+            review.put(ReviewEntry.COLUMN_CONTENT, reviewObject.getString("content"));
+
+            reviewValues.add(review);
+        }
+
+        return reviewValues;
     }
 }
