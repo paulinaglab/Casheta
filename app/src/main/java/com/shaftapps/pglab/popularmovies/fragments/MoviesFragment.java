@@ -1,4 +1,4 @@
-package com.shaftapps.pglab.popularmovies.fragment;
+package com.shaftapps.pglab.popularmovies.fragments;
 
 import android.app.Activity;
 import android.database.Cursor;
@@ -15,9 +15,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 
-import com.shaftapps.pglab.popularmovies.asynctask.FetchMoviesTask;
+import com.shaftapps.pglab.popularmovies.asynctasks.FetchMoviesTask;
 import com.shaftapps.pglab.popularmovies.R;
-import com.shaftapps.pglab.popularmovies.CursorMoviesAdapter;
+import com.shaftapps.pglab.popularmovies.adapters.MoviesCursorAdapter;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
 import java.io.Serializable;
@@ -36,7 +36,7 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
 
     private OnMovieSelectListener movieSelectListener;
     private RecyclerView recyclerView;
-    private CursorMoviesAdapter cursorMoviesAdapter;
+    private MoviesCursorAdapter moviesCursorAdapter;
     private ProgressBar progressBar;
     private SortingMode sortingMode;
 
@@ -52,8 +52,8 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
         View fragmentView = inflater.inflate(R.layout.fragment_movies, container, false);
 
         // RecyclerView initialization
-        cursorMoviesAdapter = new CursorMoviesAdapter(getActivity());
-        cursorMoviesAdapter.setOnItemClickListener(new CursorMoviesAdapter.OnItemClickListener() {
+        moviesCursorAdapter = new MoviesCursorAdapter(getActivity());
+        moviesCursorAdapter.setOnItemClickListener(new MoviesCursorAdapter.OnItemClickListener() {
             @Override
             public void onItemClicked(Uri uri) {
                 movieSelected(uri);
@@ -65,7 +65,7 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
         recyclerView =
                 (RecyclerView) fragmentView.findViewById(R.id.movies_recycler_view);
         recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(cursorMoviesAdapter);
+        recyclerView.setAdapter(moviesCursorAdapter);
 
         // ProgressBar initialization
         progressBar = (ProgressBar) fragmentView.findViewById(R.id.movies_progress_bar);
@@ -111,29 +111,29 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
         this.sortingMode = sortingMode;
         switch (sortingMode) {
             case MOST_POPULAR:
-                if (mostPopularCursor == null || !mostPopularCursor.moveToFirst()) {
+                if (getLoaderManager().getLoader(MOST_POPULAR_LOADER_ID) == null) {
                     FetchMoviesTask task = new FetchMoviesTask(getActivity(),
                             FetchMoviesTask.QueryType.MOST_POPULAR);
                     task.setDurationListener(this);
                     task.execute();
                 } else {
-                    cursorMoviesAdapter.swapCursor(mostPopularCursor);
+                    moviesCursorAdapter.swapCursor(mostPopularCursor);
                     updateGrid(scrollTop);
                 }
                 break;
             case HIGHEST_RATED:
-                if (highestRatedCursor == null || !highestRatedCursor.moveToFirst()) {
+                if (getLoaderManager().getLoader(HIGHEST_RATED_LOADER_ID) == null) {
                     FetchMoviesTask task = new FetchMoviesTask(getActivity(),
                             FetchMoviesTask.QueryType.HIGHEST_RATED);
                     task.setDurationListener(this);
                     task.execute();
                 } else {
-                    cursorMoviesAdapter.swapCursor(highestRatedCursor);
+                    moviesCursorAdapter.swapCursor(highestRatedCursor);
                     updateGrid(scrollTop);
                 }
                 break;
             case FAVORITES:
-                cursorMoviesAdapter.swapCursor(favoriteCursor);
+                moviesCursorAdapter.swapCursor(favoriteCursor);
                 updateGrid(scrollTop);
                 break;
             default:
@@ -143,7 +143,7 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     private void updateGrid(boolean scrollTop) {
-        cursorMoviesAdapter.notifyDataSetChanged();
+        moviesCursorAdapter.notifyDataSetChanged();
         if (scrollTop)
             recyclerView.smoothScrollToPosition(0);
     }
@@ -195,17 +195,17 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
             case MOST_POPULAR_LOADER_ID:
                 mostPopularCursor = data;
                 if (sortingMode.equals(SortingMode.MOST_POPULAR))
-                    cursorMoviesAdapter.swapCursor(mostPopularCursor);
+                    moviesCursorAdapter.swapCursor(mostPopularCursor);
                 break;
             case HIGHEST_RATED_LOADER_ID:
                 highestRatedCursor = data;
                 if (sortingMode.equals(SortingMode.HIGHEST_RATED))
-                    cursorMoviesAdapter.swapCursor(highestRatedCursor);
+                    moviesCursorAdapter.swapCursor(highestRatedCursor);
                 break;
             case FAVORITE_LOADER_ID:
                 favoriteCursor = data;
                 if (sortingMode.equals(SortingMode.FAVORITES))
-                    cursorMoviesAdapter.swapCursor(favoriteCursor);
+                    moviesCursorAdapter.swapCursor(favoriteCursor);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown loader id: " + loaderId);
@@ -215,7 +215,7 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public void onTaskStart() {
         progressBar.setVisibility(View.VISIBLE);
-        cursorMoviesAdapter.swapCursor(null);
+        moviesCursorAdapter.swapCursor(null);
         updateGrid(false);
     }
 

@@ -1,4 +1,4 @@
-package com.shaftapps.pglab.popularmovies;
+package com.shaftapps.pglab.popularmovies.adapters;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -10,38 +10,33 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
 /**
  * Created by Paulina on 2015-09-14.
  */
-public class CursorMoviesAdapter extends RecyclerView.Adapter<CursorMoviesAdapter.MovieItemViewHolder> {
+public class MoviesCursorAdapter extends CursorAdapter<MoviesCursorAdapter.MovieItemViewHolder> {
 
     protected Context context;
-    private Cursor cursor;
     protected OnItemClickListener onItemClickListener;
 
-    public CursorMoviesAdapter(Context context) {
+    public MoviesCursorAdapter(Context context) {
         this.context = context;
     }
-
-    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
-        this.onItemClickListener = onItemClickListener;
-    }
-
 
     @Override
     public MovieItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.movie_grid_item, parent, false);
-        final MovieItemViewHolder movieItemViewHolder = new MovieItemViewHolder(view);
+        final MovieItemViewHolder holder = new MovieItemViewHolder(view);
         // Setting listener for item view
-        movieItemViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                itemClicked(movieItemViewHolder.getAdapterPosition());
+                itemClicked(holder.getAdapterPosition());
             }
         });
-        return movieItemViewHolder;
+        return holder;
     }
 
     /**
@@ -58,7 +53,6 @@ public class CursorMoviesAdapter extends RecyclerView.Adapter<CursorMoviesAdapte
         }
     }
 
-    @Override
     public void onBindViewHolder(MovieItemViewHolder holder, int position) {
         cursor.moveToPosition(position);
         int posterColumnIndex = cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_URL);
@@ -67,21 +61,6 @@ public class CursorMoviesAdapter extends RecyclerView.Adapter<CursorMoviesAdapte
                 .fitCenter()
                 .placeholder(R.color.grid_placeholder_bg)
                 .into(holder.poster);
-    }
-
-    @Override
-    public int getItemCount() {
-        if (cursor != null)
-            return cursor.getCount();
-        else
-            return 0;
-    }
-
-    public void swapCursor(Cursor cursor) {
-        if (this.cursor != cursor) {
-            this.cursor = cursor;
-            notifyDataSetChanged();
-        }
     }
 
     public class MovieItemViewHolder extends RecyclerView.ViewHolder {
@@ -94,6 +73,9 @@ public class CursorMoviesAdapter extends RecyclerView.Adapter<CursorMoviesAdapte
         }
     }
 
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
 
     /**
      * Listener for item (movie) selection.

@@ -1,8 +1,6 @@
-package com.shaftapps.pglab.popularmovies.activity;
+package com.shaftapps.pglab.popularmovies.activities;
 
 import android.database.Cursor;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -12,11 +10,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.shaftapps.pglab.popularmovies.Keys;
-import com.shaftapps.pglab.popularmovies.fragment.DetailFragment;
+import com.shaftapps.pglab.popularmovies.fragments.DetailFragment;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
-import com.shaftapps.pglab.popularmovies.util.ColorUtils;
-import com.shaftapps.pglab.popularmovies.util.ToolbarUtils;
+import com.shaftapps.pglab.popularmovies.utils.ColorUtils;
+import com.shaftapps.pglab.popularmovies.utils.ToolbarUtils;
 
 /**
  * Activity showing details of specific movie.

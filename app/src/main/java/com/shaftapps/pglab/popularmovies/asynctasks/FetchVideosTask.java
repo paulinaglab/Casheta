@@ -1,4 +1,4 @@
-package com.shaftapps.pglab.popularmovies.asynctask;
+package com.shaftapps.pglab.popularmovies.asynctasks;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -6,25 +6,24 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
-import com.shaftapps.pglab.popularmovies.util.MovieDBResponseParser;
+import com.shaftapps.pglab.popularmovies.utils.MovieDBResponseParser;
 
 import org.json.JSONException;
 
 import java.util.ArrayList;
 
 /**
- * Created by Paulina on 2015-09-24.
+ * Created by Paulina on 2015-09-25.
  */
-public class FetchReviewsTask extends BaseMovieDBTask {
+public class FetchVideosTask extends BaseMovieDBTask {
 
     private static final String MOVIE = "movie";
-    private static final String REVIEW = "reviews";
+    private static final String VIDEO = "videos";
 
     private Context context;
     private long movieId;
-    private DurationListener durationListener;
 
-    public FetchReviewsTask(Context context, long movieId) {
+    public FetchVideosTask(Context context, long movieId) {
         this.context = context;
         this.movieId = movieId;
     }
@@ -34,7 +33,7 @@ public class FetchReviewsTask extends BaseMovieDBTask {
         return getUriBuilder()
                 .appendPath(MOVIE)
                 .appendPath(Long.toString(movieId))
-                .appendPath(REVIEW)
+                .appendPath(VIDEO)
                 .build()
                 .toString();
     }
@@ -42,7 +41,7 @@ public class FetchReviewsTask extends BaseMovieDBTask {
     @Override
     protected ArrayList<ContentValues> getParsedData(String json) {
         try {
-            return MovieDBResponseParser.getReviewsFromJson(json);
+            return MovieDBResponseParser.getVideosFromJson(json);
         } catch (JSONException e) {
             Log.e(this.getClass().getName(), "Error parsing JSON", e);
             return null;
@@ -51,29 +50,19 @@ public class FetchReviewsTask extends BaseMovieDBTask {
 
     @Override
     protected void saveToDatabase(ArrayList<ContentValues> contentValues) {
-        Uri reviewUri = MovieContract.ReviewEntry.buildUriByMovieId(movieId);
-        for (ContentValues review : contentValues) {
+        Uri videoUri = MovieContract.VideoEntry.buildUriByMovieId(movieId);
+        for (ContentValues video : contentValues) {
             Uri insertUri = context.getContentResolver().insert(
-                    reviewUri,
-                    review);
+                    videoUri,
+                    video);
             if (insertUri == null) {
                 context.getContentResolver().update(
-                        reviewUri,
-                        review,
-                        MovieContract.ReviewEntry.COLUMN_REVIEW_API_ID + "=?",
-                        new String[]{review.getAsString(MovieContract.ReviewEntry.COLUMN_REVIEW_API_ID)});
+                        videoUri,
+                        video,
+                        MovieContract.VideoEntry.COLUMN_VIDEO_API_ID + "=?",
+                        new String[]{video.getAsString(MovieContract.VideoEntry.COLUMN_VIDEO_API_ID)});
             }
         }
     }
 
-    public void setDurationListener(DurationListener listener) {
-        durationListener = listener;
-    }
-
-    public interface DurationListener {
-
-        void onTaskStart();
-
-        void onTaskEnd();
-    }
 }

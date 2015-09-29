@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.shaftapps.pglab.popularmovies.widget.NotifyingScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.shaftapps.pglab.popularmovies.widgets.NotifyingScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/detail_notifying_scroll_view"
@@ -95,7 +95,7 @@
                 android:orientation="vertical"
                 android:weightSum="2">
 
-                <com.shaftapps.pglab.popularmovies.widget.PosterRatioImageView
+                <com.shaftapps.pglab.popularmovies.widgets.PosterRatioImageView
                     android:id="@+id/detail_poster_image"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
@@ -157,10 +157,12 @@
                 android:text="@string/details_video_label" />
 
             <!-- Videos go here -->
-            <FrameLayout
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/detail_video_recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="144dp"
-                android:background="#11ffffff" />
+                android:background="@color/video_container_bg"
+                tools:listitem="@layout/video_list_item" />
 
         </LinearLayout>
 
@@ -187,12 +189,12 @@
                 android:id="@+id/detail_review_empty_state_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:alpha="?android:disabledAlpha"
                 android:paddingBottom="8dp"
                 android:paddingLeft="16dp"
                 android:paddingRight="16dp"
                 android:paddingTop="8dp"
-                android:text="@string/details_reviews_empty_label"
-                android:alpha="?android:disabledAlpha"/>
+                android:text="@string/details_reviews_empty_label" />
 
             <include
                 android:id="@+id/detail_review_item_view"
@@ -212,4 +214,4 @@
 
     </LinearLayout>
 
-</com.shaftapps.pglab.popularmovies.widget.NotifyingScrollView>
+</com.shaftapps.pglab.popularmovies.widgets.NotifyingScrollView>

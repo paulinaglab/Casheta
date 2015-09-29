@@ -4,5 +4,7 @@
     <dimen name="status_bar_height">24dp</dimen>
     
     <dimen name="movie_grid_horizontal_margin">2dp</dimen>
+
+    <dimen name="details_video_item_space">4dp</dimen>
     
 </resources>

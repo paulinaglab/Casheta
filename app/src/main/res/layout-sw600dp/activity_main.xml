@@ -10,13 +10,13 @@
         android:layout_height="match_parent"
         android:layout_weight="2"
         android:orientation="vertical"
-        tools:context="com.shaftapps.pglab.popularmovies.activity.MainActivity">
+        tools:context="com.shaftapps.pglab.popularmovies.activities.MainActivity">
 
         <include layout="@layout/toolbar_main" />
 
         <fragment
             android:id="@+id/fragment_movies"
-            android:name="com.shaftapps.pglab.popularmovies.fragment.MoviesFragment"
+            android:name="com.shaftapps.pglab.popularmovies.fragments.MoviesFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             tools:layout="@layout/fragment_movies" />

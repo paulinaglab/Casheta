@@ -1,4 +1,4 @@
-package com.shaftapps.pglab.popularmovies.fragment;
+package com.shaftapps.pglab.popularmovies.fragments;
 
 
 import android.app.Activity;
@@ -14,6 +14,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -34,10 +36,13 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.R;
-import com.shaftapps.pglab.popularmovies.asynctask.FetchReviewsTask;
+import com.shaftapps.pglab.popularmovies.VideoItemDecoration;
+import com.shaftapps.pglab.popularmovies.adapters.VideosCursorAdapter;
+import com.shaftapps.pglab.popularmovies.asynctasks.FetchReviewsTask;
+import com.shaftapps.pglab.popularmovies.asynctasks.FetchVideosTask;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
-import com.shaftapps.pglab.popularmovies.util.ColorUtils;
-import com.shaftapps.pglab.popularmovies.widget.NotifyingScrollView;
+import com.shaftapps.pglab.popularmovies.utils.ColorUtils;
+import com.shaftapps.pglab.popularmovies.widgets.NotifyingScrollView;
 
 /**
  * Fragment with details of specific movie.
@@ -48,6 +53,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     private static final int MOVIE_LOADER_ID = 1;
     private static final int REVIEW_LOADER_ID = 2;
+    private static final int VIDEO_LOADER_ID = 3;
 
     private static final String[] MOVIE_PROJECTION = new String[]{
             MovieContract.MovieEntry.COLUMN_TITLE,
@@ -62,6 +68,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     private Cursor movieCursor;
     private Cursor reviewsCursor;
+    private Cursor videosCursor;
 
     private OnScrollChangedListener onScrollChangedListener;
 
@@ -83,6 +90,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     private TextView reviewAuthorNameTextView;
     private TextView reviewContentTextView;
     private Button reviewShowMoreButton;
+    // Video section
+    private RecyclerView videoRecyclerView;
+    private VideosCursorAdapter videosAdapter;
 
     private ViewTreeObserver.OnGlobalLayoutListener ratioWrapperOnGlobalLayoutListener;
     private int generatedColor;
@@ -112,6 +122,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         // Setting ScrollView listener
         initScrollViewListener();
 
+        // RecyclerView with Videos initialization
+        initVideoRecyclerView();
+
         setHasOptionsMenu(true);
 
         return fragmentView;
@@ -122,6 +135,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         super.onActivityCreated(savedInstanceState);
         getLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
         getLoaderManager().initLoader(REVIEW_LOADER_ID, null, this);
+        getLoaderManager().initLoader(VIDEO_LOADER_ID, null, this);
     }
 
     @Override
@@ -139,10 +153,14 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onStart() {
         super.onStart();
         if (movieUri != null) {
+            long movieId = ContentUris.parseId(movieUri);
             FetchReviewsTask fetchReviewsTask =
-                    new FetchReviewsTask(getActivity(), ContentUris.parseId(movieUri));
-            //TODO: fetchReviewsTask.setDurationListener(this);
+                    new FetchReviewsTask(getActivity(), movieId);
             fetchReviewsTask.execute();
+
+            FetchVideosTask fetchVideosTask =
+                    new FetchVideosTask(getActivity(), movieId);
+            fetchVideosTask.execute();
         }
     }
 
@@ -264,6 +282,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         reviewAuthorNameTextView = (TextView) reviewItemLayout.findViewById(R.id.review_author_name_view);
         reviewContentTextView = (TextView) reviewItemLayout.findViewById(R.id.review_content_view);
         reviewShowMoreButton = (Button) fragmentView.findViewById(R.id.detail_reviews_show_more_button);
+        // Video section
+        videoRecyclerView = (RecyclerView) fragmentView.findViewById(R.id.detail_video_recycler_view);
     }
 
 
@@ -302,6 +322,16 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 }
             }
         });
+    }
+
+    private void initVideoRecyclerView() {
+        videosAdapter = new VideosCursorAdapter(getActivity());
+        videoRecyclerView.setFocusable(false);
+        videoRecyclerView.setAdapter(videosAdapter);
+        videoRecyclerView.setLayoutManager(
+                new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false));
+        int spaceBetweenPx = getResources().getDimensionPixelSize(R.dimen.details_video_item_space);
+        videoRecyclerView.addItemDecoration(new VideoItemDecoration(spaceBetweenPx));
     }
 
     private void insertDataIntoUI() {
@@ -421,6 +451,14 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                             null,
                             null,
                             null);
+                case VIDEO_LOADER_ID:
+                    return new CursorLoader(
+                            getActivity(),
+                            MovieContract.VideoEntry.buildUriByMovieId(ContentUris.parseId(movieUri)),
+                            null,
+                            null,
+                            null,
+                            null);
                 default:
                     throw new UnsupportedOperationException("Unknown loader id: " + id);
             }
@@ -440,6 +478,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 reviewsCursor = data;
                 insertReview();
                 break;
+            case VIDEO_LOADER_ID:
+                videosCursor = data;
+                videosAdapter.swapCursor(data);
+                break;
             default:
                 throw new UnsupportedOperationException("Unknown loader id: " + loader.getId());
         }
@@ -453,6 +495,9 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
                 break;
             case REVIEW_LOADER_ID:
                 reviewsCursor = null;
+                break;
+            case VIDEO_LOADER_ID:
+                videosCursor = null;
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown loader id: " + loader.getId());

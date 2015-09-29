@@ -1,8 +1,8 @@
-package com.shaftapps.pglab.popularmovies.util;
+package com.shaftapps.pglab.popularmovies.utils;
 
 import android.content.ContentValues;
 
-import com.shaftapps.pglab.popularmovies.asynctask.FetchMoviesTask;
+import com.shaftapps.pglab.popularmovies.asynctasks.FetchMoviesTask;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -94,6 +94,33 @@ public class MovieDBResponseParser {
             review.put(ReviewEntry.COLUMN_REVIEW_API_ID, reviewObject.getString("id"));
             review.put(ReviewEntry.COLUMN_AUTHOR, reviewObject.getString("author"));
             review.put(ReviewEntry.COLUMN_CONTENT, reviewObject.getString("content"));
+
+            reviewValues.add(review);
+        }
+
+        return reviewValues;
+    }
+
+    public static ArrayList<ContentValues> getVideosFromJson(String videoJsonStr)
+            throws JSONException {
+
+        JSONObject jsonObject = new JSONObject(videoJsonStr);
+        long movieId = jsonObject.getLong("id");
+        JSONArray resultsArray = jsonObject.getJSONArray("results");
+
+        ArrayList<ContentValues> reviewValues = new ArrayList<>();
+        ContentValues review;
+
+        for (int i = 0; i < resultsArray.length(); i++) {
+            JSONObject videoObject = resultsArray.getJSONObject(i);
+            review = new ContentValues();
+
+            review.put(VideoEntry.COLUMN_MOVIE_ID, movieId);
+            review.put(VideoEntry.COLUMN_VIDEO_API_ID, videoObject.getString("id"));
+            review.put(VideoEntry.COLUMN_NAME, videoObject.getString("name"));
+            review.put(VideoEntry.COLUMN_SITE, videoObject.getString("site"));
+            review.put(VideoEntry.COLUMN_KEY, videoObject.getString("key"));
+            review.put(VideoEntry.COLUMN_TYPE, videoObject.getString("type"));
 
             reviewValues.add(review);
         }

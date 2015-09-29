@@ -1,4 +1,4 @@
-package com.shaftapps.pglab.popularmovies.widget;
+package com.shaftapps.pglab.popularmovies.widgets;
 
 import android.content.Context;
 import android.content.res.TypedArray;

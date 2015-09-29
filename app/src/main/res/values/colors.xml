@@ -7,6 +7,8 @@
     <color name="accent_color">#ffFFC400</color>
 
     <color name="grid_placeholder_bg">#424242</color>
+    <color name="video_thumbnail_placeholder">#242424</color>
+    <color name="video_container_bg">#1e000000</color>
 
     <color name="details_rate_not_initialized_bg">#4e4e4e</color>
     <color name="details_title_not_initialized_bg">#616161</color>

@@ -1,4 +1,4 @@
-package com.shaftapps.pglab.popularmovies.asynctask;
+package com.shaftapps.pglab.popularmovies.asynctasks;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,7 +8,7 @@ import android.widget.Toast;
 
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
-import com.shaftapps.pglab.popularmovies.util.MovieDBResponseParser;
+import com.shaftapps.pglab.popularmovies.utils.MovieDBResponseParser;
 
 import org.json.JSONException;
 

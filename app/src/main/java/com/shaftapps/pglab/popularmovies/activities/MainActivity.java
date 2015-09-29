@@ -1,17 +1,13 @@
-package com.shaftapps.pglab.popularmovies.activity;
+package com.shaftapps.pglab.popularmovies.activities;
 
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.ActionMenuPresenter;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -20,11 +16,11 @@ import android.widget.Spinner;
 
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
-import com.shaftapps.pglab.popularmovies.fragment.DetailFragment;
-import com.shaftapps.pglab.popularmovies.fragment.MoviesFragment;
+import com.shaftapps.pglab.popularmovies.fragments.DetailFragment;
+import com.shaftapps.pglab.popularmovies.fragments.MoviesFragment;
 import com.shaftapps.pglab.popularmovies.R;
-import com.shaftapps.pglab.popularmovies.util.ColorUtils;
-import com.shaftapps.pglab.popularmovies.util.ToolbarUtils;
+import com.shaftapps.pglab.popularmovies.utils.ColorUtils;
+import com.shaftapps.pglab.popularmovies.utils.ToolbarUtils;
 
 /**
  * Application's main activity and entry point.
