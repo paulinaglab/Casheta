@@ -4,6 +4,7 @@ package com.shaftapps.pglab.popularmovies.fragments;
 import android.app.Activity;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -49,7 +50,8 @@ import com.shaftapps.pglab.popularmovies.widgets.NotifyingScrollView;
  * <p/>
  * Created by Paulina on 2015-08-30.
  */
-public class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+public class DetailFragment extends Fragment
+        implements LoaderManager.LoaderCallbacks<Cursor>, VideosCursorAdapter.OnItemClickListener {
 
     private static final int MOVIE_LOADER_ID = 1;
     private static final int REVIEW_LOADER_ID = 2;
@@ -326,6 +328,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     private void initVideoRecyclerView() {
         videosAdapter = new VideosCursorAdapter(getActivity());
+        videosAdapter.setOnItemClickListener(this);
         videoRecyclerView.setFocusable(false);
         videoRecyclerView.setAdapter(videosAdapter);
         videoRecyclerView.setLayoutManager(
@@ -470,7 +473,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         switch (loader.getId()) {
             case MOVIE_LOADER_ID:
-                data.moveToFirst();
                 movieCursor = data;
                 insertDataIntoUI();
                 break;
@@ -502,6 +504,25 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             default:
                 throw new UnsupportedOperationException("Unknown loader id: " + loader.getId());
         }
+    }
+
+    @Override
+    public void onItemClicked(Uri uri) {
+        Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
+        if (cursor.moveToFirst()) {
+            int keyColumnIndex = cursor.getColumnIndex(MovieContract.VideoEntry.COLUMN_KEY);
+            Uri videoUrl = new Uri.Builder()
+                    .scheme("http")
+                    .authority("www.youtube.com")
+                    .appendPath("watch")
+                    .appendQueryParameter("v", cursor.getString(keyColumnIndex))
+                    .build();
+            cursor.close();
+
+            Intent intent = new Intent(Intent.ACTION_VIEW, videoUrl);
+            startActivity(intent);
+        } else
+            cursor.close();
     }
 
 

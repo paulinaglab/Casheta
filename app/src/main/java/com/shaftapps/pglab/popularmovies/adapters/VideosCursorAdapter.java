@@ -1,5 +1,6 @@
 package com.shaftapps.pglab.popularmovies.adapters;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
@@ -47,8 +48,10 @@ public class VideosCursorAdapter extends CursorAdapter<VideosCursorAdapter.Video
     public void itemClicked(int clickedPos) {
         if (onItemClickListener != null) {
             cursor.moveToPosition(clickedPos);
-            int idColumnIndex = cursor.getColumnIndex(MovieContract.MovieEntry._ID);
-            Uri clickedUri = MovieContract.MovieEntry.buildUri(cursor.getLong(idColumnIndex));
+
+            Uri clickedUri = MovieContract.VideoEntry.buildUri(
+                    cursor.getLong(cursor.getColumnIndex(MovieContract.VideoEntry._ID)));
+
             onItemClickListener.onItemClicked(clickedUri);
         }
     }

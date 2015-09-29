@@ -78,8 +78,8 @@ public class MovieContract {
         public static final String COLUMN_CONTENT = "content";
 
 
-        public static Uri buildUriById(long reviewId) {
-            return ContentUris.withAppendedId(CONTENT_URI, reviewId);
+        public static Uri buildUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
         }
 
         public static Uri buildUriByMovieId(long movieId) {
@@ -99,6 +99,8 @@ public class MovieContract {
 
         public static final String CONTENT_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_VIDEO;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_VIDEO;
 
         // Table name
         public static final String TABLE_NAME = "video";
@@ -112,6 +114,10 @@ public class MovieContract {
         public static final String COLUMN_KEY = "key";
         public static final String COLUMN_TYPE = "type";
 
+
+        public static Uri buildUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
 
         public static Uri buildUriByMovieId(long movieId) {
             return CONTENT_URI

@@ -20,8 +20,9 @@ public class MovieProvider extends ContentProvider {
 
     static final int CODE_MOVIES = 100;
     static final int CODE_MOVIE_ITEM = 101;
-    static final int CODE_REVIEWS_OF_MOVIE = 201;
-    static final int CODE_VIDEOS_OF_MOVIE = 301;
+    static final int CODE_REVIEWS_OF_MOVIE = 200;
+    static final int CODE_VIDEOS_OF_MOVIE = 300;
+    static final int CODE_VIDEO_ITEM = 301;
 
     @Override
     public boolean onCreate() {
@@ -40,10 +41,13 @@ public class MovieProvider extends ContentProvider {
                 cursor = getMovieItem(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             case CODE_REVIEWS_OF_MOVIE:
-                cursor = getReviews(uri, projection, selection, selectionArgs, sortOrder);
+                cursor = getReviewsForMovie(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             case CODE_VIDEOS_OF_MOVIE:
-                cursor = getVideos(uri, projection, selection, selectionArgs, sortOrder);
+                cursor = getVideosForMovie(uri, projection, selection, selectionArgs, sortOrder);
+                break;
+            case CODE_VIDEO_ITEM:
+                cursor= getVideoItem(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             default:
                 throw new UnsupportedOperationException("Undefined URI code: " + uri);
@@ -76,30 +80,40 @@ public class MovieProvider extends ContentProvider {
                 projection, selection, selectionArgs, null, null, sortOrder);
     }
 
-    private Cursor getReviews(Uri uri, String[] projection, String selection,
-                              String[] selectionArgs, String sortOrder) {
+    private Cursor getReviewsForMovie(Uri uri, String[] projection, String selection,
+                                      String[] selectionArgs, String sortOrder) {
 
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(MovieContract.ReviewEntry.TABLE_NAME);
-        queryBuilder.appendWhere(
-                MovieContract.ReviewEntry.COLUMN_MOVIE_ID + "=" +
-                        uri.getPathSegments().get(MovieContract.PATH_REVIEW_MOVIE_ID_INDEX));
+        queryBuilder.appendWhere(MovieContract.ReviewEntry.COLUMN_MOVIE_ID + "=" +
+                uri.getPathSegments().get(MovieContract.PATH_REVIEW_MOVIE_ID_INDEX));
 
         return queryBuilder.query(movieDbHelper.getReadableDatabase(), projection, selection,
                 selectionArgs, null, null, sortOrder);
     }
 
-    private Cursor getVideos(Uri uri, String[] projection, String selection,
-                             String[] selectionArgs, String sortOrder) {
+    private Cursor getVideosForMovie(Uri uri, String[] projection, String selection,
+                                     String[] selectionArgs, String sortOrder) {
 
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(MovieContract.VideoEntry.TABLE_NAME);
-        queryBuilder.appendWhere(
-                MovieContract.VideoEntry.COLUMN_MOVIE_ID + "=" +
-                        uri.getPathSegments().get(MovieContract.PATH_VIDEO_MOVIE_ID_INDEX));
+        queryBuilder.appendWhere(MovieContract.VideoEntry.COLUMN_MOVIE_ID + "=" +
+                uri.getPathSegments().get(MovieContract.PATH_VIDEO_MOVIE_ID_INDEX));
 
         return queryBuilder.query(movieDbHelper.getReadableDatabase(), projection, selection,
                 selectionArgs, null, null, sortOrder);
+    }
+
+    private Cursor getVideoItem(Uri uri, String[] projection, String selection,
+                                String[] selectionArgs, String sortOrder) {
+
+        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+        queryBuilder.setTables(MovieContract.VideoEntry.TABLE_NAME);
+        queryBuilder.appendWhere(MovieContract.VideoEntry._ID + "=" +
+                ContentUris.parseId(uri));
+
+        return queryBuilder.query(movieDbHelper.getReadableDatabase(),
+                projection, selection, selectionArgs, null, null, sortOrder);
     }
 
     @Override
@@ -114,6 +128,8 @@ public class MovieProvider extends ContentProvider {
                 return MovieContract.ReviewEntry.CONTENT_TYPE;
             case CODE_VIDEOS_OF_MOVIE:
                 return MovieContract.VideoEntry.CONTENT_TYPE;
+            case CODE_VIDEO_ITEM:
+                return MovieContract.VideoEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Undefined URI code: " + uri);
         }
@@ -172,7 +188,6 @@ public class MovieProvider extends ContentProvider {
                 rowsDeleted = database.delete(
                         MovieContract.MovieEntry.TABLE_NAME, selection, selectionArgs);
                 break;
-
             case CODE_REVIEWS_OF_MOVIE:
                 rowsDeleted = database.delete(
                         MovieContract.ReviewEntry.TABLE_NAME, selection, selectionArgs);
@@ -223,16 +238,23 @@ public class MovieProvider extends ContentProvider {
     static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
 
+        // Movies
         matcher.addURI(MovieContract.CONTENT_AUTHORITY,
                 MovieContract.PATH_MOVIE, CODE_MOVIES);
         matcher.addURI(MovieContract.CONTENT_AUTHORITY,
                 MovieContract.PATH_MOVIE + "/#", CODE_MOVIE_ITEM);
+
+        // Reviews
         matcher.addURI(MovieContract.CONTENT_AUTHORITY,
                 MovieContract.PATH_REVIEW + "/" +
                         MovieContract.PATH_MOVIE + "/#", CODE_REVIEWS_OF_MOVIE);
+
+        // Videos
         matcher.addURI(MovieContract.CONTENT_AUTHORITY,
                 MovieContract.PATH_VIDEO + "/" +
                         MovieContract.PATH_MOVIE + "/#", CODE_VIDEOS_OF_MOVIE);
+        matcher.addURI(MovieContract.CONTENT_AUTHORITY,
+                MovieContract.PATH_VIDEO + "/#", CODE_VIDEO_ITEM);
 
         return matcher;
     }
