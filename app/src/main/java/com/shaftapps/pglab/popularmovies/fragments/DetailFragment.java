@@ -17,6 +17,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -37,7 +38,10 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.R;
-import com.shaftapps.pglab.popularmovies.VideoItemDecoration;
+import com.shaftapps.pglab.popularmovies.activities.DetailActivity;
+import com.shaftapps.pglab.popularmovies.activities.ReviewsActivity;
+import com.shaftapps.pglab.popularmovies.utils.DisplayMetricsUtils;
+import com.shaftapps.pglab.popularmovies.widgets.VideoItemDecoration;
 import com.shaftapps.pglab.popularmovies.adapters.VideosCursorAdapter;
 import com.shaftapps.pglab.popularmovies.asynctasks.FetchReviewsTask;
 import com.shaftapps.pglab.popularmovies.asynctasks.FetchVideosTask;
@@ -51,7 +55,7 @@ import com.shaftapps.pglab.popularmovies.widgets.NotifyingScrollView;
  * Created by Paulina on 2015-08-30.
  */
 public class DetailFragment extends Fragment
-        implements LoaderManager.LoaderCallbacks<Cursor>, VideosCursorAdapter.OnItemClickListener {
+        implements LoaderManager.LoaderCallbacks<Cursor>, VideosCursorAdapter.OnItemClickListener, View.OnClickListener {
 
     private static final int MOVIE_LOADER_ID = 1;
     private static final int REVIEW_LOADER_ID = 2;
@@ -67,10 +71,10 @@ public class DetailFragment extends Fragment
             MovieContract.MovieEntry.COLUMN_BACKDROP_URL};
 
     private Uri movieUri;
+    private Uri reviewsUri;
 
     private Cursor movieCursor;
     private Cursor reviewsCursor;
-    private Cursor videosCursor;
 
     private OnScrollChangedListener onScrollChangedListener;
 
@@ -98,6 +102,7 @@ public class DetailFragment extends Fragment
 
     private ViewTreeObserver.OnGlobalLayoutListener ratioWrapperOnGlobalLayoutListener;
     private int generatedColor;
+    private boolean tablet;
 
 
     //
@@ -107,8 +112,12 @@ public class DetailFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (getArguments() != null)
+        if (getArguments() != null) {
             movieUri = getArguments().getParcelable(Keys.SELECTED_MOVIE_URI);
+            if (movieUri != null)
+                reviewsUri = MovieContract.ReviewEntry.buildUriByMovieId(
+                        ContentUris.parseId(movieUri));
+        }
 
         View fragmentView = inflater.inflate(R.layout.fragment_detail, container, false);
 
@@ -128,6 +137,10 @@ public class DetailFragment extends Fragment
         initVideoRecyclerView();
 
         setHasOptionsMenu(true);
+
+        // Checking device is phone or tablet
+        DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
+        tablet = DisplayMetricsUtils.getSmallestWidth(displayMetrics) >= 600;
 
         return fragmentView;
     }
@@ -179,6 +192,7 @@ public class DetailFragment extends Fragment
             }
         super.onDestroyView();
     }
+
 
     //
     //  OPTION MENU METHODS
@@ -415,13 +429,19 @@ public class DetailFragment extends Fragment
 
             reviewEmptyStateView.setVisibility(View.GONE);
             reviewItemLayout.setVisibility(View.VISIBLE);
+
             // Button 'show more' should be visible only if there are more then one (shown) review.
             if (reviewsCursor.moveToNext())
                 reviewShowMoreButton.setVisibility(View.VISIBLE);
             else
                 reviewShowMoreButton.setVisibility(View.GONE);
 
+            // Setting Listener which would open full reviews list in dialog (tablets) or
+            // activity (phones).
+            reviewItemLayout.setOnClickListener(this);
+            reviewShowMoreButton.setOnClickListener(this);
         } else {
+            //There is no reviews.
             reviewSubheaderTextView.setText(getString(R.string.details_reviews_label, 0));
             reviewEmptyStateView.setVisibility(View.VISIBLE);
             reviewItemLayout.setVisibility(View.GONE);
@@ -442,26 +462,17 @@ public class DetailFragment extends Fragment
                     return new CursorLoader(
                             getActivity(),
                             movieUri,
-                            MOVIE_PROJECTION,
-                            null,
-                            null,
-                            null);
+                            MOVIE_PROJECTION, null, null, null);
                 case REVIEW_LOADER_ID:
                     return new CursorLoader(
                             getActivity(),
-                            MovieContract.ReviewEntry.buildUriByMovieId(ContentUris.parseId(movieUri)),
-                            null,
-                            null,
-                            null,
-                            null);
+                            reviewsUri,
+                            null, null, null, null);
                 case VIDEO_LOADER_ID:
                     return new CursorLoader(
                             getActivity(),
                             MovieContract.VideoEntry.buildUriByMovieId(ContentUris.parseId(movieUri)),
-                            null,
-                            null,
-                            null,
-                            null);
+                            null, null, null, null);
                 default:
                     throw new UnsupportedOperationException("Unknown loader id: " + id);
             }
@@ -481,7 +492,6 @@ public class DetailFragment extends Fragment
                 insertReview();
                 break;
             case VIDEO_LOADER_ID:
-                videosCursor = data;
                 videosAdapter.swapCursor(data);
                 break;
             default:
@@ -499,7 +509,7 @@ public class DetailFragment extends Fragment
                 reviewsCursor = null;
                 break;
             case VIDEO_LOADER_ID:
-                videosCursor = null;
+                videosAdapter.swapCursor(null);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown loader id: " + loader.getId());
@@ -523,6 +533,25 @@ public class DetailFragment extends Fragment
             startActivity(intent);
         } else
             cursor.close();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == reviewShowMoreButton.getId() || v.getId() == reviewItemLayout.getId()) {
+            // Show dialog for tablets and open activity for phones.
+            if (tablet) {
+                ReviewsDialogFragment fragment = new ReviewsDialogFragment();
+                Bundle arguments = new Bundle();
+                arguments.putParcelable(Keys.REVIEWS_OF_MOVIE_URI, reviewsUri);
+                fragment.setArguments(arguments);
+                fragment.show(getFragmentManager(), ReviewsDialogFragment.TAG);
+            } else {
+                // Opening new activity with uri of selected movie.
+                Intent intent = new Intent(getActivity(), ReviewsActivity.class)
+                        .setData(reviewsUri);
+                startActivity(intent);
+            }
+        }
     }
 
 

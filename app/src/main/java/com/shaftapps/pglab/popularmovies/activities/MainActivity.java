@@ -20,6 +20,7 @@ import com.shaftapps.pglab.popularmovies.fragments.DetailFragment;
 import com.shaftapps.pglab.popularmovies.fragments.MoviesFragment;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.utils.ColorUtils;
+import com.shaftapps.pglab.popularmovies.utils.DisplayMetricsUtils;
 import com.shaftapps.pglab.popularmovies.utils.ToolbarUtils;
 
 /**
@@ -64,8 +65,9 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
         moviesFragment = (MoviesFragment)
                 getSupportFragmentManager().findFragmentById(R.id.fragment_movies);
 
-        // Checking MainActivity is two pain layout or not
-        if (findViewById(R.id.movie_detail_container) != null) {
+        // Checking MainActivity is two pane (ie. sw600dp) layout or not
+        twoPane = DisplayMetricsUtils.getSmallestWidth(getResources().getDisplayMetrics()) > 600;
+        if (twoPane) {
             twoPane = true;
             if (savedInstanceState == null) {
                 getSupportFragmentManager().beginTransaction()
@@ -73,8 +75,7 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
                         .commit();
             }
             detailSubToolbar = (Toolbar) findViewById(R.id.detail_toolbar);
-        } else
-            twoPane = false;
+        }
     }
 
     @Override

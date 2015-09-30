@@ -89,6 +89,10 @@ public class MovieContract {
                     .appendPath(Long.toString(movieId))
                     .build();
         }
+
+        public static long getMovieIdFromUri(Uri uriByMovieId){
+            return Long.parseLong(uriByMovieId.getLastPathSegment());
+        }
     }
 
 

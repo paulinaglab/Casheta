@@ -1,4 +1,4 @@
-package com.shaftapps.pglab.popularmovies;
+package com.shaftapps.pglab.popularmovies.widgets;
 
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;

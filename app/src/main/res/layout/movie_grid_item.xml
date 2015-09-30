@@ -16,7 +16,4 @@
         app:fitToRatio="height"
         tools:src="@drawable/sample_photo_vertical" />
 
-    <!-- Favorite state icon -->
-    <!-- ... -->
-
 </FrameLayout>

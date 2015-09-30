@@ -27,6 +27,8 @@
 
         <activity android:name=".activities.DetailActivity"/>
 
+        <activity android:name=".activities.ReviewsActivity"/>
+
     </application>
 
 </manifest>

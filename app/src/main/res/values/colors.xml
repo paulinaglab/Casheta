@@ -15,4 +15,6 @@
 
     <color name="details_card_view_bg">#424242</color>
 
+    <color name="reviews_toolbar_color">#e1a700</color>
+
 </resources>
