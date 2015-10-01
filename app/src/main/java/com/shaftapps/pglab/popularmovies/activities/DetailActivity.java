@@ -21,7 +21,7 @@ import com.shaftapps.pglab.popularmovies.utils.ToolbarUtils;
  * <p/>
  * Created by Paulina on 2015-08-30.
  */
-public class DetailActivity extends AppCompatActivity implements DetailFragment.OnScrollChangedListener, LoaderManager.LoaderCallbacks<Cursor> {
+public class DetailActivity extends AppCompatActivity implements DetailFragment.OnActionBarParamsChangedListener, LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int MOVIE_LOADER_ID = 1;
 
@@ -68,7 +68,7 @@ public class DetailActivity extends AppCompatActivity implements DetailFragment.
     }
 
     @Override
-    public void onScrollChanged(int ratioWrapperHeight, int color, int scrollPosition) {
+    public void onParamsChanged(int ratioWrapperHeight, int color, int scrollPosition) {
         // Paint Toolbar background.
         // Alpha of the color depends on DetailFragment's scroll position - start as transparent
         // and ends as opaque.

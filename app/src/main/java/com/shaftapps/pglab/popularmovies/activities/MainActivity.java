@@ -29,7 +29,7 @@ import com.shaftapps.pglab.popularmovies.utils.ToolbarUtils;
  * Created by Paulina on 2015-08-30.
  */
 public class MainActivity extends AppCompatActivity implements MoviesFragment.OnMovieSelectListener,
-        AdapterView.OnItemSelectedListener, DetailFragment.OnScrollChangedListener {
+        AdapterView.OnItemSelectedListener, DetailFragment.OnActionBarParamsChangedListener {
 
     private static final String SORTING_MODE_KEY = "sorting_mode_key";
     private static final String DETAIL_FRAGMENT_TAG = "detail_fragment_tag";
@@ -212,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
 
     //
     //  INTERFACE METHODS:
-    //  OnScrollChangedListener (DetailFragment's ScrollView & 'subtoolbar')
+    //  OnActionBarParamsChangedListener (DetailFragment's ScrollView & 'subtoolbar')
     //
 
     /**
@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements MoviesFragment.On
      * @param scrollPosition     current scroll position
      */
     @Override
-    public void onScrollChanged(int ratioWrapperHeight, int color, int scrollPosition) {
+    public void onParamsChanged(int ratioWrapperHeight, int color, int scrollPosition) {
         // Paint Toolbar background.
         // Alpha of the color depends on DetailFragment's scroll position - start as transparent
         // and ends as opaque.

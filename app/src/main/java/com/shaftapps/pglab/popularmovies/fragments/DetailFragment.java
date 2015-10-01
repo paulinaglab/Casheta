@@ -11,12 +11,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.ShareActionProvider;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,6 +33,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.GlideBitmapDrawable;
@@ -38,9 +42,9 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.R;
-import com.shaftapps.pglab.popularmovies.activities.DetailActivity;
 import com.shaftapps.pglab.popularmovies.activities.ReviewsActivity;
 import com.shaftapps.pglab.popularmovies.utils.DisplayMetricsUtils;
+import com.shaftapps.pglab.popularmovies.utils.YouTubeUriBuilder;
 import com.shaftapps.pglab.popularmovies.widgets.VideoItemDecoration;
 import com.shaftapps.pglab.popularmovies.adapters.VideosCursorAdapter;
 import com.shaftapps.pglab.popularmovies.asynctasks.FetchReviewsTask;
@@ -76,7 +80,7 @@ public class DetailFragment extends Fragment
     private Cursor movieCursor;
     private Cursor reviewsCursor;
 
-    private OnScrollChangedListener onScrollChangedListener;
+    private OnActionBarParamsChangedListener onActionBarParamsChangedListener;
 
     private ViewGroup ratioWrapper;
     private View titlesWrapper;
@@ -157,10 +161,10 @@ public class DetailFragment extends Fragment
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            onScrollChangedListener = (OnScrollChangedListener) activity;
+            onActionBarParamsChangedListener = (OnActionBarParamsChangedListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement OnScrollChangedListener");
+                    + " must implement OnActionBarParamsChangedListener");
         }
     }
 
@@ -202,17 +206,28 @@ public class DetailFragment extends Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         Log.d(getClass().getSimpleName(), "Fragment's onCreateOptionsMenu: " + menu);
         inflater.inflate(R.menu.detailfragment, menu);
+
         initFavoriteMenuItem(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_favorite) {
-            setFavoriteItemChecked(item, !item.isChecked());
-            updateMovie(item.isChecked());
-            Log.i(getClass().getSimpleName(), "Fav icon clicked! Now is set to " + item.isChecked());
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_favorite:
+                setFavoriteItemChecked(item, !item.isChecked());
+                updateMovie(item.isChecked());
+                Log.i(getClass().getSimpleName(), "Fav icon clicked! Now is set to " + item.isChecked());
+                return true;
+            case R.id.action_share:
+                Intent intent = createShareMovieIntent();
+                if (intent != null)
+                    startActivity(intent);
+                else
+                    Toast.makeText(
+                            getActivity(),
+                            getResources().getString(R.string.sharing_toast_no_video),
+                            Toast.LENGTH_SHORT).show();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -244,6 +259,26 @@ public class DetailFragment extends Fragment
         } else {
             item.setIcon(R.drawable.ic_favorite_off);
         }
+    }
+
+    private Intent createShareMovieIntent() {
+        Uri trailerUri = MovieContract.VideoEntry
+                .buildUriForMovieTrailer(ContentUris.parseId(movieUri));
+        Cursor cursor = getActivity().getContentResolver().query(
+                trailerUri, null, null, null, null);
+        if (cursor.moveToFirst()) {
+            int keyColumnIndex = cursor.getColumnIndex(MovieContract.VideoEntry.COLUMN_KEY);
+            Intent intent = ShareCompat.IntentBuilder
+                    .from(getActivity())
+                    .setText(getString(R.string.sharing_movie_text,
+                            YouTubeUriBuilder.getUri(cursor.getString(keyColumnIndex)).toString()) +
+                            getResources().getString(R.string.app_hashtag))
+                    .setType("text/plain")
+                    .createChooserIntent();
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+            return intent;
+        } else
+            return null;
     }
 
     private void updateMovie(boolean favorite) {
@@ -316,6 +351,7 @@ public class DetailFragment extends Fragment
                 ratioWrapper.setLayoutParams(new LinearLayout.LayoutParams(
                         ratioWrapper.getWidth(),
                         Math.min(ratioWrapper.getWidth(), screenHeight)));
+                notifyActionBarParamsChanged();
 
                 ViewTreeObserver viewTreeObserver = ratioWrapper.getViewTreeObserver();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -333,11 +369,18 @@ public class DetailFragment extends Fragment
         notifyingScrollView.setOnScrollChangedListener(new NotifyingScrollView.OnScrollChangedListener() {
             @Override
             public void onScrollChanged(int l, int t, int oldl, int oldt) {
-                if (onScrollChangedListener != null) {
-                    onScrollChangedListener.onScrollChanged(ratioWrapper.getHeight(), generatedColor, t);
-                }
+                notifyActionBarParamsChanged();
             }
         });
+    }
+
+    private void notifyActionBarParamsChanged() {
+        if (onActionBarParamsChangedListener != null) {
+            onActionBarParamsChangedListener.onParamsChanged(
+                    ratioWrapper.getHeight(),
+                    generatedColor,
+                    notifyingScrollView.getScrollY());
+        }
     }
 
     private void initVideoRecyclerView() {
@@ -390,6 +433,8 @@ public class DetailFragment extends Fragment
 
                 rateWrapper.setBackgroundColor(
                         ColorUtils.getColorWithTranslateBrightness(generatedColor, -10));
+
+                notifyActionBarParamsChanged();
             }
         };
 
@@ -521,12 +566,7 @@ public class DetailFragment extends Fragment
         Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
         if (cursor.moveToFirst()) {
             int keyColumnIndex = cursor.getColumnIndex(MovieContract.VideoEntry.COLUMN_KEY);
-            Uri videoUrl = new Uri.Builder()
-                    .scheme("http")
-                    .authority("www.youtube.com")
-                    .appendPath("watch")
-                    .appendQueryParameter("v", cursor.getString(keyColumnIndex))
-                    .build();
+            Uri videoUrl = YouTubeUriBuilder.getUri(cursor.getString(keyColumnIndex));
             cursor.close();
 
             Intent intent = new Intent(Intent.ACTION_VIEW, videoUrl);
@@ -556,17 +596,17 @@ public class DetailFragment extends Fragment
 
 
     /**
-     * DetailFragment's scroll listener.
+     * DetailFragment's scroll, changing distance and color listener.
      */
-    public interface OnScrollChangedListener {
+    public interface OnActionBarParamsChangedListener {
         /**
-         * Called when scroll position is changed.
+         * Called when scroll position, changing distance or end color is changed.
          *
          * @param ratioWrapperHeight top part layout (ratio wrapper) height
          * @param color              color generated based on poster image
          * @param scrollPosition     current scroll position
          */
-        void onScrollChanged(int ratioWrapperHeight, int color, int scrollPosition);
+        void onParamsChanged(int ratioWrapperHeight, int color, int scrollPosition);
     }
 
 }

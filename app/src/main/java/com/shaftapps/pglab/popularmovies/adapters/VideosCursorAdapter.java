@@ -10,15 +10,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.shaftapps.pglab.popularmovies.MovieDBApiKeys;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
+import com.shaftapps.pglab.popularmovies.utils.YouTubeUriBuilder;
 
 /**
  * Created by Paulina on 2015-09-25.
  */
 public class VideosCursorAdapter extends CursorAdapter<VideosCursorAdapter.VideoItemViewHolder> {
-
-    private static final String YOU_TUBE = "YouTube";
 
     protected Context context;
     protected OnItemClickListener onItemClickListener;
@@ -62,17 +62,13 @@ public class VideosCursorAdapter extends CursorAdapter<VideosCursorAdapter.Video
         // Load thumbnail if video site is YouTube
         int siteColumnIndex = cursor.getColumnIndex(MovieContract.VideoEntry.COLUMN_SITE);
         String site = cursor.getString(siteColumnIndex);
-        if (site.equals(YOU_TUBE)) {
+        if (site.equals(MovieDBApiKeys.VIDEO_SITE_YOUTUBE)) {
             //TODO: Load thumbnail
             int keyColumnIndex = cursor.getColumnIndex(MovieContract.VideoEntry.COLUMN_KEY);
 
-            String thumbnailUrl = new Uri.Builder()
-                    .scheme("http")
-                    .authority("img.youtube.com")
-                    .appendPath("vi")
-                    .appendPath(cursor.getString(keyColumnIndex))
-                    .appendPath("0.jpg")
-                    .build().toString();
+            String thumbnailUrl = YouTubeUriBuilder
+                    .getThumbnailUri(cursor.getString(keyColumnIndex))
+                    .toString();
 
             Glide.with(context)
                     .load(thumbnailUrl)

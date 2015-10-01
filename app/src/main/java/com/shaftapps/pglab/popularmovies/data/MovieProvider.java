@@ -10,6 +10,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
+import com.shaftapps.pglab.popularmovies.MovieDBApiKeys;
+
 /**
  * Created by Paulina on 2015-09-11.
  */
@@ -23,6 +25,7 @@ public class MovieProvider extends ContentProvider {
     static final int CODE_REVIEWS_OF_MOVIE = 200;
     static final int CODE_VIDEOS_OF_MOVIE = 300;
     static final int CODE_VIDEO_ITEM = 301;
+    static final int CODE_VIDEO_BEST_TO_SHARE = 302;
 
     @Override
     public boolean onCreate() {
@@ -47,7 +50,10 @@ public class MovieProvider extends ContentProvider {
                 cursor = getVideosForMovie(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             case CODE_VIDEO_ITEM:
-                cursor= getVideoItem(uri, projection, selection, selectionArgs, sortOrder);
+                cursor = getVideoItem(uri, projection, selection, selectionArgs, sortOrder);
+                break;
+            case CODE_VIDEO_BEST_TO_SHARE:
+                cursor = getVideoBestToShare(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             default:
                 throw new UnsupportedOperationException("Undefined URI code: " + uri);
@@ -116,6 +122,34 @@ public class MovieProvider extends ContentProvider {
                 projection, selection, selectionArgs, null, null, sortOrder);
     }
 
+    private Cursor getVideoBestToShare(Uri uri, String[] projection, String selection,
+                                       String[] selectionArgs, String sortOrder) {
+        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+        queryBuilder.setTables(MovieContract.VideoEntry.TABLE_NAME);
+
+        // I assume that the most preferred video to share is any trailer.
+        queryBuilder.appendWhere(
+                MovieContract.VideoEntry.COLUMN_MOVIE_ID + "=" +
+                uri.getPathSegments().get(MovieContract.PATH_TRAILER_MOVIE_ID_INDEX) +
+                " AND " +
+                MovieContract.VideoEntry.COLUMN_TYPE + "=\"" +
+                MovieDBApiKeys.VIDEO_TYPE_TRAILER + "\"");
+
+        Cursor cursor = queryBuilder.query(movieDbHelper.getReadableDatabase(),
+                projection, selection, selectionArgs, null, null, sortOrder, "1");
+        if (cursor.moveToFirst())
+            return cursor;
+
+        cursor.close();
+
+        // If there is no trailer for this movie, other video has to be sufficient.
+        queryBuilder = new SQLiteQueryBuilder();
+        queryBuilder.setTables(MovieContract.VideoEntry.TABLE_NAME);
+
+        return queryBuilder.query(movieDbHelper.getReadableDatabase(),
+                projection, selection, selectionArgs, null, null, sortOrder, "1");
+    }
+
     @Override
     public String getType(Uri uri) {
         int match = uriMatcher.match(uri);
@@ -129,6 +163,7 @@ public class MovieProvider extends ContentProvider {
             case CODE_VIDEOS_OF_MOVIE:
                 return MovieContract.VideoEntry.CONTENT_TYPE;
             case CODE_VIDEO_ITEM:
+            case CODE_VIDEO_BEST_TO_SHARE:
                 return MovieContract.VideoEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Undefined URI code: " + uri);
@@ -255,6 +290,10 @@ public class MovieProvider extends ContentProvider {
                         MovieContract.PATH_MOVIE + "/#", CODE_VIDEOS_OF_MOVIE);
         matcher.addURI(MovieContract.CONTENT_AUTHORITY,
                 MovieContract.PATH_VIDEO + "/#", CODE_VIDEO_ITEM);
+        matcher.addURI(MovieContract.CONTENT_AUTHORITY,
+                MovieContract.PATH_VIDEO + "/" +
+                        MovieContract.PATH_TRAILER + "/" +
+                        MovieContract.PATH_MOVIE + "/#", CODE_VIDEO_BEST_TO_SHARE);
 
         return matcher;
     }

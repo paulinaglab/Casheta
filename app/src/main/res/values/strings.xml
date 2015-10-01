@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Popular Movies</string>
+    <string name="app_hashtag">#PopularMoviesApp</string>
 
     <string name="error_fetching_movies">Failed to download</string>
 
@@ -15,6 +16,10 @@
     <string name="details_video_label">Videos</string>
 
     <string name="action_favorite">Favorite</string>
+    <string name="action_share">Share movie</string>
+
+    <string name="sharing_movie_text">Check out this movie:\n%s\n</string>
+    <string name="sharing_toast_no_video">No video to share</string>
 
     <string-array name="sorting_modes">
         <item>Most popular</item>

@@ -17,8 +17,10 @@ public class MovieContract {
     public static final String PATH_MOVIE = "movies";
     public static final String PATH_REVIEW = "reviews";
     public static final String PATH_VIDEO = "videos";
+    public static final String PATH_TRAILER = "trailers";
     public static final int PATH_REVIEW_MOVIE_ID_INDEX = 2;
     public static final int PATH_VIDEO_MOVIE_ID_INDEX = 2;
+    public static final int PATH_TRAILER_MOVIE_ID_INDEX = 3;
 
 
     public static final class MovieEntry implements BaseColumns {
@@ -90,7 +92,7 @@ public class MovieContract {
                     .build();
         }
 
-        public static long getMovieIdFromUri(Uri uriByMovieId){
+        public static long getMovieIdFromUri(Uri uriByMovieId) {
             return Long.parseLong(uriByMovieId.getLastPathSegment());
         }
     }
@@ -126,6 +128,15 @@ public class MovieContract {
         public static Uri buildUriByMovieId(long movieId) {
             return CONTENT_URI
                     .buildUpon()
+                    .appendPath(PATH_MOVIE)
+                    .appendPath(Long.toString(movieId))
+                    .build();
+        }
+
+        public static Uri buildUriForMovieTrailer(long movieId) {
+            return CONTENT_URI
+                    .buildUpon()
+                    .appendPath(PATH_TRAILER)
                     .appendPath(PATH_MOVIE)
                     .appendPath(Long.toString(movieId))
                     .build();
