@@ -7,8 +7,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:padding="2dp"
-        android:layout_marginRight="@dimen/movie_grid_horizontal_margin"
+        android:paddingLeft="@dimen/movie_grid_horizontal_padding"
+        android:paddingRight="@dimen/movie_grid_horizontal_padding"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp"
         tools:context="com.shaftapps.pglab.popularmovies.fragments.MoviesFragment"
         tools:listitem="@layout/movie_grid_item" />
 

@@ -58,6 +58,16 @@ public class MovieDBResponseParser {
             movie.put(MovieEntry.COLUMN_RELEASE_DATE,
                     movieObject.getString("release_date"));
 
+//            JSONArray genresArray = movieObject.optJSONArray("genres");
+//            if (genresArray != null)
+//                movie.put(MovieEntry.COLUMN_GENRE,
+//                        getListedStringObjects(genresArray, "name"));
+//
+//            JSONArray countriesArray = movieObject.optJSONArray("production_countries");
+//            if (countriesArray != null)
+//                movie.put(MovieEntry.COLUMN_COUNTRY,
+//                        getListedStringObjects(countriesArray, "name"));
+
             // This data are important only if query concerned specific category.
             switch (queryType) {
                 case MOST_POPULAR:
@@ -74,6 +84,18 @@ public class MovieDBResponseParser {
         }
 
         return movieValues;
+    }
+
+    private static String getListedStringObjects(JSONArray jsonArray, String keyName) throws JSONException {
+        StringBuilder listBuilder = new StringBuilder();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject movieObject = jsonArray.getJSONObject(i);
+            listBuilder.append(movieObject.getString(keyName));
+            if (i < jsonArray.length() - 1)
+                listBuilder.append(", ");
+        }
+
+        return listBuilder.toString();
     }
 
     public static ArrayList<ContentValues> getReviewsFromJson(String reviewJsonStr)

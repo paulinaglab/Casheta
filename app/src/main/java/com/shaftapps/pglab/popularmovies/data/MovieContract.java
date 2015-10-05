@@ -46,6 +46,8 @@ public class MovieContract {
         public static final String COLUMN_AVERAGE_RATE = "average_rate";
         public static final String COLUMN_OVERVIEW = "overview";
         public static final String COLUMN_RELEASE_DATE = "release_date";
+        public static final String COLUMN_GENRE = "genre";
+        public static final String COLUMN_COUNTRY = "countries";
         public static final String COLUMN_FAVORITE = "favorite";
         // This column specify movie is most popular by "popularity" value from API
         // or NULL if is not.

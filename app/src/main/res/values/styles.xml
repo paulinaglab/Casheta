@@ -3,6 +3,7 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="colorAccent">@color/accent_color</item>
+        <item name="android:windowBackground">@color/window_bg</item>
         <item name="android:spinnerDropDownItemStyle">@style/AppTheme.DropDownItem.Spinner</item>
     </style>
 
@@ -18,10 +19,17 @@
         <item name="android:paddingRight">16dp</item>
     </style>
 
+    <style name="AppTheme.DetailTheme" parent="AppTheme">
+        <item name="android:windowBackground">@color/details_card_view_bg</item>
+    </style>
+
     <style name="AppTheme.TextView.Subheader" parent="TextAppearance.AppCompat.Body2">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:padding">16dp</item>
+        <item name="android:paddingLeft">@dimen/detail_content_padding</item>
+        <item name="android:paddingRight">@dimen/detail_content_padding</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
         <item name="android:textColor">?android:textColorSecondary</item>
     </style>
 
@@ -29,6 +37,24 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:lineSpacingMultiplier">1.5</item>
+    </style>
+
+    <style name="AppTheme.DetailListItem.PrimaryText" parent="TextAppearance.AppCompat.Subhead">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingLeft">@dimen/detail_content_padding</item>
+        <item name="android:paddingRight">@dimen/detail_content_padding</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">4dp</item>
+    </style>
+
+    <style name="AppTheme.DetailListItem.SecondaryText" parent="TextAppearance.AppCompat.Body1">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingLeft">@dimen/detail_content_padding</item>
+        <item name="android:paddingRight">@dimen/detail_content_padding</item>
+        <item name="android:paddingBottom">16dp</item>
+        <item name="android:textColor">?android:textColorSecondary</item>
     </style>
 
 </resources>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <dimen name="reviews_recycler_view_height">480dp</dimen>
+    <bool name="sw600dp">true</bool>
 
 </resources>

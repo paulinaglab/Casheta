@@ -7,11 +7,14 @@
     <!-- Detail Fragment layout -->
     <string name="details_rate_format" translatable="false">%.1f/10</string>
     <string name="details_overview_label">Overview</string>
-    <string name="details_release_date_label">Release date: %s</string>
+    <string name="details_release_date_label">Release date</string>
+    <string name="details_genre_label">Genre</string>
+    <string name="details_prod_countries_date_label">Country</string>
 
     <string name="details_reviews_label">User reviews (%d)</string>
     <string name="details_reviews_empty_label">No reviews</string>
     <string name="details_reviews_show_more_label">Show more reviews</string>
+    <string name="details_reviews_more_text">(read more)</string>
 
     <string name="details_video_label">Videos</string>
 

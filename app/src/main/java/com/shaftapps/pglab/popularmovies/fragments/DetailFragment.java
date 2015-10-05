@@ -1,6 +1,8 @@
 package com.shaftapps.pglab.popularmovies.fragments;
 
 
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -15,13 +17,13 @@ import android.support.v4.app.ShareCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.ShareActionProvider;
+import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,6 +31,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.animation.AccelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -43,7 +46,7 @@ import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.activities.ReviewsActivity;
-import com.shaftapps.pglab.popularmovies.utils.DisplayMetricsUtils;
+import com.shaftapps.pglab.popularmovies.utils.DisplayUtils;
 import com.shaftapps.pglab.popularmovies.utils.YouTubeUriBuilder;
 import com.shaftapps.pglab.popularmovies.widgets.VideoItemDecoration;
 import com.shaftapps.pglab.popularmovies.adapters.VideosCursorAdapter;
@@ -71,6 +74,8 @@ public class DetailFragment extends Fragment
             MovieContract.MovieEntry.COLUMN_AVERAGE_RATE,
             MovieContract.MovieEntry.COLUMN_OVERVIEW,
             MovieContract.MovieEntry.COLUMN_RELEASE_DATE,
+            MovieContract.MovieEntry.COLUMN_GENRE,
+            MovieContract.MovieEntry.COLUMN_COUNTRY,
             MovieContract.MovieEntry.COLUMN_POSTER_URL,
             MovieContract.MovieEntry.COLUMN_BACKDROP_URL};
 
@@ -91,6 +96,8 @@ public class DetailFragment extends Fragment
     private TextView rateTextView;
     private TextView overviewTextView;
     private TextView releaseDate;
+    private TextView genreTextView;
+    private TextView countryTextView;
     private ImageView posterImageView;
     private ImageView backdropImageView;
     // Review section
@@ -143,8 +150,7 @@ public class DetailFragment extends Fragment
         setHasOptionsMenu(true);
 
         // Checking device is phone or tablet
-        DisplayMetrics displayMetrics = getActivity().getResources().getDisplayMetrics();
-        tablet = DisplayMetricsUtils.getSmallestWidth(displayMetrics) >= 600;
+        tablet = DisplayUtils.isSmallestWidth600dp(getActivity());
 
         return fragmentView;
     }
@@ -323,7 +329,9 @@ public class DetailFragment extends Fragment
                 fragmentView.findViewById(R.id.detail_movie_original_title);
         rateTextView = (TextView) fragmentView.findViewById(R.id.detail_rate_text_view);
         overviewTextView = (TextView) fragmentView.findViewById(R.id.detail_overview);
-        releaseDate = (TextView) fragmentView.findViewById(R.id.detail_release_date);
+        releaseDate = (TextView) fragmentView.findViewById(R.id.detail_release_date_text_view);
+        genreTextView = (TextView) fragmentView.findViewById(R.id.detail_genres_text_view);
+        countryTextView = (TextView) fragmentView.findViewById(R.id.detail_countries_text_view);
         posterImageView = (ImageView) fragmentView.findViewById(R.id.detail_poster_image);
         backdropImageView = (ImageView) fragmentView.findViewById(R.id.detail_photo_image);
         // Review section
@@ -397,21 +405,27 @@ public class DetailFragment extends Fragment
     private void insertDataIntoUI() {
         if (movieCursor != null && movieCursor.moveToFirst()) {
 
+            // Notify ActionBar that title is loaded.
+            if (onActionBarParamsChangedListener != null) {
+                onActionBarParamsChangedListener.onTitleLoaded(movieCursor.getString(
+                        movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
+            }
+
             // Setting text data
             titleTextView.setText(movieCursor.getString(
                     movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
-
             originalTitleTextView.setText(movieCursor.getString(
                     movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE)));
-
             rateTextView.setText(getString(R.string.details_rate_format, movieCursor.getDouble(
                     movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_AVERAGE_RATE))));
-
             overviewTextView.setText(movieCursor.getString(
                     movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)));
-
-            releaseDate.setText(getString(R.string.details_release_date_label, movieCursor.getString(
-                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE))));
+            releaseDate.setText(movieCursor.getString(
+                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)));
+            genreTextView.setText(movieCursor.getString(
+                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_GENRE)));
+            countryTextView.setText(movieCursor.getString(
+                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_COUNTRY)));
 
             // Loading images and color generation
             loadImagesAndColors();
@@ -429,10 +443,31 @@ public class DetailFragment extends Fragment
                 generatedColor = palette.getDarkVibrantColor(
                         ContextCompat.getColor(getActivity(), R.color.details_rate_not_initialized_bg));
 
-                titlesWrapper.setBackgroundColor(generatedColor);
+                int duration = 175;
+                int titleStartDelay = duration / 3;
 
-                rateWrapper.setBackgroundColor(
+                // Animating titles' wrapper background
+                ObjectAnimator titleBgAnimator = ObjectAnimator.ofInt(
+                        titlesWrapper,
+                        "backgroundColor",
+                        ContextCompat.getColor(getActivity(), R.color.details_title_not_initialized_bg),
+                        generatedColor);
+                titleBgAnimator.setEvaluator(new ArgbEvaluator());
+                titleBgAnimator.setDuration(duration - titleStartDelay);
+                titleBgAnimator.setStartDelay(titleStartDelay);
+                titleBgAnimator.setInterpolator(new AccelerateInterpolator());
+                titleBgAnimator.start();
+
+                // Animating rate's wrapper background
+                ObjectAnimator rateBgAnimator = ObjectAnimator.ofInt(
+                        rateWrapper,
+                        "backgroundColor",
+                        ContextCompat.getColor(getActivity(), R.color.details_rate_not_initialized_bg),
                         ColorUtils.getColorWithTranslateBrightness(generatedColor, -10));
+                rateBgAnimator.setEvaluator(new ArgbEvaluator());
+                rateBgAnimator.setDuration(duration);
+                rateBgAnimator.setInterpolator(new AccelerateInterpolator());
+                rateBgAnimator.start();
 
                 notifyActionBarParamsChanged();
             }
@@ -607,6 +642,13 @@ public class DetailFragment extends Fragment
          * @param scrollPosition     current scroll position
          */
         void onParamsChanged(int ratioWrapperHeight, int color, int scrollPosition);
+
+        /**
+         * Called when a movie title is loaded.
+         *
+         * @param title title of a movie
+         */
+        void onTitleLoaded(String title);
     }
 
 }

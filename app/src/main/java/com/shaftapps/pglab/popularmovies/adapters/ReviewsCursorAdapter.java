@@ -3,11 +3,14 @@ package com.shaftapps.pglab.popularmovies.adapters;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 import com.shaftapps.pglab.popularmovies.R;
@@ -22,6 +25,7 @@ public class ReviewsCursorAdapter extends CursorAdapter<ReviewsCursorAdapter.Rev
 
     protected Context context;
     private int expandedIndex = -1;
+
 
     public ReviewsCursorAdapter(Context context, Bundle savedInstanceState) {
         if (savedInstanceState != null)
@@ -39,13 +43,14 @@ public class ReviewsCursorAdapter extends CursorAdapter<ReviewsCursorAdapter.Rev
         View view = LayoutInflater.from(context).inflate(R.layout.review_item, parent, false);
         final ReviewItemViewHolder holder = new ReviewItemViewHolder(view);
 
-        if (getItemCount() > 1) // Because when we have only one review, I want it stay expanded.
+        if (getItemCount() > 1) { // Because when we have only one review, I want it stay expanded.
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     itemClicked(holder.getAdapterPosition());
                 }
             });
+        }
         return holder;
     }
 
@@ -77,19 +82,20 @@ public class ReviewsCursorAdapter extends CursorAdapter<ReviewsCursorAdapter.Rev
     }
 
     @Override
-    public void onBindViewHolder(ReviewItemViewHolder holder, int position) {
+    public void onBindViewHolder(final ReviewItemViewHolder holder, int position) {
         cursor.moveToPosition(position);
         holder.authorName.setText(cursor.getString(
                 cursor.getColumnIndex(MovieContract.ReviewEntry.COLUMN_AUTHOR)));
         holder.content.setText(cursor.getString(
                 cursor.getColumnIndex(MovieContract.ReviewEntry.COLUMN_CONTENT)));
 
-        if (expandedIndex == position)
+        if (expandedIndex != position) {
+            holder.content.setMaxLines(context.getResources().getInteger(R.integer.review_collapsed_max_lines));
+        } else
             holder.content.setMaxLines(Integer.MAX_VALUE);
-        else
-            holder.content.setMaxLines(
-                    context.getResources().getInteger(R.integer.review_collapsed_max_lines));
+
     }
+
 
     public class ReviewItemViewHolder extends RecyclerView.ViewHolder {
 

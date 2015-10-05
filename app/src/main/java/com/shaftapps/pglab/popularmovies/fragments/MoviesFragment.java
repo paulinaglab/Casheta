@@ -19,6 +19,7 @@ import com.shaftapps.pglab.popularmovies.asynctasks.FetchMoviesTask;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.adapters.MoviesCursorAdapter;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
+import com.shaftapps.pglab.popularmovies.widgets.AutoFitGridLayoutManager;
 
 import java.io.Serializable;
 
@@ -60,7 +61,8 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
             }
         });
 
-        GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), 3);
+        AutoFitGridLayoutManager layoutManager = new AutoFitGridLayoutManager(
+                getActivity(), R.dimen.movie_grid_preferred_column_width);
 
         recyclerView =
                 (RecyclerView) fragmentView.findViewById(R.id.movies_recycler_view);

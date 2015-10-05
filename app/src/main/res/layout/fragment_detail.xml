@@ -47,7 +47,7 @@
                         android:drawableLeft="@drawable/ic_rate_star"
                         android:drawablePadding="4dp"
                         android:gravity="center_vertical"
-                        android:paddingRight="16dp"
+                        android:paddingRight="@dimen/detail_content_padding"
                         android:textColor="?android:textColorPrimary"
                         tools:text="7.5/10" />
 
@@ -62,8 +62,8 @@
                     android:clipToPadding="false"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
-                    android:paddingLeft="16dp"
-                    android:paddingRight="16dp">
+                    android:paddingLeft="@dimen/detail_content_padding"
+                    android:paddingRight="@dimen/detail_content_padding">
 
                     <TextView
                         android:id="@+id/detail_movie_title"
@@ -73,7 +73,8 @@
                         android:ellipsize="end"
                         android:paddingBottom="4dp"
                         android:singleLine="true"
-                        tools:text="Movie title" />
+                        tools:text="Movie title"
+                        android:textSize="@dimen/detail_movie_title_font_size"/>
 
                     <TextView
                         android:id="@+id/detail_movie_original_title"
@@ -101,7 +102,7 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:adjustViewBounds="true"
-                    android:padding="16dp"
+                    android:padding="@dimen/detail_content_padding"
                     android:scaleType="centerCrop"
                     app:fitToRatio="width"
                     tools:src="@drawable/sample_photo_vertical" />
@@ -111,13 +112,36 @@
         </RelativeLayout>
 
 
+        <!-- Genre -->
         <TextView
-            android:id="@+id/detail_release_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:textSize="14sp"
-            tools:text="@string/details_release_date_label" />
+            android:id="@+id/detail_genres_text_view"
+            style="@style/AppTheme.DetailListItem.PrimaryText"
+            tools:text="Drama"/>
+
+        <TextView
+            style="@style/AppTheme.DetailListItem.SecondaryText"
+            android:text="@string/details_genre_label" />
+
+        <!-- Production-->
+        <TextView
+            android:id="@+id/detail_countries_text_view"
+            style="@style/AppTheme.DetailListItem.PrimaryText"
+            tools:text="USA, Canada"/>
+
+        <TextView
+            style="@style/AppTheme.DetailListItem.SecondaryText"
+            android:text="@string/details_prod_countries_date_label" />
+
+        <!-- Release date -->
+        <TextView
+            android:id="@+id/detail_release_date_text_view"
+            style="@style/AppTheme.DetailListItem.PrimaryText"
+            tools:text="YYYY-MM-DD"/>
+
+        <TextView
+            style="@style/AppTheme.DetailListItem.SecondaryText"
+            android:text="@string/details_release_date_label" />
+
 
 
         <View style="@style/AppTheme.Separator" />
@@ -134,8 +158,8 @@
             android:id="@+id/detail_overview"
             style="@style/AppTheme.TextView.LongText"
             android:layout_marginBottom="16dp"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
+            android:paddingLeft="@dimen/detail_content_padding"
+            android:paddingRight="@dimen/detail_content_padding"
             tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur." />
 
 
@@ -191,8 +215,8 @@
                 android:layout_height="wrap_content"
                 android:alpha="?android:disabledAlpha"
                 android:paddingBottom="8dp"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
+                android:paddingLeft="@dimen/detail_content_padding"
+                android:paddingRight="@dimen/detail_content_padding"
                 android:paddingTop="8dp"
                 android:text="@string/details_reviews_empty_label" />
 
