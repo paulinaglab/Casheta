@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- According to docs, this value should equal 24dp (status bar height),
+    but on every device I've tested status bar is always 25dp height. If I'll ignore that, this
+    1dp difference looks like divider between translucent status bar and translucent toolbar. -->
+    <dimen name="translucent_status_bar_padding">25dp</dimen>
+
+</resources>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Genre -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/detail_content_padding">
+
+            <ImageView
+                style="@style/AppTheme.DetailListItem.LeftIcon"
+                android:src="@drawable/ic_genre" />
+
+            <TextView
+                android:id="@+id/detail_genres_text_view"
+                style="@style/AppTheme.DetailListItem.PrimaryText"
+                tools:text="Drama" />
+
+            <TextView
+                style="@style/AppTheme.DetailListItem.SecondaryText"
+                android:layout_below="@id/detail_genres_text_view"
+                android:text="@string/details_genre_label" />
+
+        </RelativeLayout>
+
+        <!-- Production-->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/detail_content_padding">
+
+            <ImageView
+                style="@style/AppTheme.DetailListItem.LeftIcon"
+                android:src="@drawable/ic_country" />
+
+            <TextView
+                android:id="@+id/detail_countries_text_view"
+                style="@style/AppTheme.DetailListItem.PrimaryText"
+                tools:text="USA, Canada" />
+
+            <TextView
+                style="@style/AppTheme.DetailListItem.SecondaryText"
+                android:layout_below="@id/detail_countries_text_view"
+                android:text="@string/details_prod_countries_date_label" />
+
+        </RelativeLayout>
+
+        <!-- Release date -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="@dimen/detail_content_padding">
+
+            <ImageView
+                style="@style/AppTheme.DetailListItem.LeftIcon"
+                android:src="@drawable/ic_release_date" />
+
+            <TextView
+                android:id="@+id/detail_release_date_text_view"
+                style="@style/AppTheme.DetailListItem.PrimaryText"
+                tools:text="YYYY-MM-DD" />
+
+            <TextView
+                style="@style/AppTheme.DetailListItem.SecondaryText"
+                android:layout_below="@id/detail_release_date_text_view"
+                android:text="@string/details_release_date_label" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="@style/Widget.AppCompat.ProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
+</RelativeLayout>

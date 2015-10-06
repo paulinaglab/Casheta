@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <dimen name="status_bar_height">24dp</dimen>
+    <dimen name="translucent_status_bar_padding">0dp</dimen>
+
+    <dimen name="status_bar_height">25dp</dimen>
 
     <dimen name="movie_grid_horizontal_padding">2dp</dimen>
 

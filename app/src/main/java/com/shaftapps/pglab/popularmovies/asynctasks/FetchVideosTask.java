@@ -13,6 +13,9 @@ import org.json.JSONException;
 import java.util.ArrayList;
 
 /**
+ * Class for videos fetching AsyncTasks.
+ * Videos of movie url: http://api.themoviedb.org/3/movie/{id}/videos
+ *
  * Created by Paulina on 2015-09-25.
  */
 public class FetchVideosTask extends BaseMovieDBTask {

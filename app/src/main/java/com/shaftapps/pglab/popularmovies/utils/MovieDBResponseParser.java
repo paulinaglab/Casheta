@@ -27,10 +27,10 @@ public class MovieDBResponseParser {
 
 
     public static ArrayList<ContentValues> getMoviesFromJson(
-            String movieJsonStr, FetchMoviesTask.QueryType queryType)
+            String moviesJsonStr, FetchMoviesTask.QueryType queryType)
             throws JSONException {
 
-        JSONObject jsonObject = new JSONObject(movieJsonStr);
+        JSONObject jsonObject = new JSONObject(moviesJsonStr);
         int pageIndex = jsonObject.getInt("page");
         JSONArray resultsArray = jsonObject.getJSONArray("results");
 
@@ -39,34 +39,8 @@ public class MovieDBResponseParser {
 
         for (int i = 0; i < resultsArray.length(); i++) {
             JSONObject movieObject = resultsArray.getJSONObject(i);
-            movie = new ContentValues();
 
-            movie.put(MovieEntry._ID,
-                    movieObject.getLong("id"));
-            movie.put(MovieEntry.COLUMN_TITLE,
-                    movieObject.getString("title"));
-            movie.put(MovieEntry.COLUMN_ORIGINAL_TITLE,
-                    movieObject.getString("original_title"));
-            movie.put(MovieEntry.COLUMN_POSTER_URL,
-                    POSTER_BASE_URL + POSTER_WIDTH + movieObject.getString("poster_path"));
-            movie.put(MovieEntry.COLUMN_BACKDROP_URL,
-                    POSTER_BASE_URL + BACKDROP_WIDTH + movieObject.getString("backdrop_path"));
-            movie.put(MovieEntry.COLUMN_AVERAGE_RATE,
-                    movieObject.getDouble("vote_average"));
-            movie.put(MovieEntry.COLUMN_OVERVIEW,
-                    movieObject.getString("overview"));
-            movie.put(MovieEntry.COLUMN_RELEASE_DATE,
-                    movieObject.getString("release_date"));
-
-//            JSONArray genresArray = movieObject.optJSONArray("genres");
-//            if (genresArray != null)
-//                movie.put(MovieEntry.COLUMN_GENRE,
-//                        getListedStringObjects(genresArray, "name"));
-//
-//            JSONArray countriesArray = movieObject.optJSONArray("production_countries");
-//            if (countriesArray != null)
-//                movie.put(MovieEntry.COLUMN_COUNTRY,
-//                        getListedStringObjects(countriesArray, "name"));
+            movie = getSingleMovieFromJson(movieObject);
 
             // This data are important only if query concerned specific category.
             switch (queryType) {
@@ -86,13 +60,58 @@ public class MovieDBResponseParser {
         return movieValues;
     }
 
+    public static ContentValues getSingleMovieFromJson(String moviesJsonStr)
+            throws JSONException {
+        return getSingleMovieFromJson(new JSONObject(moviesJsonStr));
+    }
+
+    public static ContentValues getSingleMovieFromJson(JSONObject movieObject)
+            throws JSONException {
+
+        ContentValues movie = new ContentValues();
+
+        movie.put(MovieEntry._ID,
+                movieObject.getLong("id"));
+        movie.put(MovieEntry.COLUMN_TITLE,
+                movieObject.getString("title"));
+        movie.put(MovieEntry.COLUMN_ORIGINAL_TITLE,
+                movieObject.getString("original_title"));
+        movie.put(MovieEntry.COLUMN_POSTER_URL,
+                POSTER_BASE_URL + POSTER_WIDTH + movieObject.getString("poster_path"));
+        movie.put(MovieEntry.COLUMN_BACKDROP_URL,
+                POSTER_BASE_URL + BACKDROP_WIDTH + movieObject.getString("backdrop_path"));
+        movie.put(MovieEntry.COLUMN_AVERAGE_RATE,
+                movieObject.getDouble("vote_average"));
+        movie.put(MovieEntry.COLUMN_OVERVIEW,
+                movieObject.getString("overview"));
+        movie.put(MovieEntry.COLUMN_RELEASE_DATE,
+                movieObject.getString("release_date"));
+
+        JSONArray genresArray = movieObject.optJSONArray("genres");
+        if (genresArray != null)
+            movie.put(MovieEntry.COLUMN_GENRE,
+                    getListedStringObjects(genresArray, "name"));
+
+        JSONArray countriesArray = movieObject.optJSONArray("production_countries");
+        if (countriesArray != null)
+            movie.put(MovieEntry.COLUMN_COUNTRY,
+                    getListedStringObjects(countriesArray, "name"));
+
+        return movie;
+    }
+
     private static String getListedStringObjects(JSONArray jsonArray, String keyName) throws JSONException {
         StringBuilder listBuilder = new StringBuilder();
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject movieObject = jsonArray.getJSONObject(i);
-            listBuilder.append(movieObject.getString(keyName));
-            if (i < jsonArray.length() - 1)
-                listBuilder.append(", ");
+
+            String singleItem = movieObject.optString(keyName);
+            if (singleItem != null) {
+                listBuilder.append(singleItem);
+
+                if (i < jsonArray.length() - 1)
+                    listBuilder.append(", ");
+            }
         }
 
         return listBuilder.toString();

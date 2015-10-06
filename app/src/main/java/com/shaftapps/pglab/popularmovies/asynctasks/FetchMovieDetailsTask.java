@@ -2,7 +2,6 @@ package com.shaftapps.pglab.popularmovies.asynctasks;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
 import android.util.Log;
 
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
@@ -13,20 +12,19 @@ import org.json.JSONException;
 import java.util.ArrayList;
 
 /**
- * Class for reviews fetching AsyncTasks.
- * Reviews of movie url: http://api.themoviedb.org/3/movie/{id}/reviews
- *
- * Created by Paulina on 2015-09-24.
+ * Class for specific movie fetching AsyncTasks.
+ * http://api.themoviedb.org/3/movie/{id}
+ * <p/>
+ * Created by Paulina on 2015-10-05.
  */
-public class FetchReviewsTask extends BaseMovieDBTask {
+public class FetchMovieDetailsTask extends BaseMovieDBTask {
 
     private static final String MOVIE = "movie";
-    private static final String REVIEW = "reviews";
 
     private Context context;
     private long movieId;
 
-    public FetchReviewsTask(Context context, long movieId) {
+    public FetchMovieDetailsTask(Context context, long movieId) {
         this.context = context;
         this.movieId = movieId;
     }
@@ -36,7 +34,6 @@ public class FetchReviewsTask extends BaseMovieDBTask {
         return getUriBuilder()
                 .appendPath(MOVIE)
                 .appendPath(Long.toString(movieId))
-                .appendPath(REVIEW)
                 .build()
                 .toString();
     }
@@ -44,7 +41,9 @@ public class FetchReviewsTask extends BaseMovieDBTask {
     @Override
     protected ArrayList<ContentValues> getParsedData(String json) {
         try {
-            return MovieDBResponseParser.getReviewsFromJson(json);
+            ArrayList<ContentValues> movieList = new ArrayList<>();
+            movieList.add(MovieDBResponseParser.getSingleMovieFromJson(json));
+            return movieList;
         } catch (JSONException e) {
             Log.e(this.getClass().getName(), "Error parsing JSON", e);
             return null;
@@ -53,18 +52,12 @@ public class FetchReviewsTask extends BaseMovieDBTask {
 
     @Override
     protected void saveToDatabase(ArrayList<ContentValues> contentValues) {
-        Uri reviewUri = MovieContract.ReviewEntry.buildUriByMovieId(movieId);
-        for (ContentValues review : contentValues) {
-            Uri insertUri = context.getContentResolver().insert(
-                    reviewUri,
-                    review);
-            if (insertUri == null) {
-                context.getContentResolver().update(
-                        reviewUri,
-                        review,
-                        MovieContract.ReviewEntry.COLUMN_REVIEW_API_ID + "=?",
-                        new String[]{review.getAsString(MovieContract.ReviewEntry.COLUMN_REVIEW_API_ID)});
-            }
-        }
+        // Update movie from database.
+        // If movie isn't present, do nothing.
+        context.getContentResolver().update(
+                MovieContract.MovieEntry.CONTENT_URI,
+                contentValues.get(0),
+                MovieContract.MovieEntry._ID + "=?",
+                new String[]{contentValues.get(0).getAsString(MovieContract.MovieEntry._ID)});
     }
 }

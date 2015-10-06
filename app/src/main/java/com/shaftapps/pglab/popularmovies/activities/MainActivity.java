@@ -146,6 +146,16 @@ public class MainActivity extends DetailFragmentActivity implements MoviesFragme
     @Override
     public void onMovieSelect(Uri uri) {
         if (twoPane) {
+            // If already selected movie is the same as now clicked don't create another Fragment -
+            // - just tell Fragment it should react.
+            DetailFragment detailFragment = (DetailFragment)
+                    getSupportFragmentManager().findFragmentById(R.id.movie_detail_container);
+            if (detailFragment != null && detailFragment.getMovieUri() != null
+                    && detailFragment.getMovieUri().equals(uri)) {
+                detailFragment.reloadMovie();
+                return;
+            }
+
             // Putting uri to arguments
             Bundle args = new Bundle();
             args.putParcelable(Keys.SELECTED_MOVIE_URI, uri);
@@ -156,13 +166,13 @@ public class MainActivity extends DetailFragmentActivity implements MoviesFragme
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.movie_detail_container, fragment, DETAIL_FRAGMENT_TAG)
                     .commit();
-
         } else {
             // Opening new activity with uri of selected movie.
             Intent intent = new Intent(this, DetailActivity.class)
                     .setData(uri);
             startActivity(intent);
         }
+
     }
 
 

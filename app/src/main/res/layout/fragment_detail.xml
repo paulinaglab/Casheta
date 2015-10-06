@@ -73,8 +73,8 @@
                         android:ellipsize="end"
                         android:paddingBottom="4dp"
                         android:singleLine="true"
-                        tools:text="Movie title"
-                        android:textSize="@dimen/detail_movie_title_font_size"/>
+                        android:textSize="@dimen/detail_movie_title_font_size"
+                        tools:text="Movie title" />
 
                     <TextView
                         android:id="@+id/detail_movie_original_title"
@@ -112,128 +112,56 @@
         </RelativeLayout>
 
 
-        <!-- Genre -->
-        <TextView
-            android:id="@+id/detail_genres_text_view"
-            style="@style/AppTheme.DetailListItem.PrimaryText"
-            tools:text="Drama"/>
-
-        <TextView
-            style="@style/AppTheme.DetailListItem.SecondaryText"
-            android:text="@string/details_genre_label" />
-
-        <!-- Production-->
-        <TextView
-            android:id="@+id/detail_countries_text_view"
-            style="@style/AppTheme.DetailListItem.PrimaryText"
-            tools:text="USA, Canada"/>
-
-        <TextView
-            style="@style/AppTheme.DetailListItem.SecondaryText"
-            android:text="@string/details_prod_countries_date_label" />
-
-        <!-- Release date -->
-        <TextView
-            android:id="@+id/detail_release_date_text_view"
-            style="@style/AppTheme.DetailListItem.PrimaryText"
-            tools:text="YYYY-MM-DD"/>
-
-        <TextView
-            style="@style/AppTheme.DetailListItem.SecondaryText"
-            android:text="@string/details_release_date_label" />
-
+        <!-- BASIC INFO -->
+        <include
+            layout="@layout/details_section_basic_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp" />
 
 
         <View style="@style/AppTheme.Separator" />
 
 
         <!-- OVERVIEW -->
-
         <TextView
             style="@style/AppTheme.TextView.Subheader"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="8dp"
             android:text="@string/details_overview_label" />
 
         <TextView
             android:id="@+id/detail_overview"
             style="@style/AppTheme.TextView.LongText"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
+            android:paddingBottom="16dp"
             android:paddingLeft="@dimen/detail_content_padding"
             android:paddingRight="@dimen/detail_content_padding"
             tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur." />
 
 
-        <!-- VIDEOS -->
+        <View style="@style/AppTheme.Separator" />
 
-        <LinearLayout
-            android:id="@+id/detail_video_section"
+
+        <!-- VIDEOS -->
+        <include
+            layout="@layout/details_section_videos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp" />
 
-            <View
-                style="@style/AppTheme.Separator"
-                android:layout_marginTop="8dp" />
 
-            <TextView
-                style="@style/AppTheme.TextView.Subheader"
-                android:layout_marginTop="4dp"
-                android:text="@string/details_video_label" />
-
-            <!-- Videos go here -->
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/detail_video_recycler_view"
-                android:layout_width="match_parent"
-                android:layout_height="144dp"
-                android:background="@color/video_container_bg"
-                tools:listitem="@layout/video_list_item" />
-
-        </LinearLayout>
+        <View style="@style/AppTheme.Separator" />
 
 
         <!-- REVIEWS -->
-
-        <LinearLayout
-            android:id="@+id/detail_reviews_section"
+        <include
+            layout="@layout/details_section_reviews"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <View
-                style="@style/AppTheme.Separator"
-                android:layout_marginTop="8dp" />
-
-            <TextView
-                android:id="@+id/detail_review_subheader_text_view"
-                style="@style/AppTheme.TextView.Subheader"
-                android:layout_marginTop="4dp"
-                android:text="@string/details_reviews_label" />
-
-            <TextView
-                android:id="@+id/detail_review_empty_state_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:alpha="?android:disabledAlpha"
-                android:paddingBottom="8dp"
-                android:paddingLeft="@dimen/detail_content_padding"
-                android:paddingRight="@dimen/detail_content_padding"
-                android:paddingTop="8dp"
-                android:text="@string/details_reviews_empty_label" />
-
-            <include
-                android:id="@+id/detail_review_item_view"
-                layout="@layout/review_item" />
-
-            <Button
-                android:id="@+id/detail_reviews_show_more_button"
-                style="@style/Widget.AppCompat.Button.Borderless.Colored"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/details_reviews_show_more_label"
-                android:textColor="@color/accent_color" />
-
-        </LinearLayout>
+            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp" />
 
 
     </LinearLayout>

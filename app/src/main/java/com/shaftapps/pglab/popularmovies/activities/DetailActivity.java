@@ -1,17 +1,18 @@
 package com.shaftapps.pglab.popularmovies.activities;
 
-import android.database.Cursor;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.Window;
+import android.widget.RelativeLayout;
 
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.fragments.DetailFragment;
 import com.shaftapps.pglab.popularmovies.R;
-import com.shaftapps.pglab.popularmovies.data.MovieContract;
+import com.shaftapps.pglab.popularmovies.utils.ColorUtils;
 
 /**
  * Activity showing details of specific movie.
@@ -53,6 +54,28 @@ public class DetailActivity extends DetailFragmentActivity {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.movie_detail_container, fragment)
                     .commit();
+        }
+
+        //
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Window window = getWindow();
+            window.setStatusBarColor(ContextCompat.getColor(this, R.color.status_bar_color));
+            window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+        }
+    }
+
+    @Override
+    public void onParamsChanged(int ratioWrapperHeight, int color, int scrollPosition) {
+        super.onParamsChanged(ratioWrapperHeight, color, scrollPosition);
+
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            float changingDistance = ratioWrapperHeight - getDetailFragmentToolbar().getHeight();
+            int currentStatusBarColor = ColorUtils.getProportionalColor(
+                    ContextCompat.getColor(this, R.color.status_bar_color),
+                    ColorUtils.getColorWithTranslateBrightness(color, -20),
+                    changingDistance,
+                    scrollPosition);
+            getWindow().setStatusBarColor(currentStatusBarColor);
         }
     }
 }

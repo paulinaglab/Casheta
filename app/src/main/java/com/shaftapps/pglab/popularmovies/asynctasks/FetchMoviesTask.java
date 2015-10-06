@@ -13,6 +13,8 @@ import com.shaftapps.pglab.popularmovies.utils.MovieDBResponseParser;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Class for movies fetching AsyncTasks.
@@ -20,6 +22,10 @@ import java.util.ArrayList;
  * Created by Paulina on 2015-09-01.
  */
 public class FetchMoviesTask extends BaseMovieDBTask {
+
+    // For this app version I always download same page count of
+    // most popular or highest rated movies.
+    private static final int PAGE_COUNT = 3;
 
     // URL constant parts
     private static final String SEARCH_METHOD = "discover";
@@ -29,6 +35,7 @@ public class FetchMoviesTask extends BaseMovieDBTask {
     private static final String VOTE_AVERAGE = "vote_average.desc";
     private static final String VOTE_MIN = "vote_count.gte";
     private static final String VOTE_MIN_VALUE = "1000";
+    private static final String PAGE = "page";
 
     private Context context;
     private DurationListener durationListener;
@@ -55,7 +62,11 @@ public class FetchMoviesTask extends BaseMovieDBTask {
     protected Boolean doInBackground(String[] params) {
         clearCachedMovies();
 
-        return super.doInBackground(params);
+        for (int page = 1; page <= PAGE_COUNT; page++)
+            if (!super.doInBackground(getUrlWithPage(page)))
+                return false;
+
+        return true;
     }
 
     @Override
@@ -114,6 +125,13 @@ public class FetchMoviesTask extends BaseMovieDBTask {
         }
     }
 
+    private String getUrlWithPage(int page) {
+        return Uri.parse(getUrl())
+                .buildUpon()
+                .appendQueryParameter(PAGE, Integer.toString(page))
+                .build().toString();
+    }
+
 
     /**
      * Method returning url with query to the API.
@@ -125,14 +143,12 @@ public class FetchMoviesTask extends BaseMovieDBTask {
             case MOST_POPULAR:
                 return getUriBuilder()
                         .appendQueryParameter(SORT_BY, POPULARITY)
-                        .build()
-                        .toString();
+                        .build().toString();
             case HIGHEST_RATED:
                 return getUriBuilder()
                         .appendQueryParameter(SORT_BY, VOTE_AVERAGE)
                         .appendQueryParameter(VOTE_MIN, VOTE_MIN_VALUE)
-                        .build()
-                        .toString();
+                        .build().toString();
             default:
                 throw new UnsupportedOperationException(
                         "Unsupported query type: " + queryType.name());
@@ -159,18 +175,9 @@ public class FetchMoviesTask extends BaseMovieDBTask {
     protected void saveToDatabase(ArrayList<ContentValues> contentValues) {
         // Insert new data from API to database or
         // update if they're used by another category
-        for (ContentValues movie : contentValues) {
-            Uri insertUri = context.getContentResolver().insert(
-                    MovieContract.MovieEntry.CONTENT_URI,
-                    movie);
-            if (insertUri == null) {
-                context.getContentResolver().update(
-                        MovieContract.MovieEntry.CONTENT_URI,
-                        movie,
-                        MovieContract.MovieEntry._ID + "=?",
-                        new String[]{movie.getAsString(MovieContract.MovieEntry._ID)});
-            }
-        }
+        context.getContentResolver().bulkInsert(
+                MovieContract.MovieEntry.CONTENT_URI,
+                contentValues.toArray(new ContentValues[contentValues.size()]));
     }
 
     public void setDurationListener(DurationListener listener) {

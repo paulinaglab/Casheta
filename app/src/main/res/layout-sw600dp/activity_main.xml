@@ -28,7 +28,8 @@
         android:layout_height="match_parent"
         android:layout_weight="3"
         app:cardBackgroundColor="@color/details_card_view_bg"
-        android:layout_marginRight="@dimen/detail_card_gutters">
+        android:layout_marginRight="@dimen/detail_card_gutters"
+        android:translationZ="4dp">
 
         <FrameLayout
             android:id="@+id/movie_detail_container"

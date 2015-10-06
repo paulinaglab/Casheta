@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -70,7 +69,7 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
         recyclerView.setAdapter(moviesCursorAdapter);
 
         // ProgressBar initialization
-        progressBar = (ProgressBar) fragmentView.findViewById(R.id.movies_progress_bar);
+        progressBar = (ProgressBar) fragmentView.findViewById(R.id.progress_bar);
 
         return fragmentView;
     }

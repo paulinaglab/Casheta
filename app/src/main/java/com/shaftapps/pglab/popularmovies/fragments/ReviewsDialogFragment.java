@@ -14,13 +14,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.adapters.ReviewsCursorAdapter;
 import com.shaftapps.pglab.popularmovies.widgets.ReviewItemSeparator;
+import com.shaftapps.pglab.popularmovies.widgets.ReviewsLinearLayoutManager;
 
 /**
  * Created by Paulina on 2015-09-29.
@@ -34,6 +33,7 @@ public class ReviewsDialogFragment extends DialogFragment implements LoaderManag
     private Uri reviewsUri;
 
     private ReviewsCursorAdapter adapter;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,9 +51,11 @@ public class ReviewsDialogFragment extends DialogFragment implements LoaderManag
 
         // Recycler initialization
         RecyclerView recyclerView = (RecyclerView) fragmentView.findViewById(R.id.reviews_recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        ReviewsLinearLayoutManager layoutManager = new ReviewsLinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(layoutManager);
 
         adapter = new ReviewsCursorAdapter(getActivity(), savedInstanceState);
+        adapter.setOnItemSelectListener(layoutManager);
         recyclerView.setAdapter(adapter);
 
         recyclerView.addItemDecoration(

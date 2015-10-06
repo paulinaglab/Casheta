@@ -8,7 +8,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme.TranslucentStatusBar" >
 
         <provider
             android:authorities="@string/authority"
@@ -29,7 +29,7 @@
             android:theme="@style/AppTheme.DetailTheme"/>
 
         <activity android:name=".activities.ReviewsActivity"
-            android:theme="@style/AppTheme.DetailTheme"/>
+            android:theme="@style/AppTheme.ReviewTheme.TranslucentStatusBar"/>
 
     </application>
 

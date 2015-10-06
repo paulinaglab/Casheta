@@ -11,6 +11,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
@@ -20,10 +22,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -46,7 +45,9 @@ import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.activities.ReviewsActivity;
+import com.shaftapps.pglab.popularmovies.asynctasks.FetchMovieDetailsTask;
 import com.shaftapps.pglab.popularmovies.utils.DisplayUtils;
+import com.shaftapps.pglab.popularmovies.utils.TextLoader;
 import com.shaftapps.pglab.popularmovies.utils.YouTubeUriBuilder;
 import com.shaftapps.pglab.popularmovies.widgets.VideoItemDecoration;
 import com.shaftapps.pglab.popularmovies.adapters.VideosCursorAdapter;
@@ -56,6 +57,10 @@ import com.shaftapps.pglab.popularmovies.data.MovieContract;
 import com.shaftapps.pglab.popularmovies.utils.ColorUtils;
 import com.shaftapps.pglab.popularmovies.widgets.NotifyingScrollView;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
 /**
  * Fragment with details of specific movie.
  * <p/>
@@ -63,6 +68,8 @@ import com.shaftapps.pglab.popularmovies.widgets.NotifyingScrollView;
  */
 public class DetailFragment extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor>, VideosCursorAdapter.OnItemClickListener, View.OnClickListener {
+
+    private static final String GENERATED_COLOR_KEY = "generated_color";
 
     private static final int MOVIE_LOADER_ID = 1;
     private static final int REVIEW_LOADER_ID = 2;
@@ -79,11 +86,12 @@ public class DetailFragment extends Fragment
             MovieContract.MovieEntry.COLUMN_POSTER_URL,
             MovieContract.MovieEntry.COLUMN_BACKDROP_URL};
 
+    private static final int RATE_COLOR_TRANSLATION = -10;
+
     private Uri movieUri;
     private Uri reviewsUri;
 
     private Cursor movieCursor;
-    private Cursor reviewsCursor;
 
     private OnActionBarParamsChangedListener onActionBarParamsChangedListener;
 
@@ -91,29 +99,33 @@ public class DetailFragment extends Fragment
     private View titlesWrapper;
     private View rateWrapper;
     private NotifyingScrollView notifyingScrollView;
+    // Section: Rich Content (top part)
+    private ImageView posterImageView;
+    private ImageView backdropImageView;
     private TextView titleTextView;
     private TextView originalTitleTextView;
     private TextView rateTextView;
-    private TextView overviewTextView;
+    // Section: Basic Info
     private TextView releaseDate;
     private TextView genreTextView;
     private TextView countryTextView;
-    private ImageView posterImageView;
-    private ImageView backdropImageView;
-    // Review section
+    // Section: Overview
+    private TextView overviewTextView;
+    // Section: Reviews
     private TextView reviewSubheaderTextView;
     private View reviewEmptyStateView;
     private View reviewItemLayout;
     private TextView reviewAuthorNameTextView;
     private TextView reviewContentTextView;
     private Button reviewShowMoreButton;
-    // Video section
+    // Section: Videos
     private RecyclerView videoRecyclerView;
     private VideosCursorAdapter videosAdapter;
 
     private ViewTreeObserver.OnGlobalLayoutListener ratioWrapperOnGlobalLayoutListener;
-    private int generatedColor;
+    private int generatedColor = -1;
     private boolean tablet;
+    private String placeholderText;
 
 
     //
@@ -130,6 +142,10 @@ public class DetailFragment extends Fragment
                         ContentUris.parseId(movieUri));
         }
 
+        if (savedInstanceState != null) {
+            generatedColor = savedInstanceState.getInt(GENERATED_COLOR_KEY, -1);
+        }
+
         View fragmentView = inflater.inflate(R.layout.fragment_detail, container, false);
 
         // Fields initialization
@@ -137,9 +153,6 @@ public class DetailFragment extends Fragment
 
         // Setting height to layout ratioWrapper
         fitRatioWrapperHeight();
-
-        // Setting data from arguments
-        insertDataIntoUI();
 
         // Setting ScrollView listener
         initScrollViewListener();
@@ -151,6 +164,8 @@ public class DetailFragment extends Fragment
 
         // Checking device is phone or tablet
         tablet = DisplayUtils.isSmallestWidth600dp(getActivity());
+
+        placeholderText = getResources().getString(R.string.details_no_info_placeholder);
 
         return fragmentView;
     }
@@ -179,6 +194,10 @@ public class DetailFragment extends Fragment
         super.onStart();
         if (movieUri != null) {
             long movieId = ContentUris.parseId(movieUri);
+            FetchMovieDetailsTask fetchMovieDetailsTask =
+                    new FetchMovieDetailsTask(getActivity(), movieId);
+            fetchMovieDetailsTask.execute();
+
             FetchReviewsTask fetchReviewsTask =
                     new FetchReviewsTask(getActivity(), movieId);
             fetchReviewsTask.execute();
@@ -201,6 +220,16 @@ public class DetailFragment extends Fragment
                         .removeGlobalOnLayoutListener(ratioWrapperOnGlobalLayoutListener);
             }
         super.onDestroyView();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        // Saving color once generated.
+        // I want to keep it after rotating.
+        if (generatedColor != -1)
+            outState.putInt(GENERATED_COLOR_KEY, generatedColor);
+
+        super.onSaveInstanceState(outState);
     }
 
 
@@ -324,24 +353,28 @@ public class DetailFragment extends Fragment
         rateWrapper = fragmentView.findViewById(R.id.detail_rate_wrapper);
         notifyingScrollView = (NotifyingScrollView)
                 fragmentView.findViewById(R.id.detail_notifying_scroll_view);
+
+        // Section: Rich Content
+        posterImageView = (ImageView) fragmentView.findViewById(R.id.detail_poster_image);
+        backdropImageView = (ImageView) fragmentView.findViewById(R.id.detail_photo_image);
         titleTextView = (TextView) fragmentView.findViewById(R.id.detail_movie_title);
         originalTitleTextView = (TextView)
                 fragmentView.findViewById(R.id.detail_movie_original_title);
         rateTextView = (TextView) fragmentView.findViewById(R.id.detail_rate_text_view);
+        // Section: Overview
         overviewTextView = (TextView) fragmentView.findViewById(R.id.detail_overview);
+        // Section: Basic Info
         releaseDate = (TextView) fragmentView.findViewById(R.id.detail_release_date_text_view);
         genreTextView = (TextView) fragmentView.findViewById(R.id.detail_genres_text_view);
         countryTextView = (TextView) fragmentView.findViewById(R.id.detail_countries_text_view);
-        posterImageView = (ImageView) fragmentView.findViewById(R.id.detail_poster_image);
-        backdropImageView = (ImageView) fragmentView.findViewById(R.id.detail_photo_image);
-        // Review section
+        // Section: Reviews
         reviewSubheaderTextView = (TextView) fragmentView.findViewById(R.id.detail_review_subheader_text_view);
         reviewEmptyStateView = fragmentView.findViewById(R.id.detail_review_empty_state_view);
         reviewItemLayout = fragmentView.findViewById(R.id.detail_review_item_view);
         reviewAuthorNameTextView = (TextView) reviewItemLayout.findViewById(R.id.review_author_name_view);
         reviewContentTextView = (TextView) reviewItemLayout.findViewById(R.id.review_content_view);
         reviewShowMoreButton = (Button) fragmentView.findViewById(R.id.detail_reviews_show_more_button);
-        // Video section
+        // Section: Videos
         videoRecyclerView = (RecyclerView) fragmentView.findViewById(R.id.detail_video_recycler_view);
     }
 
@@ -355,7 +388,8 @@ public class DetailFragment extends Fragment
             @Override
             public void onGlobalLayout() {
                 int screenHeight = getResources().getDisplayMetrics().heightPixels -
-                        getResources().getDimensionPixelSize(R.dimen.status_bar_height);
+                        getResources().getDimensionPixelSize(R.dimen.status_bar_height) +
+                        getResources().getDimensionPixelSize(R.dimen.translucent_status_bar_padding);
                 ratioWrapper.setLayoutParams(new LinearLayout.LayoutParams(
                         ratioWrapper.getWidth(),
                         Math.min(ratioWrapper.getWidth(), screenHeight)));
@@ -386,7 +420,7 @@ public class DetailFragment extends Fragment
         if (onActionBarParamsChangedListener != null) {
             onActionBarParamsChangedListener.onParamsChanged(
                     ratioWrapper.getHeight(),
-                    generatedColor,
+                    generatedColor != -1 ? generatedColor : ContextCompat.getColor(getActivity(), R.color.main_toolbar_bg),
                     notifyingScrollView.getScrollY());
         }
     }
@@ -402,110 +436,169 @@ public class DetailFragment extends Fragment
         videoRecyclerView.addItemDecoration(new VideoItemDecoration(spaceBetweenPx));
     }
 
-    private void insertDataIntoUI() {
-        if (movieCursor != null && movieCursor.moveToFirst()) {
+
+    //
+    //  LOADING DATA HELPER METHODS
+    //
+
+    private void loadMovieDetails(Cursor oldMovieCursor, Cursor newMovieCursor) {
+        if (newMovieCursor != null && newMovieCursor.moveToFirst()) {
 
             // Notify ActionBar that title is loaded.
             if (onActionBarParamsChangedListener != null) {
-                onActionBarParamsChangedListener.onTitleLoaded(movieCursor.getString(
-                        movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
+                onActionBarParamsChangedListener.onTitleLoaded(newMovieCursor.getString(
+                        newMovieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
             }
 
-            // Setting text data
-            titleTextView.setText(movieCursor.getString(
-                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
-            originalTitleTextView.setText(movieCursor.getString(
-                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE)));
-            rateTextView.setText(getString(R.string.details_rate_format, movieCursor.getDouble(
-                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_AVERAGE_RATE))));
-            overviewTextView.setText(movieCursor.getString(
-                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)));
-            releaseDate.setText(movieCursor.getString(
-                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)));
-            genreTextView.setText(movieCursor.getString(
-                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_GENRE)));
-            countryTextView.setText(movieCursor.getString(
-                    movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_COUNTRY)));
+            loadSectionRichContent(oldMovieCursor, newMovieCursor);
 
-            // Loading images and color generation
-            loadImagesAndColors();
+            loadSectionOverview(newMovieCursor);
+
+            loadSectionBasicInfo(newMovieCursor);
         }
     }
 
-    private void loadImagesAndColors() {
-        // Creating listener for palette
-        final Palette.PaletteAsyncListener paletteAsyncListener = new Palette.PaletteAsyncListener() {
-            @Override
-            public void onGenerated(Palette palette) {
-                if (getActivity() == null)
-                    return;
+    private void loadSectionRichContent(@Nullable Cursor oldMovieCursor, @NonNull Cursor newMovieCursor) {
+        // Setting text data
+        TextLoader.loadText(titleTextView,
+                newMovieCursor, MovieContract.MovieEntry.COLUMN_TITLE);
+        TextLoader.loadText(originalTitleTextView,
+                newMovieCursor, MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE);
+        rateTextView.setText(getString(R.string.details_rate_format, newMovieCursor.getDouble(
+                newMovieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_AVERAGE_RATE))));
 
-                generatedColor = palette.getDarkVibrantColor(
-                        ContextCompat.getColor(getActivity(), R.color.details_rate_not_initialized_bg));
+        // Loading images and color generation
+        String newPosterUrl = newMovieCursor.getString(
+                newMovieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_URL));
+        String newBackdropUrl = newMovieCursor.getString(
+                newMovieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_URL));
 
-                int duration = 175;
-                int titleStartDelay = duration / 3;
+        // Applying new images only if they actually different.
+        // Thanks of that I avoid unnecessary reloading.
+        if (oldMovieCursor == null || !oldMovieCursor.moveToFirst()) {
+            loadPosterAndColors(newPosterUrl);
+            loadBackdrop(newBackdropUrl);
+        } else {
+            // Update poster only if poster_url has changed.
+            String oldPosterUrl = oldMovieCursor.getString(
+                    oldMovieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_URL));
 
-                // Animating titles' wrapper background
-                ObjectAnimator titleBgAnimator = ObjectAnimator.ofInt(
-                        titlesWrapper,
-                        "backgroundColor",
-                        ContextCompat.getColor(getActivity(), R.color.details_title_not_initialized_bg),
-                        generatedColor);
-                titleBgAnimator.setEvaluator(new ArgbEvaluator());
-                titleBgAnimator.setDuration(duration - titleStartDelay);
-                titleBgAnimator.setStartDelay(titleStartDelay);
-                titleBgAnimator.setInterpolator(new AccelerateInterpolator());
-                titleBgAnimator.start();
+            if (!newPosterUrl.equals(oldPosterUrl))
+                loadPosterAndColors(newPosterUrl);
 
-                // Animating rate's wrapper background
-                ObjectAnimator rateBgAnimator = ObjectAnimator.ofInt(
-                        rateWrapper,
-                        "backgroundColor",
-                        ContextCompat.getColor(getActivity(), R.color.details_rate_not_initialized_bg),
-                        ColorUtils.getColorWithTranslateBrightness(generatedColor, -10));
-                rateBgAnimator.setEvaluator(new ArgbEvaluator());
-                rateBgAnimator.setDuration(duration);
-                rateBgAnimator.setInterpolator(new AccelerateInterpolator());
-                rateBgAnimator.start();
+            // Update backdrop only if backdrop_url has changed.
+            String oldBackdropUrl = oldMovieCursor.getString(
+                    oldMovieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_URL));
 
-                notifyActionBarParamsChanged();
-            }
-        };
+            if (!newBackdropUrl.equals(oldBackdropUrl))
+                loadBackdrop(newBackdropUrl);
 
-        // Creating Glide's object, which allows starting Palette generation when the image is loaded
-        GlideDrawableImageViewTarget posterGlideDrawable = new GlideDrawableImageViewTarget(posterImageView) {
-            @Override
-            public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> animation) {
-                super.onResourceReady(resource, animation);
-                Palette.from(((GlideBitmapDrawable) resource).getBitmap()).generate(paletteAsyncListener);
-            }
-        };
+        }
 
-        // Poster loading
-        Glide.with(getActivity())
-                .load(movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_URL)))
-                .fitCenter()
-                .placeholder(R.color.grid_placeholder_bg)
-                .into(posterGlideDrawable);
+    }
 
+    private void loadPosterAndColors(String url) {
+        if (generatedColor != -1) {
+            titlesWrapper.setBackgroundColor(generatedColor);
+            rateWrapper.setBackgroundColor(
+                    ColorUtils.getColorWithTranslateBrightness(generatedColor, RATE_COLOR_TRANSLATION));
+
+            // Poster loading
+            Glide.with(getActivity())
+                    .load(url)
+                    .fitCenter()
+                    .placeholder(R.color.grid_placeholder_bg)
+                    .into(posterImageView);
+        } else {
+            // Creating listener for palette
+            final Palette.PaletteAsyncListener paletteAsyncListener = new Palette.PaletteAsyncListener() {
+                @Override
+                public void onGenerated(Palette palette) {
+                    if (getActivity() == null)
+                        return;
+
+                    generatedColor = palette.getDarkVibrantColor(
+                            ContextCompat.getColor(getActivity(), R.color.details_rate_not_initialized_bg));
+
+                    int duration = 175;
+                    int titleStartDelay = duration / 3;
+
+                    // Animating titles' wrapper background
+                    ObjectAnimator titleBgAnimator = ObjectAnimator.ofInt(
+                            titlesWrapper,
+                            "backgroundColor",
+                            ContextCompat.getColor(getActivity(), R.color.details_title_not_initialized_bg),
+                            generatedColor);
+                    titleBgAnimator.setEvaluator(new ArgbEvaluator());
+                    titleBgAnimator.setDuration(duration - titleStartDelay);
+                    titleBgAnimator.setStartDelay(titleStartDelay);
+                    titleBgAnimator.setInterpolator(new AccelerateInterpolator());
+                    titleBgAnimator.start();
+
+                    // Animating rate's wrapper background
+                    ObjectAnimator rateBgAnimator = ObjectAnimator.ofInt(
+                            rateWrapper,
+                            "backgroundColor",
+                            ContextCompat.getColor(getActivity(), R.color.details_rate_not_initialized_bg),
+                            ColorUtils.getColorWithTranslateBrightness(generatedColor, RATE_COLOR_TRANSLATION));
+                    rateBgAnimator.setEvaluator(new ArgbEvaluator());
+                    rateBgAnimator.setDuration(duration);
+                    rateBgAnimator.setInterpolator(new AccelerateInterpolator());
+                    rateBgAnimator.start();
+
+                    notifyActionBarParamsChanged();
+                }
+            };
+
+            // Creating Glide's object, which allows starting Palette generation when the image is loaded
+            GlideDrawableImageViewTarget posterGlideDrawable = new GlideDrawableImageViewTarget(posterImageView) {
+                @Override
+                public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> animation) {
+                    super.onResourceReady(resource, animation);
+                    Palette.from(((GlideBitmapDrawable) resource).getBitmap()).generate(paletteAsyncListener);
+                }
+            };
+
+            // Poster loading
+            Glide.with(getActivity())
+                    .load(url)
+                    .fitCenter()
+                    .placeholder(R.color.grid_placeholder_bg)
+                    .into(posterGlideDrawable);
+        }
+    }
+
+    private void loadBackdrop(String url) {
         // Background photo (backdrop) loading
         Glide.with(getActivity())
-                .load(movieCursor.getString(movieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_URL)))
+                .load(url)
                 .fitCenter()
                 .into(backdropImageView);
     }
 
-    private void insertReview() {
+    private void loadSectionOverview(@NonNull Cursor movieCursor) {
+        TextLoader.loadText(overviewTextView,
+                movieCursor, MovieContract.MovieEntry.COLUMN_OVERVIEW);
+    }
+
+    private void loadSectionBasicInfo(@NonNull Cursor movieCursor) {
+        TextLoader.loadDate(releaseDate,
+                movieCursor, MovieContract.MovieEntry.COLUMN_RELEASE_DATE);
+        TextLoader.loadText(genreTextView,
+                movieCursor, MovieContract.MovieEntry.COLUMN_GENRE, placeholderText);
+        TextLoader.loadText(countryTextView,
+                movieCursor, MovieContract.MovieEntry.COLUMN_COUNTRY, placeholderText);
+    }
+
+    private void loadSectionReviews(@Nullable Cursor reviewsCursor) {
         if (reviewsCursor != null && reviewsCursor.moveToFirst()) {
             reviewSubheaderTextView.setText(getString(R.string.details_reviews_label,
                     reviewsCursor.getCount()));
 
-            reviewAuthorNameTextView.setText(reviewsCursor.getString(
-                    reviewsCursor.getColumnIndex(MovieContract.ReviewEntry.COLUMN_AUTHOR)));
-
-            reviewContentTextView.setText(reviewsCursor.getString(
-                    reviewsCursor.getColumnIndex(MovieContract.ReviewEntry.COLUMN_CONTENT)));
+            TextLoader.loadText(reviewAuthorNameTextView,
+                    reviewsCursor, MovieContract.ReviewEntry.COLUMN_AUTHOR);
+            TextLoader.loadText(reviewContentTextView,
+                    reviewsCursor, MovieContract.ReviewEntry.COLUMN_CONTENT);
 
             reviewEmptyStateView.setVisibility(View.GONE);
             reviewItemLayout.setVisibility(View.VISIBLE);
@@ -527,6 +620,18 @@ public class DetailFragment extends Fragment
             reviewItemLayout.setVisibility(View.GONE);
             reviewShowMoreButton.setVisibility(View.GONE);
         }
+    }
+
+    private void loadSectionVideos(@Nullable Cursor videosCursor) {
+        videosAdapter.swapCursor(videosCursor);
+    }
+
+    public Uri getMovieUri() {
+        return movieUri;
+    }
+
+    public void reloadMovie() {
+        notifyingScrollView.smoothScrollTo(0, 0);
     }
 
 
@@ -564,15 +669,14 @@ public class DetailFragment extends Fragment
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         switch (loader.getId()) {
             case MOVIE_LOADER_ID:
+                loadMovieDetails(movieCursor, data);
                 movieCursor = data;
-                insertDataIntoUI();
                 break;
             case REVIEW_LOADER_ID:
-                reviewsCursor = data;
-                insertReview();
+                loadSectionReviews(data);
                 break;
             case VIDEO_LOADER_ID:
-                videosAdapter.swapCursor(data);
+                loadSectionVideos(data);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown loader id: " + loader.getId());
@@ -586,10 +690,10 @@ public class DetailFragment extends Fragment
                 movieCursor = null;
                 break;
             case REVIEW_LOADER_ID:
-                reviewsCursor = null;
+                // do nothing
                 break;
             case VIDEO_LOADER_ID:
-                videosAdapter.swapCursor(null);
+                loadSectionVideos(null);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown loader id: " + loader.getId());

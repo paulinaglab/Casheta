@@ -130,10 +130,10 @@ public class MovieProvider extends ContentProvider {
         // I assume that the most preferred video to share is any trailer.
         queryBuilder.appendWhere(
                 MovieContract.VideoEntry.COLUMN_MOVIE_ID + "=" +
-                uri.getPathSegments().get(MovieContract.PATH_TRAILER_MOVIE_ID_INDEX) +
-                " AND " +
-                MovieContract.VideoEntry.COLUMN_TYPE + "=\"" +
-                MovieDBApiKeys.VIDEO_TYPE_TRAILER + "\"");
+                        uri.getPathSegments().get(MovieContract.PATH_TRAILER_MOVIE_ID_INDEX) +
+                        " AND " +
+                        MovieContract.VideoEntry.COLUMN_TYPE + "=\"" +
+                        MovieDBApiKeys.VIDEO_TYPE_TRAILER + "\"");
 
         Cursor cursor = queryBuilder.query(movieDbHelper.getReadableDatabase(),
                 projection, selection, selectionArgs, null, null, sortOrder, "1");
@@ -268,6 +268,38 @@ public class MovieProvider extends ContentProvider {
             getContext().getContentResolver().notifyChange(uri, null);
         }
         return rowsUpdated;
+    }
+
+    @Override
+    public int bulkInsert(Uri uri, ContentValues[] values) {
+        SQLiteDatabase database = movieDbHelper.getWritableDatabase();
+
+        switch (uriMatcher.match(uri)) {
+            case CODE_MOVIES:
+                int updatedCount = 0;
+                database.beginTransaction();
+                try {
+                    for (ContentValues value : values) {
+                        try {
+                            database.insertOrThrow(MovieContract.MovieEntry.TABLE_NAME, null, value);
+                            updatedCount++;
+                        } catch (SQLException e) {
+                            updatedCount += database.update(
+                                    MovieContract.MovieEntry.TABLE_NAME,
+                                    value,
+                                    MovieContract.MovieEntry._ID + "=?",
+                                    new String[]{value.getAsString(MovieContract.MovieEntry._ID)});
+                        }
+                    }
+                    database.setTransactionSuccessful();
+                } finally {
+                    database.endTransaction();
+                }
+                getContext().getContentResolver().notifyChange(uri, null);
+                return updatedCount;
+            default:
+                throw new UnsupportedOperationException("Unsupported URI code: " + uri);
+        }
     }
 
     static UriMatcher buildUriMatcher() {

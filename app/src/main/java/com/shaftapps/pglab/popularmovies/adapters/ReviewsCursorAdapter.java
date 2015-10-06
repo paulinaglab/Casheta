@@ -25,6 +25,7 @@ public class ReviewsCursorAdapter extends CursorAdapter<ReviewsCursorAdapter.Rev
 
     protected Context context;
     private int expandedIndex = -1;
+    private OnItemSelectListener onItemSelectListener;
 
 
     public ReviewsCursorAdapter(Context context, Bundle savedInstanceState) {
@@ -70,6 +71,8 @@ public class ReviewsCursorAdapter extends CursorAdapter<ReviewsCursorAdapter.Rev
         }
         notifyItemChanged(oldExpanded);
 
+        if (onItemSelectListener != null)
+            onItemSelectListener.onItemSelect(clickedPos);
     }
 
     @Override
@@ -96,6 +99,9 @@ public class ReviewsCursorAdapter extends CursorAdapter<ReviewsCursorAdapter.Rev
 
     }
 
+    public void setOnItemSelectListener(OnItemSelectListener onItemSelectListener) {
+        this.onItemSelectListener = onItemSelectListener;
+    }
 
     public class ReviewItemViewHolder extends RecyclerView.ViewHolder {
 
@@ -107,5 +113,10 @@ public class ReviewsCursorAdapter extends CursorAdapter<ReviewsCursorAdapter.Rev
             authorName = (TextView) itemView.findViewById(R.id.review_author_name_view);
             content = (TextView) itemView.findViewById(R.id.review_content_view);
         }
+    }
+
+    public interface OnItemSelectListener {
+
+        void onItemSelect(int adapterPosition);
     }
 }
