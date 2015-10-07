@@ -564,6 +564,7 @@ public class DetailFragment extends Fragment
                     .load(url)
                     .fitCenter()
                     .placeholder(R.color.grid_placeholder_bg)
+                    .error(R.drawable.poster_error)
                     .into(posterGlideDrawable);
         }
     }
@@ -573,6 +574,7 @@ public class DetailFragment extends Fragment
         Glide.with(getActivity())
                 .load(url)
                 .fitCenter()
+                .error(R.drawable.backdrop_error)
                 .into(backdropImageView);
     }
 

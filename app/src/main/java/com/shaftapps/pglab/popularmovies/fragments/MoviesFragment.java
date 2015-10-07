@@ -40,6 +40,9 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
     private ProgressBar progressBar;
     private SortingMode sortingMode;
 
+    private FetchMoviesTask fetchMostPopularTask;
+    private FetchMoviesTask fetchHighestRatedTask;
+
     private Cursor mostPopularCursor;
     private Cursor highestRatedCursor;
     private Cursor favoriteCursor;
@@ -97,6 +100,15 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     @Override
+    public void onPause() {
+        if (fetchMostPopularTask != null)
+            fetchMostPopularTask.cancel(true);
+        if (fetchHighestRatedTask != null)
+            fetchHighestRatedTask.cancel(true);
+        super.onPause();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         movieSelectListener = null;
@@ -113,10 +125,10 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
         switch (sortingMode) {
             case MOST_POPULAR:
                 if (getLoaderManager().getLoader(MOST_POPULAR_LOADER_ID) == null) {
-                    FetchMoviesTask task = new FetchMoviesTask(getActivity(),
+                    fetchMostPopularTask = new FetchMoviesTask(getActivity(),
                             FetchMoviesTask.QueryType.MOST_POPULAR);
-                    task.setDurationListener(this);
-                    task.execute();
+                    fetchMostPopularTask.setDurationListener(this);
+                    fetchMostPopularTask.execute();
                 } else {
                     moviesCursorAdapter.swapCursor(mostPopularCursor);
                     updateGrid(scrollTop);
@@ -124,10 +136,10 @@ public class MoviesFragment extends Fragment implements LoaderManager.LoaderCall
                 break;
             case HIGHEST_RATED:
                 if (getLoaderManager().getLoader(HIGHEST_RATED_LOADER_ID) == null) {
-                    FetchMoviesTask task = new FetchMoviesTask(getActivity(),
+                    fetchHighestRatedTask = new FetchMoviesTask(getActivity(),
                             FetchMoviesTask.QueryType.HIGHEST_RATED);
-                    task.setDurationListener(this);
-                    task.execute();
+                    fetchHighestRatedTask.setDurationListener(this);
+                    fetchHighestRatedTask.execute();
                 } else {
                     moviesCursorAdapter.swapCursor(highestRatedCursor);
                     updateGrid(scrollTop);

@@ -7,10 +7,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
+        android:paddingBottom="2dp"
         android:paddingLeft="@dimen/movie_grid_horizontal_padding"
         android:paddingRight="@dimen/movie_grid_horizontal_padding"
         android:paddingTop="2dp"
-        android:paddingBottom="2dp"
         tools:context="com.shaftapps.pglab.popularmovies.fragments.MoviesFragment"
         tools:listitem="@layout/movie_grid_item" />
 
@@ -20,6 +20,61 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:visibility="gone"/>
+        android:visibility="gone" />
+
+    <!-- Empty state: can't load movies -->
+    <LinearLayout
+        android:id="@+id/movies_empty_state_loading_error"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:weightSum="5">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:scaleType="centerCrop"
+            android:src="@drawable/offline_error" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/error_empty_movies" />
+
+        <Button
+            android:id="@+id/movies_try_again_loading_button"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/error_empty_movies_try_again_button" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/movies_empty_state_no_favorite_movies"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:weightSum="5">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="2"
+            android:scaleType="centerInside"
+            android:src="@drawable/empty_favorites" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/error_empty_favorites_info" />
+
+    </LinearLayout>
 
 </RelativeLayout>

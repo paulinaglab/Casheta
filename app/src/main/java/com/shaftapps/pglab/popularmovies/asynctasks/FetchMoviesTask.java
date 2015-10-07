@@ -71,6 +71,9 @@ public class FetchMoviesTask extends BaseMovieDBTask {
 
     @Override
     protected void onPostExecute(Boolean success) {
+        if (isCancelled())
+            return;
+
         if (durationListener != null)
             durationListener.onTaskEnd(queryType);
 

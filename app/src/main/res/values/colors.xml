@@ -4,18 +4,21 @@
     <color name="secondary_text">#b2ffffff</color>
     <color name="separator">#1effffff</color>
 
-    <!-- Toolbar & status bar: Main -->
-    <color name="main_toolbar_bg">#181818</color>
-    <color name="main_status_bar_bg">#070707</color>
-
     <color name="window_bg">#212121</color>
     <color name="accent_color">#ffFFC400</color>
+
+
+    <!-- Toolbar & status bar: Main -->
+    <color name="main_toolbar_bg">#414141</color>
+    <color name="main_status_bar_bg">#333333</color>
+
 
     <!-- Toolbar & status bar: Details -->
     <color name="status_bar_color">#88000000</color>
     <color name="toolbar_gradient_start_color">#66000000</color>
 
     <color name="details_card_view_bg">#343434</color>
+
 
     <!-- Toolbar & status bar: Reviews -->
     <color name="reviews_toolbar_color">#e1a700</color>

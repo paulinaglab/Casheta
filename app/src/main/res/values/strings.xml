@@ -3,6 +3,9 @@
     <string name="app_hashtag">#PopularMoviesApp</string>
 
     <string name="error_fetching_movies">Failed to download</string>
+    <string name="error_empty_movies">Can\'t load movies</string>
+    <string name="error_empty_movies_try_again_button">Try again</string>
+    <string name="error_empty_favorites_info">You have no favorite movies</string>
 
     <!-- Detail Fragment layout -->
     <string name="details_rate_format" translatable="false">%.1f/10</string>
