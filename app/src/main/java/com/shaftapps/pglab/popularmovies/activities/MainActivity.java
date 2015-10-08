@@ -3,18 +3,20 @@ package com.shaftapps.pglab.popularmovies.activities;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.shaftapps.pglab.popularmovies.Keys;
-import com.shaftapps.pglab.popularmovies.fragments.DetailFragment;
-import com.shaftapps.pglab.popularmovies.fragments.MoviesFragment;
 import com.shaftapps.pglab.popularmovies.R;
+import com.shaftapps.pglab.popularmovies.adapters.MovieCategoryPagerAdapter;
+import com.shaftapps.pglab.popularmovies.fragments.BaseMoviesCategoryFragment;
+import com.shaftapps.pglab.popularmovies.fragments.DetailFragment;
 import com.shaftapps.pglab.popularmovies.utils.DisplayUtils;
 
 /**
@@ -22,16 +24,14 @@ import com.shaftapps.pglab.popularmovies.utils.DisplayUtils;
  * <p/>
  * Created by Paulina on 2015-08-30.
  */
-public class MainActivity extends DetailFragmentActivity implements MoviesFragment.OnMovieSelectListener,
-        AdapterView.OnItemSelectedListener {
+public class MainActivity extends DetailFragmentActivity implements BaseMoviesCategoryFragment.OnMovieSelectListener {
 
-    private static final String SORTING_MODE_KEY = "sorting_mode_key";
     private static final String DETAIL_FRAGMENT_TAG = "detail_fragment_tag";
 
-    private Spinner sortModeSpinner;
     private Toolbar toolbar;
-    private MoviesFragment moviesFragment;
-    private MoviesFragment.SortingMode sortingMode;
+    private ViewPager viewPager;
+    private TabLayout tabLayout;
+
     private boolean twoPane;
 
 
@@ -46,15 +46,7 @@ public class MainActivity extends DetailFragmentActivity implements MoviesFragme
 
         // Setting custom toolbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("");
         setSupportActionBar(toolbar);
-
-        // Initialization of spinner with sorting modes
-        initSpinner();
-
-        // Initialization of MainActivity's static fragment
-        moviesFragment = (MoviesFragment)
-                getSupportFragmentManager().findFragmentById(R.id.fragment_movies);
 
         // Checking MainActivity is two pane (ie. sw600dp) layout or not
         twoPane = DisplayUtils.isSmallestWidth600dp(this);
@@ -67,26 +59,12 @@ public class MainActivity extends DetailFragmentActivity implements MoviesFragme
             Toolbar detailSubToolbar = (Toolbar) findViewById(R.id.detail_toolbar);
             bindToolbarWithDetailFragment(detailSubToolbar);
         }
-    }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        // Setting default (first) option of sorting movies if there is no saved data
-        // or loading saved one.
-        if (savedInstanceState == null) {
-            sortingMode = MoviesFragment.SortingMode.MOST_POPULAR;
-            notifySortingModeSet(false);
-        } else {
-            sortingMode = (MoviesFragment.SortingMode) savedInstanceState.getSerializable(SORTING_MODE_KEY);
-            notifySortingModeSet(false);
-        }
-    }
+        viewPager = (ViewPager) findViewById(R.id.main_view_pager);
+        viewPager.setAdapter(new MovieCategoryPagerAdapter(this, getSupportFragmentManager()));
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(SORTING_MODE_KEY, sortingMode);
-        super.onSaveInstanceState(outState);
+        tabLayout = (TabLayout) findViewById(R.id.main_tab_layout);
+        tabLayout.setupWithViewPager(viewPager);
     }
 
 
@@ -114,28 +92,6 @@ public class MainActivity extends DetailFragmentActivity implements MoviesFragme
     //
     //  INITIALIZATION HELPER METHODS
     //
-
-    private void initSpinner() {
-        sortModeSpinner = (Spinner) toolbar.findViewById(R.id.sort_mode_spinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.sorting_modes, R.layout.sort_mode_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        sortModeSpinner.setAdapter(adapter);
-        sortModeSpinner.setOnItemSelectedListener(this);
-    }
-
-
-    //
-    //  OTHER HELPER METHODS
-    //
-
-    /**
-     * Method called when a selected sorting mode should be applied.
-     */
-    private void notifySortingModeSet(boolean scrollTop) {
-        moviesFragment.loadRequiredMovies(sortingMode, scrollTop);
-    }
 
 
     //
@@ -173,26 +129,6 @@ public class MainActivity extends DetailFragmentActivity implements MoviesFragme
             startActivity(intent);
         }
 
-    }
-
-
-    //
-    //  INTERFACE METHODS:
-    //  OnItemSelectedListener (Spinner)
-    //
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if (sortModeSpinner == parent) {
-            if (position != sortingMode.ordinal()) {
-                sortingMode = MoviesFragment.SortingMode.values()[position];
-                notifySortingModeSet(true);
-            }
-        }
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
     }
 
 }

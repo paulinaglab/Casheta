@@ -43,7 +43,7 @@ public abstract class DetailFragmentActivity extends AppCompatActivity implement
         return toolbar;
     }
 
-    public void showTitleIfOpaque(){
+    public void showTitleIfOpaque() {
         // Show title on toolbar when background is opaque.
         if ((toolbar.getBackground() instanceof ColorDrawable) &&
                 Color.alpha(((ColorDrawable) toolbar.getBackground()).getColor()) == 255)

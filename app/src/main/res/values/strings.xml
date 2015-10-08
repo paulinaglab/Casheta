@@ -3,7 +3,8 @@
     <string name="app_hashtag">#PopularMoviesApp</string>
 
     <string name="error_fetching_movies">Failed to download</string>
-    <string name="error_empty_movies">Can\'t load movies</string>
+    <string name="error_empty_movies_highest_rated">Can\'t load highest rated movies</string>
+    <string name="error_empty_movies_most_popular">Can\'t load most popular movies</string>
     <string name="error_empty_movies_try_again_button">Try again</string>
     <string name="error_empty_favorites_info">You have no favorite movies</string>
 

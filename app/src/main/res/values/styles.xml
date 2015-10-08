@@ -11,6 +11,10 @@
         <!-- Not supported on pre-Lollipop -->
     </style>
 
+    <style name="AppTheme.Toolbar.ScrollingOnPhones" parent="AppTheme">
+        <item name="layout_scrollFlags">scroll|enterAlways</item>
+    </style>
+
     <style name="AppTheme.Separator">
         <item name="android:layout_height">1dp</item>
         <item name="android:layout_width">match_parent</item>
@@ -23,6 +27,23 @@
         <item name="android:paddingRight">16dp</item>
     </style>
 
+    <style name="AppTheme.Movies.RecyclerView" parent="AppTheme">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:clipToPadding">false</item>
+        <item name="android:paddingLeft">@dimen/movie_grid_horizontal_padding</item>
+        <item name="android:paddingRight">@dimen/movie_grid_horizontal_padding</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+    </style>
+
+    <style name="AppTheme.Movies.ProgressBar" parent="@style/Widget.AppCompat.ProgressBar">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerInParent">true</item>
+    </style>
+
+    <!-- Movie details theme. -->
     <style name="AppTheme.DetailTheme" parent="AppTheme">
         <item name="android:windowBackground">@color/details_card_view_bg</item>
     </style>

@@ -1,8 +1,6 @@
 package com.shaftapps.pglab.popularmovies.utils;
 
 import android.content.Context;
-import android.graphics.Point;
-import android.util.DisplayMetrics;
 
 import com.shaftapps.pglab.popularmovies.R;
 

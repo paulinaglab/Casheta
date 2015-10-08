@@ -4,7 +4,9 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import static com.shaftapps.pglab.popularmovies.data.MovieContract.*;
+import static com.shaftapps.pglab.popularmovies.data.MovieContract.MovieEntry;
+import static com.shaftapps.pglab.popularmovies.data.MovieContract.ReviewEntry;
+import static com.shaftapps.pglab.popularmovies.data.MovieContract.VideoEntry;
 
 /**
  * Created by Paulina on 2015-09-11.

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <!-- Grid with movies -->
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/movies_recycler_view"
+        style="@style/AppTheme.Movies.RecyclerView" />
+
+
+    <!-- Empty state -->
+    <LinearLayout
+        android:id="@+id/movies_empty_state_no_favorite_movies"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:weightSum="4">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scaleType="centerInside"
+            android:src="@drawable/empty_favorites" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="16dp"
+            android:alpha="?android:disabledAlpha"
+            android:text="@string/error_empty_favorites_info" />
+
+    </LinearLayout>
+
+</RelativeLayout>

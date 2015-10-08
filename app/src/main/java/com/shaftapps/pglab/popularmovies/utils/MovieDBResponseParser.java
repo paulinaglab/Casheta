@@ -10,7 +10,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import static com.shaftapps.pglab.popularmovies.data.MovieContract.*;
+import static com.shaftapps.pglab.popularmovies.data.MovieContract.MovieEntry;
+import static com.shaftapps.pglab.popularmovies.data.MovieContract.ReviewEntry;
+import static com.shaftapps.pglab.popularmovies.data.MovieContract.VideoEntry;
 
 /**
  * Utility class parsing JSON response to list of MovieData.

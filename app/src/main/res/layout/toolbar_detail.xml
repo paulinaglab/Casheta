@@ -13,10 +13,10 @@
         android:id="@+id/detail_toolbar"
         android:layout_width="match_parent"
         android:layout_height="?android:actionBarSize"
-        android:background="@drawable/toolbar_gradient_bg"
+        android:clipToPadding="false"
         android:minHeight="?android:actionBarSize"
-        android:paddingRight="8dp"
         android:paddingLeft="@dimen/detail_toolbar_title_padding"
-        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+        android:paddingRight="8dp"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
 
 </FrameLayout>

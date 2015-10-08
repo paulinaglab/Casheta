@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme.Toolbar.ScrollingOnPhones" parent="AppTheme">
+        <!-- This styles.xml file is for sw600dp so there is no scrolling flags. -->
+        <item name="layout_scrollFlags" />
+    </style>
+
+</resources>

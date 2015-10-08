@@ -1,6 +1,5 @@
 package com.shaftapps.pglab.popularmovies.adapters;
 
-import android.content.ContentUris;
 import android.content.Context;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;

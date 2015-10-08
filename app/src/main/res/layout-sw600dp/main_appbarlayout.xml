@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/main_toolbar_bg"
+    android:translationZ="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/two_part_divider_above"
+        android:orientation="horizontal"
+        android:weightSum="@integer/main_pane_weight_sum">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            style="@style/AppTheme.Toolbar.ScrollingOnPhones"
+            android:layout_width="0dp"
+            android:layout_height="?android:actionBarSize"
+            android:layout_weight="@integer/main_left_pane_weight"
+            android:minHeight="?android:actionBarSize"
+            android:paddingLeft="@dimen/detail_toolbar_title_padding"
+            app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/two_part_divider_below"
+        android:orientation="horizontal"
+        android:weightSum="@integer/main_pane_weight_sum">
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_weight="@integer/main_left_pane_weight"
+            android:layout_height="wrap_content">
+
+            <android.support.design.widget.TabLayout
+                android:id="@+id/main_tab_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                app:tabMode="scrollable" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+</android.support.design.widget.AppBarLayout>

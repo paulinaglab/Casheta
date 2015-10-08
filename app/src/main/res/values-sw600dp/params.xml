@@ -3,4 +3,8 @@
 
     <bool name="sw600dp">true</bool>
 
+    <integer name="main_pane_weight_sum">5</integer>
+    <integer name="main_left_pane_weight">2</integer>
+    <integer name="main_right_pane_weight">3</integer>
+
 </resources>

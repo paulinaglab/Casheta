@@ -4,13 +4,13 @@
     <color name="secondary_text">#b2ffffff</color>
     <color name="separator">#1effffff</color>
 
-    <color name="window_bg">#212121</color>
+    <color name="window_bg">#171717</color>
     <color name="accent_color">#ffFFC400</color>
 
 
     <!-- Toolbar & status bar: Main -->
-    <color name="main_toolbar_bg">#414141</color>
-    <color name="main_status_bar_bg">#333333</color>
+    <color name="main_toolbar_bg">#282828</color>
+    <color name="main_status_bar_bg">#1e1e1e</color>
 
 
     <!-- Toolbar & status bar: Details -->

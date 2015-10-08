@@ -45,21 +45,17 @@ import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.activities.ReviewsActivity;
-import com.shaftapps.pglab.popularmovies.asynctasks.FetchMovieDetailsTask;
-import com.shaftapps.pglab.popularmovies.utils.DisplayUtils;
-import com.shaftapps.pglab.popularmovies.utils.TextLoader;
-import com.shaftapps.pglab.popularmovies.utils.YouTubeUriBuilder;
-import com.shaftapps.pglab.popularmovies.widgets.VideoItemDecoration;
 import com.shaftapps.pglab.popularmovies.adapters.VideosCursorAdapter;
+import com.shaftapps.pglab.popularmovies.asynctasks.FetchMovieDetailsTask;
 import com.shaftapps.pglab.popularmovies.asynctasks.FetchReviewsTask;
 import com.shaftapps.pglab.popularmovies.asynctasks.FetchVideosTask;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 import com.shaftapps.pglab.popularmovies.utils.ColorUtils;
+import com.shaftapps.pglab.popularmovies.utils.DisplayUtils;
+import com.shaftapps.pglab.popularmovies.utils.TextLoader;
+import com.shaftapps.pglab.popularmovies.utils.YouTubeUriBuilder;
 import com.shaftapps.pglab.popularmovies.widgets.NotifyingScrollView;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
+import com.shaftapps.pglab.popularmovies.widgets.VideoItemDecoration;
 
 /**
  * Fragment with details of specific movie.
@@ -476,39 +472,39 @@ public class DetailFragment extends Fragment
         // Applying new images only if they actually different.
         // Thanks of that I avoid unnecessary reloading.
         if (oldMovieCursor == null || !oldMovieCursor.moveToFirst()) {
-            loadPosterAndColors(newPosterUrl);
-            loadBackdrop(newBackdropUrl);
+            loadPoster(newPosterUrl);
+            loadBackdropAndColors(newBackdropUrl);
         } else {
             // Update poster only if poster_url has changed.
             String oldPosterUrl = oldMovieCursor.getString(
                     oldMovieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_URL));
 
             if (!newPosterUrl.equals(oldPosterUrl))
-                loadPosterAndColors(newPosterUrl);
+                loadPoster(newPosterUrl);
 
             // Update backdrop only if backdrop_url has changed.
             String oldBackdropUrl = oldMovieCursor.getString(
                     oldMovieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_BACKDROP_URL));
 
             if (!newBackdropUrl.equals(oldBackdropUrl))
-                loadBackdrop(newBackdropUrl);
+                loadBackdropAndColors(newBackdropUrl);
 
         }
 
     }
 
-    private void loadPosterAndColors(String url) {
+    private void loadBackdropAndColors(String url) {
         if (generatedColor != -1) {
             titlesWrapper.setBackgroundColor(generatedColor);
             rateWrapper.setBackgroundColor(
                     ColorUtils.getColorWithTranslateBrightness(generatedColor, RATE_COLOR_TRANSLATION));
 
-            // Poster loading
+            // Background photo (backdrop) loading
             Glide.with(getActivity())
                     .load(url)
                     .fitCenter()
-                    .placeholder(R.color.grid_placeholder_bg)
-                    .into(posterImageView);
+                    .error(R.drawable.backdrop_error)
+                    .into(backdropImageView);
         } else {
             // Creating listener for palette
             final Palette.PaletteAsyncListener paletteAsyncListener = new Palette.PaletteAsyncListener() {
@@ -551,7 +547,7 @@ public class DetailFragment extends Fragment
             };
 
             // Creating Glide's object, which allows starting Palette generation when the image is loaded
-            GlideDrawableImageViewTarget posterGlideDrawable = new GlideDrawableImageViewTarget(posterImageView) {
+            GlideDrawableImageViewTarget backdropGlideDrawable = new GlideDrawableImageViewTarget(backdropImageView) {
                 @Override
                 public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> animation) {
                     super.onResourceReady(resource, animation);
@@ -559,23 +555,23 @@ public class DetailFragment extends Fragment
                 }
             };
 
-            // Poster loading
+            // Background photo (backdrop) loading
             Glide.with(getActivity())
                     .load(url)
                     .fitCenter()
-                    .placeholder(R.color.grid_placeholder_bg)
-                    .error(R.drawable.poster_error)
-                    .into(posterGlideDrawable);
+                    .error(R.drawable.backdrop_error)
+                    .into(backdropGlideDrawable);
         }
     }
 
-    private void loadBackdrop(String url) {
-        // Background photo (backdrop) loading
+    private void loadPoster(String url) {
+        // Poster loading
         Glide.with(getActivity())
                 .load(url)
                 .fitCenter()
-                .error(R.drawable.backdrop_error)
-                .into(backdropImageView);
+                .placeholder(R.color.grid_placeholder_bg)
+                .error(R.drawable.poster_error)
+                .into(posterImageView);
     }
 
     private void loadSectionOverview(@NonNull Cursor movieCursor) {

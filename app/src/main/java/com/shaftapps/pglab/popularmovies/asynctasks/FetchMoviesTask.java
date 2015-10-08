@@ -13,8 +13,6 @@ import com.shaftapps.pglab.popularmovies.utils.MovieDBResponseParser;
 import org.json.JSONException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 
 /**
  * Class for movies fetching AsyncTasks.
@@ -74,11 +72,14 @@ public class FetchMoviesTask extends BaseMovieDBTask {
         if (isCancelled())
             return;
 
-        if (durationListener != null)
-            durationListener.onTaskEnd(queryType);
-
-        if (success == null || !success)
+        if (success == null || !success) {
             Toast.makeText(context, R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
+            if (durationListener != null)
+                durationListener.onTaskFailed(queryType);
+        } else {
+            if (durationListener != null)
+                durationListener.onTaskEnd(queryType);
+        }
     }
 
 
@@ -198,6 +199,8 @@ public class FetchMoviesTask extends BaseMovieDBTask {
         void onTaskStart();
 
         void onTaskEnd(QueryType queryType);
+
+        void onTaskFailed(QueryType queryType);
     }
 
 }

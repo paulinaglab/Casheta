@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- For tablets this padding absent, but it is needed to calculate height for ratioWrapper. -->
+    <dimen name="translucent_status_bar_padding">0dp</dimen>
+
+</resources>
