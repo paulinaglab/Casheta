@@ -28,8 +28,8 @@
     <!-- Placeholders -->
     <color name="grid_placeholder_bg">#424242</color>
 
-    <color name="details_rate_not_initialized_bg">#303030</color>
-    <color name="details_title_not_initialized_bg">#434343</color>
+    <color name="details_rate_not_initialized_bg">#232323</color>
+    <color name="details_title_not_initialized_bg">#282828</color>
 
     <color name="video_thumbnail_placeholder">#242424</color>
     <color name="video_container_bg">#1e000000</color>

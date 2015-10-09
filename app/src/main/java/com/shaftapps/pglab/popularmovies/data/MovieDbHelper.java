@@ -3,6 +3,7 @@ package com.shaftapps.pglab.popularmovies.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 
 import static com.shaftapps.pglab.popularmovies.data.MovieContract.MovieEntry;
 import static com.shaftapps.pglab.popularmovies.data.MovieContract.ReviewEntry;
@@ -61,10 +62,22 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                         VideoEntry.COLUMN_NAME + " TEXT NOT NULL, " +
                         VideoEntry.COLUMN_SITE + " TEXT NOT NULL, " +
                         VideoEntry.COLUMN_KEY + " TEXT NOT NULL, " +
-                        VideoEntry.COLUMN_TYPE + " TEXT NOT NULL, "  +
+                        VideoEntry.COLUMN_TYPE + " TEXT NOT NULL, " +
                         "FOREIGN KEY (" + VideoEntry.COLUMN_MOVIE_ID + ") REFERENCES " +
                         MovieEntry.TABLE_NAME + " (" + MovieEntry._ID + " ) ON DELETE CASCADE)";
         db.execSQL(SQL_CREATE_VIDEO_TABLE);
+    }
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        if (!db.isReadOnly()) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                db.setForeignKeyConstraintsEnabled(true);
+            } else {
+                db.execSQL("PRAGMA foreign_keys=ON");
+            }
+        }
     }
 
     @Override

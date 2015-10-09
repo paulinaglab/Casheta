@@ -17,11 +17,11 @@ public abstract class DetailFragmentActivity extends AppCompatActivity implement
     private String toolbarTitle;
 
     @Override
-    public void onParamsChanged(int ratioWrapperHeight, int color, int scrollPosition) {
+    public void onParamsChanged(int wrapperHeight, int color, int scrollPosition) {
         // Paint Toolbar background.
         // Alpha of the color depends on DetailFragment's scroll position - start as transparent
         // and ends as opaque.
-        float changingDistance = ratioWrapperHeight - toolbar.getHeight();
+        float changingDistance = wrapperHeight - toolbar.getHeight();
         int currentColor = ColorUtils.getColorWithProportionalAlpha(
                 color, changingDistance, scrollPosition);
         toolbar.setBackgroundColor(currentColor);

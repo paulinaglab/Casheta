@@ -33,7 +33,6 @@ import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -63,7 +62,8 @@ import com.shaftapps.pglab.popularmovies.widgets.VideoItemDecoration;
  * Created by Paulina on 2015-08-30.
  */
 public class DetailFragment extends Fragment
-        implements LoaderManager.LoaderCallbacks<Cursor>, VideosCursorAdapter.OnItemClickListener, View.OnClickListener {
+        implements LoaderManager.LoaderCallbacks<Cursor>, VideosCursorAdapter.OnItemClickListener,
+        View.OnClickListener {
 
     private static final String GENERATED_COLOR_KEY = "generated_color";
 
@@ -91,7 +91,7 @@ public class DetailFragment extends Fragment
 
     private OnActionBarParamsChangedListener onActionBarParamsChangedListener;
 
-    private ViewGroup ratioWrapper;
+    private ViewGroup smartHeightWrapper;
     private View titlesWrapper;
     private View rateWrapper;
     private NotifyingScrollView notifyingScrollView;
@@ -118,7 +118,7 @@ public class DetailFragment extends Fragment
     private RecyclerView videoRecyclerView;
     private VideosCursorAdapter videosAdapter;
 
-    private ViewTreeObserver.OnGlobalLayoutListener ratioWrapperOnGlobalLayoutListener;
+    private ViewTreeObserver.OnGlobalLayoutListener smartHeightWrapperOnGlobalLayoutListener;
     private int generatedColor = -1;
     private boolean tablet;
     private String placeholderText;
@@ -147,8 +147,8 @@ public class DetailFragment extends Fragment
         // Fields initialization
         initFields(fragmentView);
 
-        // Setting height to layout ratioWrapper
-        fitRatioWrapperHeight();
+        // Setting height to layout smartHeightWrapper
+        initSmartHeightWrapperListener();
 
         // Setting ScrollView listener
         initScrollViewListener();
@@ -206,14 +206,14 @@ public class DetailFragment extends Fragment
 
     @Override
     public void onDestroyView() {
-        if (ratioWrapperOnGlobalLayoutListener != null)
+        if (smartHeightWrapperOnGlobalLayoutListener != null)
             //TODO: remove it in a method
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                ratioWrapper.getViewTreeObserver()
-                        .removeOnGlobalLayoutListener(ratioWrapperOnGlobalLayoutListener);
+                smartHeightWrapper.getViewTreeObserver()
+                        .removeOnGlobalLayoutListener(smartHeightWrapperOnGlobalLayoutListener);
             } else {
-                ratioWrapper.getViewTreeObserver()
-                        .removeGlobalOnLayoutListener(ratioWrapperOnGlobalLayoutListener);
+                smartHeightWrapper.getViewTreeObserver()
+                        .removeGlobalOnLayoutListener(smartHeightWrapperOnGlobalLayoutListener);
             }
         super.onDestroyView();
     }
@@ -344,7 +344,7 @@ public class DetailFragment extends Fragment
     //
 
     private void initFields(View fragmentView) {
-        ratioWrapper = (ViewGroup) fragmentView.findViewById(R.id.detail_ratio_wrapper);
+        smartHeightWrapper = (ViewGroup) fragmentView.findViewById(R.id.smart_height_wrapper);
         titlesWrapper = fragmentView.findViewById(R.id.detail_titles_wrapper);
         rateWrapper = fragmentView.findViewById(R.id.detail_rate_wrapper);
         notifyingScrollView = (NotifyingScrollView)
@@ -375,32 +375,23 @@ public class DetailFragment extends Fragment
     }
 
 
-    /**
-     * This method fits height of top part layout (with title, poster and backdrop).
-     */
-    private void fitRatioWrapperHeight() {
-        ViewTreeObserver ratioWrapperTreeObserver = ratioWrapper.getViewTreeObserver();
-        ratioWrapperOnGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+    private void initSmartHeightWrapperListener() {
+        ViewTreeObserver smartHeightWrapperTreeObserver = smartHeightWrapper.getViewTreeObserver();
+        smartHeightWrapperOnGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                int screenHeight = getResources().getDisplayMetrics().heightPixels -
-                        getResources().getDimensionPixelSize(R.dimen.status_bar_height) +
-                        getResources().getDimensionPixelSize(R.dimen.translucent_status_bar_padding);
-                ratioWrapper.setLayoutParams(new LinearLayout.LayoutParams(
-                        ratioWrapper.getWidth(),
-                        Math.min(ratioWrapper.getWidth(), screenHeight)));
                 notifyActionBarParamsChanged();
 
-                ViewTreeObserver viewTreeObserver = ratioWrapper.getViewTreeObserver();
+                ViewTreeObserver viewTreeObserver = smartHeightWrapper.getViewTreeObserver();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     viewTreeObserver.removeOnGlobalLayoutListener(this);
                 } else {
                     viewTreeObserver.removeGlobalOnLayoutListener(this);
                 }
-                ratioWrapperOnGlobalLayoutListener = null;
+                smartHeightWrapperOnGlobalLayoutListener = null;
             }
         };
-        ratioWrapperTreeObserver.addOnGlobalLayoutListener(ratioWrapperOnGlobalLayoutListener);
+        smartHeightWrapperTreeObserver.addOnGlobalLayoutListener(smartHeightWrapperOnGlobalLayoutListener);
     }
 
     private void initScrollViewListener() {
@@ -415,8 +406,8 @@ public class DetailFragment extends Fragment
     private void notifyActionBarParamsChanged() {
         if (onActionBarParamsChangedListener != null) {
             onActionBarParamsChangedListener.onParamsChanged(
-                    ratioWrapper.getHeight(),
-                    generatedColor != -1 ? generatedColor : ContextCompat.getColor(getActivity(), R.color.main_toolbar_bg),
+                    smartHeightWrapper.getHeight(),
+                    generatedColor != -1 ? generatedColor : ContextCompat.getColor(getActivity(), R.color.details_title_not_initialized_bg),
                     notifyingScrollView.getScrollY());
         }
     }
@@ -624,6 +615,11 @@ public class DetailFragment extends Fragment
         videosAdapter.swapCursor(videosCursor);
     }
 
+
+    //
+    //  PUBLIC METHODS
+    //
+
     public Uri getMovieUri() {
         return movieUri;
     }
@@ -698,6 +694,12 @@ public class DetailFragment extends Fragment
         }
     }
 
+
+    //
+    //  INTERFACE METHODS
+    //  (on click callbacks)
+    //
+
     @Override
     public void onItemClicked(Uri uri) {
         Cursor cursor = getActivity().getContentResolver().query(uri, null, null, null, null);
@@ -739,11 +741,11 @@ public class DetailFragment extends Fragment
         /**
          * Called when scroll position, changing distance or end color is changed.
          *
-         * @param ratioWrapperHeight top part layout (ratio wrapper) height
-         * @param color              color generated based on poster image
-         * @param scrollPosition     current scroll position
+         * @param wrapperHeight  top part layout (wrapper) height
+         * @param color          color generated based on poster image
+         * @param scrollPosition current scroll position
          */
-        void onParamsChanged(int ratioWrapperHeight, int color, int scrollPosition);
+        void onParamsChanged(int wrapperHeight, int color, int scrollPosition);
 
         /**
          * Called when a movie title is loaded.

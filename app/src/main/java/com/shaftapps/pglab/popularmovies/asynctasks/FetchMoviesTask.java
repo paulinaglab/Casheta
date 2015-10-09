@@ -73,7 +73,7 @@ public class FetchMoviesTask extends BaseMovieDBTask {
             return;
 
         if (success == null || !success) {
-            Toast.makeText(context, R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
+            // Toast.makeText(context, R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
             if (durationListener != null)
                 durationListener.onTaskFailed(queryType);
         } else {

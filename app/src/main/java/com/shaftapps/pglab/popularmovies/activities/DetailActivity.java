@@ -63,11 +63,11 @@ public class DetailActivity extends DetailFragmentActivity {
     }
 
     @Override
-    public void onParamsChanged(int ratioWrapperHeight, int color, int scrollPosition) {
-        super.onParamsChanged(ratioWrapperHeight, color, scrollPosition);
+    public void onParamsChanged(int wrapperHeight, int color, int scrollPosition) {
+        super.onParamsChanged(wrapperHeight, color, scrollPosition);
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            float changingDistance = ratioWrapperHeight - getDetailFragmentToolbar().getHeight();
+            float changingDistance = wrapperHeight - getDetailFragmentToolbar().getHeight();
             int currentStatusBarColor = ColorUtils.getProportionalColor(
                     ContextCompat.getColor(this, R.color.status_bar_color),
                     ColorUtils.getColorWithTranslateBrightness(color, -20),

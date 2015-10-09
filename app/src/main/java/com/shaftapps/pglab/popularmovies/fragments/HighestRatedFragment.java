@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ProgressBar;
 
 import com.shaftapps.pglab.popularmovies.R;
@@ -17,7 +18,8 @@ import com.shaftapps.pglab.popularmovies.data.MovieContract;
 /**
  * Created by Paulina on 2015-10-08.
  */
-public class HighestRatedFragment extends NetworkMoviesCategoryFragment {
+public class HighestRatedFragment extends NetworkMoviesCategoryFragment
+        implements View.OnClickListener {
 
     private RecyclerView moviesGridRecycleView;
 
@@ -33,6 +35,9 @@ public class HighestRatedFragment extends NetworkMoviesCategoryFragment {
 
         View emptyStateView = fragmentView.findViewById(R.id.movies_empty_state_loading_error);
         setupEmptyStateView(emptyStateView);
+
+        Button tryAgainButton = (Button) fragmentView.findViewById(R.id.movies_try_again_loading_button);
+        tryAgainButton.setOnClickListener(this);
 
         return fragmentView;
     }
@@ -57,5 +62,12 @@ public class HighestRatedFragment extends NetworkMoviesCategoryFragment {
                 MovieContract.MovieEntry.COLUMN_HIGHEST_RATED + "<>?",
                 new String[]{"NULL"},
                 MovieContract.MovieEntry.COLUMN_HIGHEST_RATED + " ASC");
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.movies_try_again_loading_button) {
+            tryFetchAgain();
+        }
     }
 }
