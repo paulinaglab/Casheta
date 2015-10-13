@@ -3,14 +3,12 @@ package com.shaftapps.pglab.popularmovies.activities;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.R;
@@ -28,6 +26,7 @@ public class MainActivity extends DetailFragmentActivity implements BaseMoviesCa
 
     private static final String DETAIL_FRAGMENT_TAG = "detail_fragment_tag";
 
+    private CoordinatorLayout coordinatorLayout;
     private Toolbar toolbar;
     private ViewPager viewPager;
     private TabLayout tabLayout;
@@ -43,6 +42,8 @@ public class MainActivity extends DetailFragmentActivity implements BaseMoviesCa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.cover_coordinator_layout);
 
         // Setting custom toolbar
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -112,6 +113,11 @@ public class MainActivity extends DetailFragmentActivity implements BaseMoviesCa
                 return;
             }
 
+            if (getSnackbar() != null) {
+                getSnackbar().dismiss();
+                setSnackbar(null);
+            }
+
             // Putting uri to arguments
             Bundle args = new Bundle();
             args.putParcelable(Keys.SELECTED_MOVIE_URI, uri);
@@ -131,4 +137,8 @@ public class MainActivity extends DetailFragmentActivity implements BaseMoviesCa
 
     }
 
+    @Override
+    protected CoordinatorLayout getCoordinatorLayout() {
+        return coordinatorLayout;
+    }
 }

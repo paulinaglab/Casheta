@@ -24,7 +24,8 @@ public class FetchMovieDetailsTask extends BaseMovieDBTask {
     private Context context;
     private long movieId;
 
-    public FetchMovieDetailsTask(Context context, long movieId) {
+    public FetchMovieDetailsTask(int id, Context context, long movieId) {
+        super(id);
         this.context = context;
         this.movieId = movieId;
     }
@@ -36,6 +37,11 @@ public class FetchMovieDetailsTask extends BaseMovieDBTask {
                 .appendPath(Long.toString(movieId))
                 .build()
                 .toString();
+    }
+
+    @Override
+    protected void clearCache() {
+        // Do nothing, because if this method is called movie details will be updated in next step.
     }
 
     @Override

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 /**
  * Class for reviews fetching AsyncTasks.
  * Reviews of movie url: http://api.themoviedb.org/3/movie/{id}/reviews
- *
+ * <p/>
  * Created by Paulina on 2015-09-24.
  */
 public class FetchReviewsTask extends BaseMovieDBTask {
@@ -25,10 +25,13 @@ public class FetchReviewsTask extends BaseMovieDBTask {
 
     private Context context;
     private long movieId;
+    private Uri reviewUri;
 
-    public FetchReviewsTask(Context context, long movieId) {
+    public FetchReviewsTask(int id, Context context, long movieId) {
+        super(id);
         this.context = context;
         this.movieId = movieId;
+        reviewUri = MovieContract.ReviewEntry.buildUriByMovieId(movieId);
     }
 
     @Override
@@ -39,6 +42,11 @@ public class FetchReviewsTask extends BaseMovieDBTask {
                 .appendPath(REVIEW)
                 .build()
                 .toString();
+    }
+
+    @Override
+    protected void clearCache() {
+        context.getContentResolver().delete(reviewUri, null, null);
     }
 
     @Override
@@ -53,7 +61,6 @@ public class FetchReviewsTask extends BaseMovieDBTask {
 
     @Override
     protected void saveToDatabase(ArrayList<ContentValues> contentValues) {
-        Uri reviewUri = MovieContract.ReviewEntry.buildUriByMovieId(movieId);
         for (ContentValues review : contentValues) {
             Uri insertUri = context.getContentResolver().insert(
                     reviewUri,

@@ -3,15 +3,16 @@ package com.shaftapps.pglab.popularmovies.asynctasks;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.IntDef;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 import com.shaftapps.pglab.popularmovies.utils.MovieDBResponseParser;
 
 import org.json.JSONException;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
 /**
@@ -36,11 +37,12 @@ public class FetchMoviesTask extends BaseMovieDBTask {
     private static final String PAGE = "page";
 
     private Context context;
-    private DurationListener durationListener;
-    private QueryType queryType;
+    @QueryType
+    private int queryType;
 
 
-    public FetchMoviesTask(Context context, QueryType queryType) {
+    public FetchMoviesTask(int id, Context context, @QueryType int queryType) {
+        super(id);
         this.context = context;
         this.queryType = queryType;
     }
@@ -51,35 +53,26 @@ public class FetchMoviesTask extends BaseMovieDBTask {
     //
 
     @Override
-    protected void onPreExecute() {
-        if (durationListener != null)
-            durationListener.onTaskStart();
-    }
-
-    @Override
     protected Boolean doInBackground(String[] params) {
-        clearCachedMovies();
+        // Clearing cache
+        clearCache();
 
-        for (int page = 1; page <= PAGE_COUNT; page++)
-            if (!super.doInBackground(getUrlWithPage(page)))
+        for (int page = 1; page <= PAGE_COUNT; page++) {
+            // Fetching data
+            String jsonStr = fetchData(getUrlWithPage(page));
+            if (jsonStr == null)
                 return false;
 
-        return true;
-    }
+            // Parsing
+            ArrayList<ContentValues> parsedData = getParsedData(jsonStr);
 
-    @Override
-    protected void onPostExecute(Boolean success) {
-        if (isCancelled())
-            return;
-
-        if (success == null || !success) {
-            // Toast.makeText(context, R.string.error_fetching_movies, Toast.LENGTH_SHORT).show();
-            if (durationListener != null)
-                durationListener.onTaskFailed(queryType);
-        } else {
-            if (durationListener != null)
-                durationListener.onTaskEnd(queryType);
+            // Saving to database
+            saveToDatabase(parsedData);
+            if (parsedData == null)
+                return false;
         }
+
+        return true;
     }
 
 
@@ -87,7 +80,9 @@ public class FetchMoviesTask extends BaseMovieDBTask {
     //  HELPER METHODS
     //
 
-    private void clearCachedMovies() {
+
+    @Override
+    protected void clearCache() {
         switch (queryType) {
             case MOST_POPULAR: {
                 // Delete all movies, which are in database only because they're most popular.
@@ -125,7 +120,7 @@ public class FetchMoviesTask extends BaseMovieDBTask {
             }
             default:
                 throw new UnsupportedOperationException(
-                        "Unsupported query type: " + queryType.name());
+                        "Unsupported query type: " + queryType);
         }
     }
 
@@ -155,7 +150,7 @@ public class FetchMoviesTask extends BaseMovieDBTask {
                         .build().toString();
             default:
                 throw new UnsupportedOperationException(
-                        "Unsupported query type: " + queryType.name());
+                        "Unsupported query type: " + queryType);
         }
     }
 
@@ -184,23 +179,15 @@ public class FetchMoviesTask extends BaseMovieDBTask {
                 contentValues.toArray(new ContentValues[contentValues.size()]));
     }
 
-    public void setDurationListener(DurationListener listener) {
-        durationListener = listener;
+
+    /**
+     * Logical type describes movies fetching state.
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({MOST_POPULAR, HIGHEST_RATED})
+    public @interface QueryType {
     }
 
-
-    public enum QueryType {
-        MOST_POPULAR, HIGHEST_RATED
-    }
-
-
-    public interface DurationListener {
-
-        void onTaskStart();
-
-        void onTaskEnd(QueryType queryType);
-
-        void onTaskFailed(QueryType queryType);
-    }
-
+    public static final int MOST_POPULAR = 0;
+    public static final int HIGHEST_RATED = 1;
 }

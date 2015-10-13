@@ -29,7 +29,7 @@ public class MovieDBResponseParser {
 
 
     public static ArrayList<ContentValues> getMoviesFromJson(
-            String moviesJsonStr, FetchMoviesTask.QueryType queryType)
+            String moviesJsonStr, int queryType)
             throws JSONException {
 
         JSONObject jsonObject = new JSONObject(moviesJsonStr);
@@ -46,11 +46,11 @@ public class MovieDBResponseParser {
 
             // This data are important only if query concerned specific category.
             switch (queryType) {
-                case MOST_POPULAR:
+                case FetchMoviesTask.MOST_POPULAR:
                     movie.put(MovieEntry.COLUMN_MOST_POPULAR,
                             movieObject.getDouble("popularity"));
                     break;
-                case HIGHEST_RATED:
+                case FetchMoviesTask.HIGHEST_RATED:
                     movie.put(MovieEntry.COLUMN_HIGHEST_RATED,
                             (pageIndex - 1) * PAGE_LENGTH + i);
                     break;

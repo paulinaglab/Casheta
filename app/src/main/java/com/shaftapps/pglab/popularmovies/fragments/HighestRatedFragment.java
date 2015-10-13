@@ -43,8 +43,9 @@ public class HighestRatedFragment extends NetworkMoviesCategoryFragment
     }
 
     @Override
-    protected FetchMoviesTask.QueryType getQueryType() {
-        return FetchMoviesTask.QueryType.HIGHEST_RATED;
+    @FetchMoviesTask.QueryType
+    protected int getQueryType() {
+        return FetchMoviesTask.HIGHEST_RATED;
     }
 
     @NonNull

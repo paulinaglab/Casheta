@@ -213,6 +213,7 @@ public class MovieProvider extends ContentProvider {
         return returnUri;
     }
 
+
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         SQLiteDatabase database = movieDbHelper.getWritableDatabase();
@@ -223,14 +224,24 @@ public class MovieProvider extends ContentProvider {
                 rowsDeleted = database.delete(
                         MovieContract.MovieEntry.TABLE_NAME, selection, selectionArgs);
                 break;
-            case CODE_REVIEWS_OF_MOVIE:
+            case CODE_REVIEWS_OF_MOVIE: {
+                long movieId = ContentUris.parseId(uri);
                 rowsDeleted = database.delete(
-                        MovieContract.ReviewEntry.TABLE_NAME, selection, selectionArgs);
+                        MovieContract.ReviewEntry.TABLE_NAME,
+                        MovieContract.ReviewEntry.COLUMN_MOVIE_ID + "=?",
+                        new String[]{Long.toString(movieId)}
+                );
                 break;
-            case CODE_VIDEOS_OF_MOVIE:
+            }
+            case CODE_VIDEOS_OF_MOVIE: {
+                long movieId = ContentUris.parseId(uri);
                 rowsDeleted = database.delete(
-                        MovieContract.VideoEntry.TABLE_NAME, selection, selectionArgs);
+                        MovieContract.VideoEntry.TABLE_NAME,
+                        MovieContract.VideoEntry.COLUMN_MOVIE_ID + "=?",
+                        new String[]{Long.toString(movieId)}
+                );
                 break;
+            }
             default:
                 throw new UnsupportedOperationException("Undefined URI code: " + uri);
         }

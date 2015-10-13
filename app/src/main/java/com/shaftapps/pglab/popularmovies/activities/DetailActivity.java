@@ -2,6 +2,7 @@ package com.shaftapps.pglab.popularmovies.activities;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -19,6 +20,8 @@ import com.shaftapps.pglab.popularmovies.utils.ColorUtils;
  */
 public class DetailActivity extends DetailFragmentActivity {
 
+    private CoordinatorLayout coordinatorLayout;
+
     //
     //  ACTIVITY LIFECYCLE METHODS
     //
@@ -27,6 +30,8 @@ public class DetailActivity extends DetailFragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.movie_detail_container);
 
         // Toolbar initialization
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
@@ -63,8 +68,8 @@ public class DetailActivity extends DetailFragmentActivity {
     }
 
     @Override
-    public void onParamsChanged(int wrapperHeight, int color, int scrollPosition) {
-        super.onParamsChanged(wrapperHeight, color, scrollPosition);
+    public void onActionBarParamsChanged(int wrapperHeight, int color, int scrollPosition) {
+        super.onActionBarParamsChanged(wrapperHeight, color, scrollPosition);
 
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             float changingDistance = wrapperHeight - getDetailFragmentToolbar().getHeight();
@@ -75,5 +80,10 @@ public class DetailActivity extends DetailFragmentActivity {
                     scrollPosition);
             getWindow().setStatusBarColor(currentStatusBarColor);
         }
+    }
+
+    @Override
+    protected CoordinatorLayout getCoordinatorLayout() {
+        return coordinatorLayout;
     }
 }

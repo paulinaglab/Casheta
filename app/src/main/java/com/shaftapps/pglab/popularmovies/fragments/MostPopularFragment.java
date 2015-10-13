@@ -43,8 +43,9 @@ public class MostPopularFragment extends NetworkMoviesCategoryFragment
     }
 
     @Override
-    protected FetchMoviesTask.QueryType getQueryType() {
-        return FetchMoviesTask.QueryType.MOST_POPULAR;
+    @FetchMoviesTask.QueryType
+    protected int getQueryType() {
+        return FetchMoviesTask.MOST_POPULAR;
     }
 
     @NonNull

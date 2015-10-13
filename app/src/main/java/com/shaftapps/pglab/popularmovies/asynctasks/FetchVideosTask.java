@@ -15,7 +15,7 @@ import java.util.ArrayList;
 /**
  * Class for videos fetching AsyncTasks.
  * Videos of movie url: http://api.themoviedb.org/3/movie/{id}/videos
- *
+ * <p/>
  * Created by Paulina on 2015-09-25.
  */
 public class FetchVideosTask extends BaseMovieDBTask {
@@ -25,10 +25,13 @@ public class FetchVideosTask extends BaseMovieDBTask {
 
     private Context context;
     private long movieId;
+    private Uri videoUri;
 
-    public FetchVideosTask(Context context, long movieId) {
+    public FetchVideosTask(int id, Context context, long movieId) {
+        super(id);
         this.context = context;
         this.movieId = movieId;
+        videoUri = MovieContract.VideoEntry.buildUriByMovieId(movieId);
     }
 
     @Override
@@ -39,6 +42,11 @@ public class FetchVideosTask extends BaseMovieDBTask {
                 .appendPath(VIDEO)
                 .build()
                 .toString();
+    }
+
+    @Override
+    protected void clearCache() {
+        context.getContentResolver().delete(videoUri, null, null);
     }
 
     @Override
@@ -53,13 +61,12 @@ public class FetchVideosTask extends BaseMovieDBTask {
 
     @Override
     protected void saveToDatabase(ArrayList<ContentValues> contentValues) {
-        Uri videoUri = MovieContract.VideoEntry.buildUriByMovieId(movieId);
         for (ContentValues video : contentValues) {
             Uri insertUri = context.getContentResolver().insert(
                     videoUri,
                     video);
             if (insertUri == null) {
-                context.getContentResolver().update(
+                int updatedCount = context.getContentResolver().update(
                         videoUri,
                         video,
                         MovieContract.VideoEntry.COLUMN_VIDEO_API_ID + "=?",

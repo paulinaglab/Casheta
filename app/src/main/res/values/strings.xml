@@ -17,11 +17,16 @@
     <string name="details_no_info_placeholder">No info</string>
 
     <string name="details_reviews_label">User reviews (%d)</string>
+    <string name="details_reviews_error_label">Can\'t load reviews</string>
     <string name="details_reviews_empty_label">No reviews</string>
     <string name="details_reviews_show_more_label">Show more reviews</string>
     <string name="details_reviews_more_text">(read more)</string>
 
     <string name="details_video_label">Videos</string>
+
+    <!-- Detail Fragment - snackbars -->
+    <string name="snackbar_detail_fetching_failed_text">Can\'t reload movie details.</string>
+    <string name="snackbar_detail_fetching_failed_action">Retry</string>
 
     <string name="action_favorite">Favorite</string>
     <string name="action_share">Share movie</string>

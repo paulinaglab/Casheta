@@ -7,17 +7,18 @@
     <color name="window_bg">#171717</color>
     <color name="accent_color">#ffFFC400</color>
 
+    <color name="details_card_view_bg">#303030</color>
+
+    <color name="snackbar_bg">#424242</color>
 
     <!-- Toolbar & status bar: Main -->
-    <color name="main_toolbar_bg">#282828</color>
-    <color name="main_status_bar_bg">#1e1e1e</color>
+    <color name="main_toolbar_bg">#222222</color>
+    <color name="main_status_bar_bg">#1a1a1a</color>
 
 
     <!-- Toolbar & status bar: Details -->
     <color name="status_bar_color">#88000000</color>
     <color name="toolbar_gradient_start_color">#66000000</color>
-
-    <color name="details_card_view_bg">#343434</color>
 
 
     <!-- Toolbar & status bar: Reviews -->
@@ -26,7 +27,7 @@
 
 
     <!-- Placeholders -->
-    <color name="grid_placeholder_bg">#424242</color>
+    <color name="grid_placeholder_bg">#2a2a2a</color>
 
     <color name="details_rate_not_initialized_bg">#232323</color>
     <color name="details_title_not_initialized_bg">#282828</color>

@@ -2,14 +2,12 @@ package com.shaftapps.pglab.popularmovies.fragments;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.IntDef;
 import android.view.View;
 import android.widget.ProgressBar;
 
+import com.shaftapps.pglab.popularmovies.FetchingState;
+import com.shaftapps.pglab.popularmovies.asynctasks.BaseMovieDBTask;
 import com.shaftapps.pglab.popularmovies.asynctasks.FetchMoviesTask;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * Abstract for Fragments with grid filled with movies from API, which are visible only offline.
@@ -19,15 +17,17 @@ import java.lang.annotation.RetentionPolicy;
  * Created by Paulina on 2015-10-08.
  */
 public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFragment
-        implements FetchMoviesTask.DurationListener {
+        implements BaseMovieDBTask.DurationListener {
 
     private static final String MOVIES_FETCHED_KEY = "movies_fetched_key";
+
+    private static final int FETCH_MOVIES_TASK_ID = 1;
 
     private ProgressBar progressBar;
 
     private FetchMoviesTask fetchMoviesTask;
 
-    @FetchingState
+    @FetchingState.State
     private int moviesFetchedState;
 
 
@@ -39,9 +39,9 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
-            moviesFetchedState = getFetchingState(savedInstanceState.getInt(MOVIES_FETCHED_KEY));
+            moviesFetchedState = FetchingState.get(savedInstanceState.getInt(MOVIES_FETCHED_KEY));
         } else {
-            moviesFetchedState = NOT_FINISHED;
+            moviesFetchedState = FetchingState.NOT_FINISHED;
         }
     }
 
@@ -54,7 +54,7 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
     @Override
     public void onStart() {
         super.onStart();
-        if (moviesFetchedState == NOT_FINISHED) {
+        if (moviesFetchedState == FetchingState.NOT_FINISHED) {
             initFetchMovieTask();
             fetchMoviesTask.execute();
         }
@@ -80,12 +80,12 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
 
     @Override
     protected void initMoviesGridLoader() {
-        if (moviesFetchedState == FETCHED)
+        if (moviesFetchedState == FetchingState.FETCHED)
             super.initMoviesGridLoader();
     }
 
     private void initFetchMovieTask() {
-        fetchMoviesTask = new FetchMoviesTask(getActivity(), getQueryType());
+        fetchMoviesTask = new FetchMoviesTask(FETCH_MOVIES_TASK_ID, getActivity(), getQueryType());
         fetchMoviesTask.setDurationListener(this);
     }
 
@@ -113,7 +113,7 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
 
     protected void updateEmptyStateVisibility() {
         switch (moviesFetchedState) {
-            case FAILED:
+            case FetchingState.FAILED:
                 showEmptyStateView();
                 break;
             default:
@@ -126,7 +126,8 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
     //  ABSTRACT METHODS
     //
 
-    protected abstract FetchMoviesTask.QueryType getQueryType();
+    @FetchMoviesTask.QueryType
+    protected abstract int getQueryType();
 
 
     //
@@ -135,55 +136,35 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
     //
 
     @Override
-    public void onTaskStart() {
-        if (progressBar != null)
-            progressBar.setVisibility(View.VISIBLE);
-        moviesFetchedState = NOT_FINISHED;
-        updateEmptyStateVisibility();
+    public void onTaskStart(BaseMovieDBTask task) {
+        if (task.getId() == FETCH_MOVIES_TASK_ID) {
+            if (progressBar != null)
+                progressBar.setVisibility(View.VISIBLE);
+            moviesFetchedState = FetchingState.NOT_FINISHED;
+            updateEmptyStateVisibility();
+        }
     }
 
     @Override
-    public void onTaskEnd(FetchMoviesTask.QueryType queryType) {
-        if (progressBar != null)
-            progressBar.setVisibility(View.GONE);
+    public void onTaskEnd(BaseMovieDBTask task) {
+        if (task.getId() == FETCH_MOVIES_TASK_ID) {
+            if (progressBar != null)
+                progressBar.setVisibility(View.GONE);
 
-        moviesFetchedState = FETCHED;
-        updateEmptyStateVisibility();
+            moviesFetchedState = FetchingState.FETCHED;
+            updateEmptyStateVisibility();
 
-        getLoaderManager().initLoader(getMoviesGridLoaderId(), null, this);
+            getLoaderManager().initLoader(getMoviesGridLoaderId(), null, this);
+        }
     }
 
     @Override
-    public void onTaskFailed(FetchMoviesTask.QueryType queryType) {
-        if (progressBar != null)
-            progressBar.setVisibility(View.GONE);
-        moviesFetchedState = FAILED;
-        updateEmptyStateVisibility();
-    }
-
-
-    /**
-     * Logical type describes movies fetching state.
-     */
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef({FETCHED, NOT_FINISHED, FAILED})
-    public @interface FetchingState {
-    }
-
-    public static final int FETCHED = 0;
-    public static final int NOT_FINISHED = 1;
-    public static final int FAILED = 2;
-
-
-    @FetchingState
-    public int getFetchingState(int code) {
-        switch (code) {
-            case FETCHED:
-            case NOT_FINISHED:
-            case FAILED:
-                return code;
-            default:
-                throw new RuntimeException("FetchingState: Undefined code: " + code);
+    public void onTaskFailed(BaseMovieDBTask task) {
+        if (task.getId() == FETCH_MOVIES_TASK_ID) {
+            if (progressBar != null)
+                progressBar.setVisibility(View.GONE);
+            moviesFetchedState = FetchingState.FAILED;
+            updateEmptyStateVisibility();
         }
     }
 }

@@ -39,12 +39,16 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.GlideBitmapDrawable;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
+import com.bumptech.glide.request.target.Target;
+import com.shaftapps.pglab.popularmovies.FetchingState;
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.activities.ReviewsActivity;
 import com.shaftapps.pglab.popularmovies.adapters.VideosCursorAdapter;
+import com.shaftapps.pglab.popularmovies.asynctasks.BaseMovieDBTask;
 import com.shaftapps.pglab.popularmovies.asynctasks.FetchMovieDetailsTask;
 import com.shaftapps.pglab.popularmovies.asynctasks.FetchReviewsTask;
 import com.shaftapps.pglab.popularmovies.asynctasks.FetchVideosTask;
@@ -53,6 +57,7 @@ import com.shaftapps.pglab.popularmovies.utils.ColorUtils;
 import com.shaftapps.pglab.popularmovies.utils.DisplayUtils;
 import com.shaftapps.pglab.popularmovies.utils.TextLoader;
 import com.shaftapps.pglab.popularmovies.utils.YouTubeUriBuilder;
+import com.shaftapps.pglab.popularmovies.widgets.NetworkContentLayout;
 import com.shaftapps.pglab.popularmovies.widgets.NotifyingScrollView;
 import com.shaftapps.pglab.popularmovies.widgets.VideoItemDecoration;
 
@@ -63,13 +68,20 @@ import com.shaftapps.pglab.popularmovies.widgets.VideoItemDecoration;
  */
 public class DetailFragment extends Fragment
         implements LoaderManager.LoaderCallbacks<Cursor>, VideosCursorAdapter.OnItemClickListener,
-        View.OnClickListener {
+        View.OnClickListener, BaseMovieDBTask.DurationListener {
 
     private static final String GENERATED_COLOR_KEY = "generated_color";
+    private static final String MOVIE_DETAILS_FETCHED_KEY = "movie_details_fetched_key";
+    private static final String REVIEWS_FETCHED_KEY = "reviews_fetched_key";
+    private static final String VIDEOS_FETCHED_KEY = "videos_fetched_key";
 
     private static final int MOVIE_LOADER_ID = 1;
     private static final int REVIEW_LOADER_ID = 2;
     private static final int VIDEO_LOADER_ID = 3;
+
+    private static final int FETCH_MOVIE_DETAILS_TASK_ID = 1;
+    private static final int FETCH_REVIEW_TASK_ID = 2;
+    private static final int FETCH_VIDEO_TASK_ID = 3;
 
     private static final String[] MOVIE_PROJECTION = new String[]{
             MovieContract.MovieEntry.COLUMN_TITLE,
@@ -85,12 +97,12 @@ public class DetailFragment extends Fragment
     private static final int RATE_COLOR_TRANSLATION = -10;
 
     private Uri movieUri;
+    private long movieId = -1;
     private Uri reviewsUri;
 
     private Cursor movieCursor;
 
-    private OnActionBarParamsChangedListener onActionBarParamsChangedListener;
-
+    // Views:
     private ViewGroup smartHeightWrapper;
     private View titlesWrapper;
     private View rateWrapper;
@@ -108,38 +120,65 @@ public class DetailFragment extends Fragment
     // Section: Overview
     private TextView overviewTextView;
     // Section: Reviews
+    private NetworkContentLayout reviewContentLayout;
     private TextView reviewSubheaderTextView;
-    private View reviewEmptyStateView;
-    private View reviewItemLayout;
     private TextView reviewAuthorNameTextView;
     private TextView reviewContentTextView;
     private Button reviewShowMoreButton;
     // Section: Videos
+    private NetworkContentLayout videoContentLayout;
     private RecyclerView videoRecyclerView;
     private VideosCursorAdapter videosAdapter;
 
+    private DetailFragmentListener detailFragmentListener;
     private ViewTreeObserver.OnGlobalLayoutListener smartHeightWrapperOnGlobalLayoutListener;
-    private int generatedColor = -1;
+
     private boolean tablet;
     private String placeholderText;
+    private FetchMovieDetailsTask fetchMovieDetailsTask;
+    private FetchReviewsTask fetchReviewsTask;
+    private FetchVideosTask fetchVideosTask;
 
+    // Saving state data
+    private int generatedColor = -1;
+    @FetchingState.State
+    private int movieDetailsFetchingState = FetchingState.NOT_FINISHED;
+    @FetchingState.State
+    private int reviewsFetchingState = FetchingState.NOT_FINISHED;
+    @FetchingState.State
+    private int videosFetchingState = FetchingState.NOT_FINISHED;
+    private boolean posterDownloaded;
+    private boolean backdropDownloaded;
 
     //
     //  FRAGMENT LIFECYCLE METHODS
     //
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            generatedColor = savedInstanceState.getInt(GENERATED_COLOR_KEY, -1);
+            movieDetailsFetchingState = FetchingState.get(
+                    savedInstanceState.getInt(MOVIE_DETAILS_FETCHED_KEY));
+            reviewsFetchingState = FetchingState.get(
+                    savedInstanceState.getInt(REVIEWS_FETCHED_KEY));
+            videosFetchingState = FetchingState.get(
+                    savedInstanceState.getInt(VIDEOS_FETCHED_KEY));
+        }
+
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         if (getArguments() != null) {
             movieUri = getArguments().getParcelable(Keys.SELECTED_MOVIE_URI);
-            if (movieUri != null)
-                reviewsUri = MovieContract.ReviewEntry.buildUriByMovieId(
-                        ContentUris.parseId(movieUri));
-        }
-
-        if (savedInstanceState != null) {
-            generatedColor = savedInstanceState.getInt(GENERATED_COLOR_KEY, -1);
+            if (movieUri != null) {
+                movieId = ContentUris.parseId(movieUri);
+                reviewsUri = MovieContract.ReviewEntry.buildUriByMovieId(movieId);
+            }
         }
 
         View fragmentView = inflater.inflate(R.layout.fragment_detail, container, false);
@@ -147,11 +186,8 @@ public class DetailFragment extends Fragment
         // Fields initialization
         initFields(fragmentView);
 
-        // Setting height to layout smartHeightWrapper
-        initSmartHeightWrapperListener();
-
-        // Setting ScrollView listener
-        initScrollViewListener();
+        // Listeners initialization
+        initListeners(fragmentView);
 
         // RecyclerView with Videos initialization
         initVideoRecyclerView();
@@ -172,49 +208,59 @@ public class DetailFragment extends Fragment
         getLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
         getLoaderManager().initLoader(REVIEW_LOADER_ID, null, this);
         getLoaderManager().initLoader(VIDEO_LOADER_ID, null, this);
+        if (movieDetailsFetchingState == FetchingState.FAILED ||
+                reviewsFetchingState == FetchingState.FAILED ||
+                videosFetchingState == FetchingState.FAILED)
+            detailFragmentListener.showFetchingFailedSnackbar();
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            onActionBarParamsChangedListener = (OnActionBarParamsChangedListener) activity;
+            detailFragmentListener = (DetailFragmentListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement OnActionBarParamsChangedListener");
+                    + " must implement DetailFragmentListener");
         }
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onResume() {
+        super.onResume();
         if (movieUri != null) {
-            long movieId = ContentUris.parseId(movieUri);
-            FetchMovieDetailsTask fetchMovieDetailsTask =
-                    new FetchMovieDetailsTask(getActivity(), movieId);
-            fetchMovieDetailsTask.execute();
-
-            FetchReviewsTask fetchReviewsTask =
-                    new FetchReviewsTask(getActivity(), movieId);
-            fetchReviewsTask.execute();
-
-            FetchVideosTask fetchVideosTask =
-                    new FetchVideosTask(getActivity(), movieId);
-            fetchVideosTask.execute();
+            if (movieDetailsFetchingState == FetchingState.NOT_FINISHED) {
+                initFetchMovieDetailsTask();
+                fetchMovieDetailsTask.execute();
+            }
+            if (reviewsFetchingState == FetchingState.NOT_FINISHED) {
+                initFetchReviewsTask();
+                fetchReviewsTask.execute();
+            }
+            if (videosFetchingState == FetchingState.NOT_FINISHED) {
+                initFetchVideosTask();
+                fetchVideosTask.execute();
+            }
         }
+    }
+
+    @Override
+    public void onPause() {
+        if (fetchMovieDetailsTask != null) {
+            fetchMovieDetailsTask.cancel(true);
+        }
+        if (fetchReviewsTask != null) {
+            fetchReviewsTask.cancel(true);
+        }
+        if (fetchVideosTask != null) {
+            fetchVideosTask.cancel(true);
+        }
+        super.onPause();
     }
 
     @Override
     public void onDestroyView() {
-        if (smartHeightWrapperOnGlobalLayoutListener != null)
-            //TODO: remove it in a method
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                smartHeightWrapper.getViewTreeObserver()
-                        .removeOnGlobalLayoutListener(smartHeightWrapperOnGlobalLayoutListener);
-            } else {
-                smartHeightWrapper.getViewTreeObserver()
-                        .removeGlobalOnLayoutListener(smartHeightWrapperOnGlobalLayoutListener);
-            }
+        resetSmartHeightWrapperListener();
         super.onDestroyView();
     }
 
@@ -224,6 +270,10 @@ public class DetailFragment extends Fragment
         // I want to keep it after rotating.
         if (generatedColor != -1)
             outState.putInt(GENERATED_COLOR_KEY, generatedColor);
+
+        outState.putInt(MOVIE_DETAILS_FETCHED_KEY, movieDetailsFetchingState);
+        outState.putInt(REVIEWS_FETCHED_KEY, reviewsFetchingState);
+        outState.putInt(VIDEOS_FETCHED_KEY, videosFetchingState);
 
         super.onSaveInstanceState(outState);
     }
@@ -235,9 +285,7 @@ public class DetailFragment extends Fragment
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        Log.d(getClass().getSimpleName(), "Fragment's onCreateOptionsMenu: " + menu);
         inflater.inflate(R.menu.detailfragment, menu);
-
         initFavoriteMenuItem(menu);
     }
 
@@ -265,7 +313,7 @@ public class DetailFragment extends Fragment
 
     private void initFavoriteMenuItem(Menu menu) {
         // Is this movie favorite?
-        if (movieUri != null) {
+        if (movieUri != null && getActivity() != null) {
             Cursor cursor = getActivity().getContentResolver().query(
                     movieUri,
                     new String[]{MovieContract.MovieEntry.COLUMN_FAVORITE},
@@ -294,7 +342,7 @@ public class DetailFragment extends Fragment
 
     private Intent createShareMovieIntent() {
         Uri trailerUri = MovieContract.VideoEntry
-                .buildUriForMovieTrailer(ContentUris.parseId(movieUri));
+                .buildUriForMovieTrailer(movieId);
         Cursor cursor = getActivity().getContentResolver().query(
                 trailerUri, null, null, null, null);
         if (cursor.moveToFirst()) {
@@ -322,7 +370,7 @@ public class DetailFragment extends Fragment
                         MovieContract.MovieEntry.CONTENT_URI,
                         contentValues,
                         MovieContract.MovieEntry._ID + "=?",
-                        new String[]{Long.toString(ContentUris.parseId(movieUri))});
+                        new String[]{Long.toString(movieId)});
             } else {
                 // Remove movie from favorites
                 ContentValues contentValues = new ContentValues();
@@ -331,9 +379,7 @@ public class DetailFragment extends Fragment
                         MovieContract.MovieEntry.CONTENT_URI,
                         contentValues,
                         MovieContract.MovieEntry._ID + "=?",
-                        new String[]{Long.toString(ContentUris.parseId(movieUri))});
-                //TODO: undo snackbar
-                //TODO: highest rated/most popular ?: flag remove on exit
+                        new String[]{Long.toString(movieId)});
             }
         }
     }
@@ -364,16 +410,35 @@ public class DetailFragment extends Fragment
         genreTextView = (TextView) fragmentView.findViewById(R.id.detail_genres_text_view);
         countryTextView = (TextView) fragmentView.findViewById(R.id.detail_countries_text_view);
         // Section: Reviews
+        reviewContentLayout = (NetworkContentLayout) fragmentView.findViewById(R.id.review_network_content_layout);
         reviewSubheaderTextView = (TextView) fragmentView.findViewById(R.id.detail_review_subheader_text_view);
-        reviewEmptyStateView = fragmentView.findViewById(R.id.detail_review_empty_state_view);
-        reviewItemLayout = fragmentView.findViewById(R.id.detail_review_item_view);
-        reviewAuthorNameTextView = (TextView) reviewItemLayout.findViewById(R.id.review_author_name_view);
-        reviewContentTextView = (TextView) reviewItemLayout.findViewById(R.id.review_content_view);
+        reviewAuthorNameTextView = (TextView) fragmentView.findViewById(R.id.review_author_name_view);
+        reviewContentTextView = (TextView) fragmentView.findViewById(R.id.review_content_view);
         reviewShowMoreButton = (Button) fragmentView.findViewById(R.id.detail_reviews_show_more_button);
         // Section: Videos
+        videoContentLayout = (NetworkContentLayout) fragmentView.findViewById(R.id.video_network_content_layout);
         videoRecyclerView = (RecyclerView) fragmentView.findViewById(R.id.detail_video_recycler_view);
     }
 
+    private void initListeners(View fragmentView) {
+        // Setting height to layout smartHeightWrapper
+        initSmartHeightWrapperListener();
+
+        // Setting ScrollView listener
+        notifyingScrollView.setOnScrollChangedListener(new NotifyingScrollView.OnScrollChangedListener() {
+            @Override
+            public void onScrollChanged(int l, int t, int oldl, int oldt) {
+                notifyActionBarParamsChanged();
+            }
+        });
+
+        // Setting Listener which would open full reviews list in dialog (tablets) or
+        // activity (phones).
+        View reviewItemLayout = fragmentView.findViewById(R.id.detail_review_item_view);
+        reviewItemLayout.setOnClickListener(this);
+        View reviewShowMoreButton = fragmentView.findViewById(R.id.detail_reviews_show_more_button);
+        reviewShowMoreButton.setOnClickListener(this);
+    }
 
     private void initSmartHeightWrapperListener() {
         ViewTreeObserver smartHeightWrapperTreeObserver = smartHeightWrapper.getViewTreeObserver();
@@ -381,31 +446,28 @@ public class DetailFragment extends Fragment
             @Override
             public void onGlobalLayout() {
                 notifyActionBarParamsChanged();
-
-                ViewTreeObserver viewTreeObserver = smartHeightWrapper.getViewTreeObserver();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    viewTreeObserver.removeOnGlobalLayoutListener(this);
-                } else {
-                    viewTreeObserver.removeGlobalOnLayoutListener(this);
-                }
-                smartHeightWrapperOnGlobalLayoutListener = null;
+                resetSmartHeightWrapperListener();
             }
         };
         smartHeightWrapperTreeObserver.addOnGlobalLayoutListener(smartHeightWrapperOnGlobalLayoutListener);
     }
 
-    private void initScrollViewListener() {
-        notifyingScrollView.setOnScrollChangedListener(new NotifyingScrollView.OnScrollChangedListener() {
-            @Override
-            public void onScrollChanged(int l, int t, int oldl, int oldt) {
-                notifyActionBarParamsChanged();
+    private void resetSmartHeightWrapperListener() {
+        if (smartHeightWrapperOnGlobalLayoutListener != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                smartHeightWrapper.getViewTreeObserver()
+                        .removeOnGlobalLayoutListener(smartHeightWrapperOnGlobalLayoutListener);
+            } else {
+                smartHeightWrapper.getViewTreeObserver()
+                        .removeGlobalOnLayoutListener(smartHeightWrapperOnGlobalLayoutListener);
             }
-        });
+            smartHeightWrapperOnGlobalLayoutListener = null;
+        }
     }
 
     private void notifyActionBarParamsChanged() {
-        if (onActionBarParamsChangedListener != null) {
-            onActionBarParamsChangedListener.onParamsChanged(
+        if (detailFragmentListener != null) {
+            detailFragmentListener.onActionBarParamsChanged(
                     smartHeightWrapper.getHeight(),
                     generatedColor != -1 ? generatedColor : ContextCompat.getColor(getActivity(), R.color.details_title_not_initialized_bg),
                     notifyingScrollView.getScrollY());
@@ -425,6 +487,27 @@ public class DetailFragment extends Fragment
 
 
     //
+    //  TASKS INITIALIZATION
+    //
+
+    private void initFetchMovieDetailsTask() {
+        fetchMovieDetailsTask = new FetchMovieDetailsTask(
+                FETCH_MOVIE_DETAILS_TASK_ID, getActivity(), movieId);
+        fetchMovieDetailsTask.setDurationListener(this);
+    }
+
+    private void initFetchReviewsTask() {
+        fetchReviewsTask = new FetchReviewsTask(FETCH_REVIEW_TASK_ID, getActivity(), movieId);
+        fetchReviewsTask.setDurationListener(this);
+    }
+
+    private void initFetchVideosTask() {
+        fetchVideosTask = new FetchVideosTask(FETCH_VIDEO_TASK_ID, getActivity(), movieId);
+        fetchVideosTask.setDurationListener(this);
+    }
+
+
+    //
     //  LOADING DATA HELPER METHODS
     //
 
@@ -432,8 +515,8 @@ public class DetailFragment extends Fragment
         if (newMovieCursor != null && newMovieCursor.moveToFirst()) {
 
             // Notify ActionBar that title is loaded.
-            if (onActionBarParamsChangedListener != null) {
-                onActionBarParamsChangedListener.onTitleLoaded(newMovieCursor.getString(
+            if (detailFragmentListener != null) {
+                detailFragmentListener.onTitleLoaded(newMovieCursor.getString(
                         newMovieCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
             }
 
@@ -479,7 +562,6 @@ public class DetailFragment extends Fragment
 
             if (!newBackdropUrl.equals(oldBackdropUrl))
                 loadBackdropAndColors(newBackdropUrl);
-
         }
 
     }
@@ -495,6 +577,19 @@ public class DetailFragment extends Fragment
                     .load(url)
                     .fitCenter()
                     .error(R.drawable.backdrop_error)
+                    .listener(new RequestListener<String, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            backdropDownloaded = false;
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            backdropDownloaded = true;
+                            return false;
+                        }
+                    })
                     .into(backdropImageView);
         } else {
             // Creating listener for palette
@@ -551,6 +646,19 @@ public class DetailFragment extends Fragment
                     .load(url)
                     .fitCenter()
                     .error(R.drawable.backdrop_error)
+                    .listener(new RequestListener<String, GlideDrawable>() {
+                        @Override
+                        public boolean onException(Exception e, String model, Target<GlideDrawable> target, boolean isFirstResource) {
+                            posterDownloaded = false;
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(GlideDrawable resource, String model, Target<GlideDrawable> target, boolean isFromMemoryCache, boolean isFirstResource) {
+                            posterDownloaded = true;
+                            return false;
+                        }
+                    })
                     .into(backdropGlideDrawable);
         }
     }
@@ -581,6 +689,7 @@ public class DetailFragment extends Fragment
 
     private void loadSectionReviews(@Nullable Cursor reviewsCursor) {
         if (reviewsCursor != null && reviewsCursor.moveToFirst()) {
+            reviewContentLayout.setContentState(NetworkContentLayout.LOADED);
             reviewSubheaderTextView.setText(getString(R.string.details_reviews_label,
                     reviewsCursor.getCount()));
 
@@ -589,30 +698,32 @@ public class DetailFragment extends Fragment
             TextLoader.loadText(reviewContentTextView,
                     reviewsCursor, MovieContract.ReviewEntry.COLUMN_CONTENT);
 
-            reviewEmptyStateView.setVisibility(View.GONE);
-            reviewItemLayout.setVisibility(View.VISIBLE);
-
             // Button 'show more' should be visible only if there are more then one (shown) review.
             if (reviewsCursor.moveToNext())
                 reviewShowMoreButton.setVisibility(View.VISIBLE);
             else
                 reviewShowMoreButton.setVisibility(View.GONE);
-
-            // Setting Listener which would open full reviews list in dialog (tablets) or
-            // activity (phones).
-            reviewItemLayout.setOnClickListener(this);
-            reviewShowMoreButton.setOnClickListener(this);
         } else {
             //There is no reviews.
+            if (reviewsFetchingState == FetchingState.FAILED)
+                reviewContentLayout.setContentState(NetworkContentLayout.FAILED);
+            else
+                reviewContentLayout.setContentState(NetworkContentLayout.EMPTY);
+
             reviewSubheaderTextView.setText(getString(R.string.details_reviews_label, 0));
-            reviewEmptyStateView.setVisibility(View.VISIBLE);
-            reviewItemLayout.setVisibility(View.GONE);
-            reviewShowMoreButton.setVisibility(View.GONE);
         }
     }
 
     private void loadSectionVideos(@Nullable Cursor videosCursor) {
         videosAdapter.swapCursor(videosCursor);
+        // Switch video layout state.
+        if (videosAdapter.getItemCount() == 0) {
+            if (videosFetchingState == FetchingState.FAILED)
+                videoContentLayout.setContentState(NetworkContentLayout.FAILED);
+            else
+                videoContentLayout.setContentState(NetworkContentLayout.EMPTY);
+        } else
+            videoContentLayout.setContentState(NetworkContentLayout.LOADED);
     }
 
 
@@ -650,7 +761,7 @@ public class DetailFragment extends Fragment
                 case VIDEO_LOADER_ID:
                     return new CursorLoader(
                             getActivity(),
-                            MovieContract.VideoEntry.buildUriByMovieId(ContentUris.parseId(movieUri)),
+                            MovieContract.VideoEntry.buildUriByMovieId(movieId),
                             null, null, null, null);
                 default:
                     throw new UnsupportedOperationException("Unknown loader id: " + id);
@@ -684,7 +795,7 @@ public class DetailFragment extends Fragment
                 movieCursor = null;
                 break;
             case REVIEW_LOADER_ID:
-                // do nothing
+                loadSectionReviews(null);
                 break;
             case VIDEO_LOADER_ID:
                 loadSectionVideos(null);
@@ -716,7 +827,8 @@ public class DetailFragment extends Fragment
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == reviewShowMoreButton.getId() || v.getId() == reviewItemLayout.getId()) {
+        if (v.getId() == R.id.detail_reviews_show_more_button ||
+                v.getId() == R.id.detail_review_item_view) {
             // Show dialog for tablets and open activity for phones.
             if (tablet) {
                 ReviewsDialogFragment fragment = new ReviewsDialogFragment();
@@ -733,11 +845,91 @@ public class DetailFragment extends Fragment
         }
     }
 
+    @Override
+    public void onTaskStart(BaseMovieDBTask task) {
+        if (getActivity() != null)
+            switch (task.getId()) {
+                case FETCH_MOVIE_DETAILS_TASK_ID:
+                    movieDetailsFetchingState = FetchingState.NOT_FINISHED;
+                    break;
+                case FETCH_REVIEW_TASK_ID:
+                    reviewsFetchingState = FetchingState.NOT_FINISHED;
+                    reviewContentLayout.setContentState(NetworkContentLayout.PROGRESS);
+                    break;
+                case FETCH_VIDEO_TASK_ID:
+                    videosFetchingState = FetchingState.NOT_FINISHED;
+                    videoContentLayout.setContentState(NetworkContentLayout.PROGRESS);
+                    break;
+            }
+    }
+
+    @Override
+    public void onTaskEnd(BaseMovieDBTask task) {
+        if (getActivity() != null)
+            switch (task.getId()) {
+                case FETCH_MOVIE_DETAILS_TASK_ID:
+                    movieDetailsFetchingState = FetchingState.FETCHED;
+                    break;
+                case FETCH_REVIEW_TASK_ID:
+                    reviewsFetchingState = FetchingState.FETCHED;
+                    getLoaderManager().getLoader(REVIEW_LOADER_ID).forceLoad();
+                    // Method loadSectionReviews(Cursor reviewsCursor) change NetworkContentLayout state.
+                    break;
+                case FETCH_VIDEO_TASK_ID:
+                    videosFetchingState = FetchingState.FETCHED;
+                    getLoaderManager().getLoader(VIDEO_LOADER_ID).forceLoad();
+                    // Method loadSectionVideos(Cursor videosCursor) change NetworkContentLayout state.
+                    break;
+            }
+    }
+
+    @Override
+    public void onTaskFailed(BaseMovieDBTask task) {
+        if (getActivity() != null) {
+            switch (task.getId()) {
+                case FETCH_MOVIE_DETAILS_TASK_ID:
+                    movieDetailsFetchingState = FetchingState.FAILED;
+                    break;
+                case FETCH_REVIEW_TASK_ID:
+                    reviewsFetchingState = FetchingState.FAILED;
+                    getLoaderManager().getLoader(REVIEW_LOADER_ID).forceLoad();
+                    // Method loadSectionReviews(Cursor reviewsCursor) change NetworkContentLayout state.
+                    break;
+                case FETCH_VIDEO_TASK_ID:
+                    videosFetchingState = FetchingState.FAILED;
+                    getLoaderManager().getLoader(VIDEO_LOADER_ID).forceLoad();
+                    // Method loadSectionVideos(Cursor videosCursor) change NetworkContentLayout state.
+                    break;
+            }
+            detailFragmentListener.showFetchingFailedSnackbar();
+        }
+    }
+
+    public void retryFailedFetching() {
+        if (movieUri != null) {
+            if (movieDetailsFetchingState == FetchingState.FAILED) {
+                initFetchMovieDetailsTask();
+                fetchMovieDetailsTask.execute();
+            }
+            if (reviewsFetchingState == FetchingState.FAILED) {
+                initFetchReviewsTask();
+                fetchReviewsTask.execute();
+            }
+            if (videosFetchingState == FetchingState.FAILED) {
+                initFetchVideosTask();
+                fetchVideosTask.execute();
+            }
+            if (!posterDownloaded || !backdropDownloaded){
+                loadSectionRichContent(null, movieCursor);
+            }
+        }
+    }
+
 
     /**
      * DetailFragment's scroll, changing distance and color listener.
      */
-    public interface OnActionBarParamsChangedListener {
+    public interface DetailFragmentListener {
         /**
          * Called when scroll position, changing distance or end color is changed.
          *
@@ -745,7 +937,7 @@ public class DetailFragment extends Fragment
          * @param color          color generated based on poster image
          * @param scrollPosition current scroll position
          */
-        void onParamsChanged(int wrapperHeight, int color, int scrollPosition);
+        void onActionBarParamsChanged(int wrapperHeight, int color, int scrollPosition);
 
         /**
          * Called when a movie title is loaded.
@@ -753,6 +945,8 @@ public class DetailFragment extends Fragment
          * @param title title of a movie
          */
         void onTitleLoaded(String title);
+
+        void showFetchingFailedSnackbar();
     }
 
 }

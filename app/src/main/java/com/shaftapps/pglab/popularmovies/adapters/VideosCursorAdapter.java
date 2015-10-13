@@ -72,7 +72,7 @@ public class VideosCursorAdapter extends CursorAdapter<VideosCursorAdapter.Video
             Glide.with(context)
                     .load(thumbnailUrl)
                     .fitCenter()
-                    .placeholder(R.color.grid_placeholder_bg)
+                    .placeholder(R.color.video_thumbnail_placeholder)
                     .into(holder.thumbnail);
         }
     }
