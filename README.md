@@ -1,4 +1,7 @@
 # PopularMovies
-[UDACITY] Project 1: Popular Movies App
+[UDACITY] Popular Movies App
 
-In order to run the application insert your API key in FetchMoviesTask class as API_KEY_VALUE constant. Enjoy!
+Tip: 
+In order to run the application insert your API key in BaseMovieDBTask class as API_KEY_VALUE constant. Enjoy!
+
+![alt tag](http://shaftapps.com/img/popular_movies_devices.png)
