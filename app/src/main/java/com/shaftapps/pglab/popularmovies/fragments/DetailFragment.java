@@ -8,6 +8,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -590,8 +591,10 @@ public class DetailFragment extends Fragment
                     if (getActivity() == null)
                         return;
 
-                    generatedColor = palette.getDarkVibrantColor(
+                    generatedColor = palette.getVibrantColor(
                             ContextCompat.getColor(getActivity(), R.color.details_rate_not_initialized_bg));
+                    generatedColor = ColorUtils.getProportionalColor(generatedColor, Color.BLACK, 3, 1);
+
 
                     int duration = 175;
                     int titleStartDelay = duration / 3;
