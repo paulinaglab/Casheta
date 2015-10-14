@@ -144,6 +144,9 @@ public class MovieProvider extends ContentProvider {
 
         // If there is no trailer for this movie, other video has to be sufficient.
         queryBuilder = new SQLiteQueryBuilder();
+        queryBuilder.appendWhere(
+                MovieContract.VideoEntry.COLUMN_MOVIE_ID + "=" +
+                        uri.getPathSegments().get(MovieContract.PATH_TRAILER_MOVIE_ID_INDEX));
         queryBuilder.setTables(MovieContract.VideoEntry.TABLE_NAME);
 
         return queryBuilder.query(movieDbHelper.getReadableDatabase(),
@@ -290,6 +293,7 @@ public class MovieProvider extends ContentProvider {
                 int updatedCount = 0;
                 database.beginTransaction();
                 try {
+                    // If insert is not possible, Provider is trying to update row.
                     for (ContentValues value : values) {
                         try {
                             database.insertOrThrow(MovieContract.MovieEntry.TABLE_NAME, null, value);

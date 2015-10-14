@@ -13,6 +13,8 @@ import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
 /**
+ * Adapter class for grid with movies.
+ * <p/>
  * Created by Paulina on 2015-09-14.
  */
 public class MoviesCursorAdapter extends CursorAdapter<MoviesCursorAdapter.MovieItemViewHolder> {
@@ -52,6 +54,7 @@ public class MoviesCursorAdapter extends CursorAdapter<MoviesCursorAdapter.Movie
         }
     }
 
+    @Override
     public void onBindViewHolder(MovieItemViewHolder holder, int position) {
         cursor.moveToPosition(position);
         int posterColumnIndex = cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_URL);
@@ -72,6 +75,11 @@ public class MoviesCursorAdapter extends CursorAdapter<MoviesCursorAdapter.Movie
         }
     }
 
+    /**
+     * Method setting listener for item click.
+     *
+     * @param onItemClickListener listener.
+     */
     public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
     }
@@ -83,7 +91,7 @@ public class MoviesCursorAdapter extends CursorAdapter<MoviesCursorAdapter.Movie
         /**
          * Triggered when user click an item from grid.
          *
-         * @param uri uri of movie clicked by user
+         * @param uri uri of movie clicked by user.
          */
         void onItemClicked(Uri uri);
     }

@@ -7,7 +7,6 @@
     <TextView
         android:id="@+id/detail_review_subheader_text_view"
         style="@style/AppTheme.TextView.Subheader"
-        android:layout_marginTop="4dp"
         android:text="@string/details_reviews_label" />
 
 
@@ -41,10 +40,7 @@
 
         <!-- Progress Bar layout -->
         <ProgressBar
-            style="@style/Widget.AppCompat.ProgressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
+            style="@style/AppTheme.Movies.ProgressBar"
             android:visibility="gone" />
 
 

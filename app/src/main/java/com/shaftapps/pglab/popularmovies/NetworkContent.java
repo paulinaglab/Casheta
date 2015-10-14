@@ -6,9 +6,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
+ * Represents state of network content.
+ *
  * Created by Paulina on 2015-10-09.
  */
-public class FetchingState {
+public class NetworkContent {
     /**
      * Logical type describes movies fetching state.
      */
@@ -30,7 +32,7 @@ public class FetchingState {
             case FAILED:
                 return code;
             default:
-                throw new RuntimeException("FetchingState: Undefined code: " + code);
+                throw new RuntimeException("NetworkContent: Undefined code: " + code);
         }
     }
 }

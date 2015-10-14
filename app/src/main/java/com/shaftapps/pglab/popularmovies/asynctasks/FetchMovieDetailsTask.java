@@ -12,8 +12,8 @@ import org.json.JSONException;
 import java.util.ArrayList;
 
 /**
- * Class for specific movie fetching AsyncTasks.
- * http://api.themoviedb.org/3/movie/{id}
+ * Class for fetching details of specific movie.
+ * Details of movie url: http://api.themoviedb.org/3/movie/{id}
  * <p/>
  * Created by Paulina on 2015-10-05.
  */

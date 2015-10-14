@@ -12,6 +12,8 @@ import com.shaftapps.pglab.popularmovies.data.MovieContract;
 import com.shaftapps.pglab.popularmovies.fragments.ReviewsDialogFragment;
 
 /**
+ * Activity showing reviews. Concerns only on phones.
+ * <p/>
  * Created by Paulina on 2015-09-30.
  */
 public class ReviewsActivity extends AppCompatActivity {

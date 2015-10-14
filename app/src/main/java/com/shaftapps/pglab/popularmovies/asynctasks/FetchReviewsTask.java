@@ -13,7 +13,7 @@ import org.json.JSONException;
 import java.util.ArrayList;
 
 /**
- * Class for reviews fetching AsyncTasks.
+ * Class for fetching reviews.
  * Reviews of movie url: http://api.themoviedb.org/3/movie/{id}/reviews
  * <p/>
  * Created by Paulina on 2015-09-24.

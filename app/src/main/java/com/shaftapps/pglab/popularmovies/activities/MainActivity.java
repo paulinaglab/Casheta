@@ -27,9 +27,6 @@ public class MainActivity extends DetailFragmentActivity implements BaseMoviesCa
     private static final String DETAIL_FRAGMENT_TAG = "detail_fragment_tag";
 
     private CoordinatorLayout coordinatorLayout;
-    private Toolbar toolbar;
-    private ViewPager viewPager;
-    private TabLayout tabLayout;
 
     private boolean twoPane;
 
@@ -46,7 +43,7 @@ public class MainActivity extends DetailFragmentActivity implements BaseMoviesCa
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.cover_coordinator_layout);
 
         // Setting custom toolbar
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         // Checking MainActivity is two pane (ie. sw600dp) layout or not
@@ -61,10 +58,10 @@ public class MainActivity extends DetailFragmentActivity implements BaseMoviesCa
             bindToolbarWithDetailFragment(detailSubToolbar);
         }
 
-        viewPager = (ViewPager) findViewById(R.id.main_view_pager);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.main_view_pager);
         viewPager.setAdapter(new MovieCategoryPagerAdapter(this, getSupportFragmentManager()));
 
-        tabLayout = (TabLayout) findViewById(R.id.main_tab_layout);
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.main_tab_layout);
         tabLayout.setupWithViewPager(viewPager);
     }
 

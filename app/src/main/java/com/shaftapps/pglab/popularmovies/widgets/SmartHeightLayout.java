@@ -7,6 +7,8 @@ import android.widget.RelativeLayout;
 import com.shaftapps.pglab.popularmovies.R;
 
 /**
+ * Container which adjusts it's height to keep ratio or fit screen (depends on screen properties)
+ * <p/>
  * Created by Paulina on 2015-10-09.
  */
 public class SmartHeightLayout extends RelativeLayout {

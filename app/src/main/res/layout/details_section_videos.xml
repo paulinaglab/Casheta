@@ -12,30 +12,33 @@
     <com.shaftapps.pglab.popularmovies.widgets.NetworkContentLayout
         android:id="@+id/video_network_content_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/video_container_bg">
+        android:layout_height="wrap_content">
 
         <!-- Normal content layout -->
         <android.support.v7.widget.RecyclerView
             android:id="@+id/detail_video_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="144dp"
-            tools:listitem="@layout/video_list_item" />
+            tools:listitem="@layout/video_list_item"
+            android:background="@color/video_container_bg"/>
 
         <!-- Progress Bar layout -->
         <ProgressBar
-            style="@style/Widget.AppCompat.ProgressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
+            style="@style/AppTheme.Movies.ProgressBar"
             android:visibility="gone" />
 
         <!-- Failed loading layout - optional -->
-        <!-- ... -->
+        <TextView
+            style="@style/AppTheme.TextView.SecondaryInfo"
+            android:text="@string/details_video_error_label"
+            android:visibility="gone" />
 
 
         <!-- Empty state layout - optional -->
-        <!-- ... -->
+        <TextView
+            style="@style/AppTheme.TextView.SecondaryInfo"
+            android:text="@string/details_video_empty_label"
+            android:visibility="gone" />
 
     </com.shaftapps.pglab.popularmovies.widgets.NetworkContentLayout>
 

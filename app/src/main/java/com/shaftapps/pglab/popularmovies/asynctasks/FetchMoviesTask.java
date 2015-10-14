@@ -16,7 +16,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
 /**
- * Class for movies fetching AsyncTasks.
+ * Class for fetching movies by category (sorting mode).
  * <p/>
  * Created by Paulina on 2015-09-01.
  */
@@ -88,12 +88,12 @@ public class FetchMoviesTask extends BaseMovieDBTask {
                 // Delete all movies, which are in database only because they're most popular.
                 context.getContentResolver().delete(
                         MovieContract.MovieEntry.CONTENT_URI,
-                        MovieContract.MovieEntry.COLUMN_HIGHEST_RATED + "=? AND " +
-                                MovieContract.MovieEntry.COLUMN_FAVORITE + "=?",
-                        new String[]{"NULL", "NULL"});
+                        MovieContract.MovieEntry.COLUMN_HIGHEST_RATED + " IS NULL AND " +
+                                MovieContract.MovieEntry.COLUMN_FAVORITE + " IS NULL",
+                        null);
                 // Overwrite (reset) popularity in remaining movies.
                 ContentValues contentValues = new ContentValues();
-                contentValues.put(MovieContract.MovieEntry.COLUMN_MOST_POPULAR, "NULL");
+                contentValues.putNull(MovieContract.MovieEntry.COLUMN_MOST_POPULAR);
                 context.getContentResolver().update(
                         MovieContract.MovieEntry.CONTENT_URI,
                         contentValues,
@@ -105,12 +105,12 @@ public class FetchMoviesTask extends BaseMovieDBTask {
                 // Delete all movies, which are in database only because they're highest rated.
                 context.getContentResolver().delete(
                         MovieContract.MovieEntry.CONTENT_URI,
-                        MovieContract.MovieEntry.COLUMN_MOST_POPULAR + "=? AND " +
-                                MovieContract.MovieEntry.COLUMN_FAVORITE + "=?",
-                        new String[]{"NULL", "NULL"});
+                        MovieContract.MovieEntry.COLUMN_MOST_POPULAR + " IS NULL AND " +
+                                MovieContract.MovieEntry.COLUMN_FAVORITE + " IS NULL",
+                        null);
                 // Overwrite (reset) highest rated order value in remaining movies.
                 ContentValues contentValues = new ContentValues();
-                contentValues.put(MovieContract.MovieEntry.COLUMN_HIGHEST_RATED, "NULL");
+                contentValues.putNull(MovieContract.MovieEntry.COLUMN_HIGHEST_RATED);
                 context.getContentResolver().update(
                         MovieContract.MovieEntry.CONTENT_URI,
                         contentValues,
@@ -124,6 +124,12 @@ public class FetchMoviesTask extends BaseMovieDBTask {
         }
     }
 
+    /**
+     * Builds url string by appending 'page' query parameter to base discover url.
+     *
+     * @param page number of page.
+     * @return complete query url with page number.
+     */
     private String getUrlWithPage(int page) {
         return Uri.parse(getUrl())
                 .buildUpon()
@@ -154,6 +160,7 @@ public class FetchMoviesTask extends BaseMovieDBTask {
         }
     }
 
+    @Override
     protected Uri.Builder getUriBuilder() {
         return super.getUriBuilder()
                 .appendPath(SEARCH_METHOD)

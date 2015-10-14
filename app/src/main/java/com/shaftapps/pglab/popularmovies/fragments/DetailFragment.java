@@ -22,7 +22,6 @@ import android.support.v4.content.Loader;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,7 +42,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.bumptech.glide.request.target.Target;
-import com.shaftapps.pglab.popularmovies.FetchingState;
+import com.shaftapps.pglab.popularmovies.NetworkContent;
 import com.shaftapps.pglab.popularmovies.Keys;
 import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.activities.ReviewsActivity;
@@ -141,12 +140,12 @@ public class DetailFragment extends Fragment
 
     // Saving state data
     private int generatedColor = -1;
-    @FetchingState.State
-    private int movieDetailsFetchingState = FetchingState.NOT_FINISHED;
-    @FetchingState.State
-    private int reviewsFetchingState = FetchingState.NOT_FINISHED;
-    @FetchingState.State
-    private int videosFetchingState = FetchingState.NOT_FINISHED;
+    @NetworkContent.State
+    private int movieDetailsFetchingState = NetworkContent.NOT_FINISHED;
+    @NetworkContent.State
+    private int reviewsFetchingState = NetworkContent.NOT_FINISHED;
+    @NetworkContent.State
+    private int videosFetchingState = NetworkContent.NOT_FINISHED;
     private boolean posterDownloaded;
     private boolean backdropDownloaded;
 
@@ -155,16 +154,27 @@ public class DetailFragment extends Fragment
     //
 
     @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            detailFragmentListener = (DetailFragmentListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement DetailFragmentListener");
+        }
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState != null) {
             generatedColor = savedInstanceState.getInt(GENERATED_COLOR_KEY, -1);
-            movieDetailsFetchingState = FetchingState.get(
+            movieDetailsFetchingState = NetworkContent.get(
                     savedInstanceState.getInt(MOVIE_DETAILS_FETCHED_KEY));
-            reviewsFetchingState = FetchingState.get(
+            reviewsFetchingState = NetworkContent.get(
                     savedInstanceState.getInt(REVIEWS_FETCHED_KEY));
-            videosFetchingState = FetchingState.get(
+            videosFetchingState = NetworkContent.get(
                     savedInstanceState.getInt(VIDEOS_FETCHED_KEY));
         }
 
@@ -173,7 +183,12 @@ public class DetailFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (getArguments() != null) {
+        if (getArguments() == null) {
+            //Hidding Toolbar for empty state
+            detailFragmentListener.onActionBarParamsChanged(
+                    1, ContextCompat.getColor(getActivity(), R.color.details_card_view_bg), Integer.MAX_VALUE);
+            return inflater.inflate(R.layout.fragment_detail_empty_state, container, false);
+        } else {
             movieUri = getArguments().getParcelable(Keys.SELECTED_MOVIE_URI);
             if (movieUri != null) {
                 movieId = ContentUris.parseId(movieUri);
@@ -208,36 +223,25 @@ public class DetailFragment extends Fragment
         getLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
         getLoaderManager().initLoader(REVIEW_LOADER_ID, null, this);
         getLoaderManager().initLoader(VIDEO_LOADER_ID, null, this);
-        if (movieDetailsFetchingState == FetchingState.FAILED ||
-                reviewsFetchingState == FetchingState.FAILED ||
-                videosFetchingState == FetchingState.FAILED)
+        if (movieDetailsFetchingState == NetworkContent.FAILED ||
+                reviewsFetchingState == NetworkContent.FAILED ||
+                videosFetchingState == NetworkContent.FAILED)
             detailFragmentListener.showFetchingFailedSnackbar();
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            detailFragmentListener = (DetailFragmentListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement DetailFragmentListener");
-        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
         if (movieUri != null) {
-            if (movieDetailsFetchingState == FetchingState.NOT_FINISHED) {
+            if (movieDetailsFetchingState == NetworkContent.NOT_FINISHED) {
                 initFetchMovieDetailsTask();
                 fetchMovieDetailsTask.execute();
             }
-            if (reviewsFetchingState == FetchingState.NOT_FINISHED) {
+            if (reviewsFetchingState == NetworkContent.NOT_FINISHED) {
                 initFetchReviewsTask();
                 fetchReviewsTask.execute();
             }
-            if (videosFetchingState == FetchingState.NOT_FINISHED) {
+            if (videosFetchingState == NetworkContent.NOT_FINISHED) {
                 initFetchVideosTask();
                 fetchVideosTask.execute();
             }
@@ -246,6 +250,7 @@ public class DetailFragment extends Fragment
 
     @Override
     public void onPause() {
+        // Canceling active tasks to avoid crashes on callbacks.
         if (fetchMovieDetailsTask != null) {
             fetchMovieDetailsTask.cancel(true);
         }
@@ -256,12 +261,6 @@ public class DetailFragment extends Fragment
             fetchVideosTask.cancel(true);
         }
         super.onPause();
-    }
-
-    @Override
-    public void onDestroyView() {
-        resetSmartHeightWrapperListener();
-        super.onDestroyView();
     }
 
     @Override
@@ -276,6 +275,12 @@ public class DetailFragment extends Fragment
         outState.putInt(VIDEOS_FETCHED_KEY, videosFetchingState);
 
         super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onDestroyView() {
+        resetSmartHeightWrapperListener();
+        super.onDestroyView();
     }
 
 
@@ -295,7 +300,6 @@ public class DetailFragment extends Fragment
             case R.id.action_favorite:
                 setFavoriteItemChecked(item, !item.isChecked());
                 updateMovie(item.isChecked());
-                Log.i(getClass().getSimpleName(), "Fav icon clicked! Now is set to " + item.isChecked());
                 return true;
             case R.id.action_share:
                 Intent intent = createShareMovieIntent();
@@ -341,8 +345,7 @@ public class DetailFragment extends Fragment
     }
 
     private Intent createShareMovieIntent() {
-        Uri trailerUri = MovieContract.VideoEntry
-                .buildUriForMovieTrailer(movieId);
+        Uri trailerUri = MovieContract.VideoEntry.buildUriForMovieTrailer(movieId);
         Cursor cursor = getActivity().getContentResolver().query(
                 trailerUri, null, null, null, null);
         if (cursor.moveToFirst()) {
@@ -362,25 +365,13 @@ public class DetailFragment extends Fragment
 
     private void updateMovie(boolean favorite) {
         if (movieUri != null) {
-            if (favorite) {
-                // Add movie to favorites
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(MovieContract.MovieEntry.COLUMN_FAVORITE, true);
-                getActivity().getContentResolver().update(
-                        MovieContract.MovieEntry.CONTENT_URI,
-                        contentValues,
-                        MovieContract.MovieEntry._ID + "=?",
-                        new String[]{Long.toString(movieId)});
-            } else {
-                // Remove movie from favorites
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(MovieContract.MovieEntry.COLUMN_FAVORITE, false);
-                getActivity().getContentResolver().update(
-                        MovieContract.MovieEntry.CONTENT_URI,
-                        contentValues,
-                        MovieContract.MovieEntry._ID + "=?",
-                        new String[]{Long.toString(movieId)});
-            }
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MovieContract.MovieEntry.COLUMN_FAVORITE, favorite);
+            getActivity().getContentResolver().update(
+                    MovieContract.MovieEntry.CONTENT_URI,
+                    contentValues,
+                    MovieContract.MovieEntry._ID + "=?",
+                    new String[]{Long.toString(movieId)});
         }
     }
 
@@ -705,7 +696,7 @@ public class DetailFragment extends Fragment
                 reviewShowMoreButton.setVisibility(View.GONE);
         } else {
             //There is no reviews.
-            if (reviewsFetchingState == FetchingState.FAILED)
+            if (reviewsFetchingState == NetworkContent.FAILED)
                 reviewContentLayout.setContentState(NetworkContentLayout.FAILED);
             else
                 reviewContentLayout.setContentState(NetworkContentLayout.EMPTY);
@@ -718,10 +709,12 @@ public class DetailFragment extends Fragment
         videosAdapter.swapCursor(videosCursor);
         // Switch video layout state.
         if (videosAdapter.getItemCount() == 0) {
-            if (videosFetchingState == FetchingState.FAILED)
+            if (videosFetchingState == NetworkContent.FAILED)
                 videoContentLayout.setContentState(NetworkContentLayout.FAILED);
-            else
+            else if (videosFetchingState != NetworkContent.NOT_FINISHED)
                 videoContentLayout.setContentState(NetworkContentLayout.EMPTY);
+            else
+                videoContentLayout.setContentState(NetworkContentLayout.PROGRESS);
         } else
             videoContentLayout.setContentState(NetworkContentLayout.LOADED);
     }
@@ -735,6 +728,9 @@ public class DetailFragment extends Fragment
         return movieUri;
     }
 
+    /**
+     * Brings fragment to its initial state (without fetching again).
+     */
     public void reloadMovie() {
         notifyingScrollView.smoothScrollTo(0, 0);
     }
@@ -850,14 +846,14 @@ public class DetailFragment extends Fragment
         if (getActivity() != null)
             switch (task.getId()) {
                 case FETCH_MOVIE_DETAILS_TASK_ID:
-                    movieDetailsFetchingState = FetchingState.NOT_FINISHED;
+                    movieDetailsFetchingState = NetworkContent.NOT_FINISHED;
                     break;
                 case FETCH_REVIEW_TASK_ID:
-                    reviewsFetchingState = FetchingState.NOT_FINISHED;
+                    reviewsFetchingState = NetworkContent.NOT_FINISHED;
                     reviewContentLayout.setContentState(NetworkContentLayout.PROGRESS);
                     break;
                 case FETCH_VIDEO_TASK_ID:
-                    videosFetchingState = FetchingState.NOT_FINISHED;
+                    videosFetchingState = NetworkContent.NOT_FINISHED;
                     videoContentLayout.setContentState(NetworkContentLayout.PROGRESS);
                     break;
             }
@@ -868,15 +864,15 @@ public class DetailFragment extends Fragment
         if (getActivity() != null)
             switch (task.getId()) {
                 case FETCH_MOVIE_DETAILS_TASK_ID:
-                    movieDetailsFetchingState = FetchingState.FETCHED;
+                    movieDetailsFetchingState = NetworkContent.FETCHED;
                     break;
                 case FETCH_REVIEW_TASK_ID:
-                    reviewsFetchingState = FetchingState.FETCHED;
+                    reviewsFetchingState = NetworkContent.FETCHED;
                     getLoaderManager().getLoader(REVIEW_LOADER_ID).forceLoad();
                     // Method loadSectionReviews(Cursor reviewsCursor) change NetworkContentLayout state.
                     break;
                 case FETCH_VIDEO_TASK_ID:
-                    videosFetchingState = FetchingState.FETCHED;
+                    videosFetchingState = NetworkContent.FETCHED;
                     getLoaderManager().getLoader(VIDEO_LOADER_ID).forceLoad();
                     // Method loadSectionVideos(Cursor videosCursor) change NetworkContentLayout state.
                     break;
@@ -888,15 +884,15 @@ public class DetailFragment extends Fragment
         if (getActivity() != null) {
             switch (task.getId()) {
                 case FETCH_MOVIE_DETAILS_TASK_ID:
-                    movieDetailsFetchingState = FetchingState.FAILED;
+                    movieDetailsFetchingState = NetworkContent.FAILED;
                     break;
                 case FETCH_REVIEW_TASK_ID:
-                    reviewsFetchingState = FetchingState.FAILED;
+                    reviewsFetchingState = NetworkContent.FAILED;
                     getLoaderManager().getLoader(REVIEW_LOADER_ID).forceLoad();
                     // Method loadSectionReviews(Cursor reviewsCursor) change NetworkContentLayout state.
                     break;
                 case FETCH_VIDEO_TASK_ID:
-                    videosFetchingState = FetchingState.FAILED;
+                    videosFetchingState = NetworkContent.FAILED;
                     getLoaderManager().getLoader(VIDEO_LOADER_ID).forceLoad();
                     // Method loadSectionVideos(Cursor videosCursor) change NetworkContentLayout state.
                     break;
@@ -907,19 +903,19 @@ public class DetailFragment extends Fragment
 
     public void retryFailedFetching() {
         if (movieUri != null) {
-            if (movieDetailsFetchingState == FetchingState.FAILED) {
+            if (movieDetailsFetchingState == NetworkContent.FAILED) {
                 initFetchMovieDetailsTask();
                 fetchMovieDetailsTask.execute();
             }
-            if (reviewsFetchingState == FetchingState.FAILED) {
+            if (reviewsFetchingState == NetworkContent.FAILED) {
                 initFetchReviewsTask();
                 fetchReviewsTask.execute();
             }
-            if (videosFetchingState == FetchingState.FAILED) {
+            if (videosFetchingState == NetworkContent.FAILED) {
                 initFetchVideosTask();
                 fetchVideosTask.execute();
             }
-            if (!posterDownloaded || !backdropDownloaded){
+            if (!posterDownloaded || !backdropDownloaded) {
                 loadSectionRichContent(null, movieCursor);
             }
         }
@@ -946,6 +942,9 @@ public class DetailFragment extends Fragment
          */
         void onTitleLoaded(String title);
 
+        /**
+         * Called when any fetching task fails.
+         */
         void showFetchingFailedSnackbar();
     }
 

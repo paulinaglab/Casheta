@@ -31,7 +31,7 @@
             android:layout_height="0dp"
             android:layout_weight="2"
             android:scaleType="centerInside"
-            android:src="@drawable/offline_error" />
+            android:src="@drawable/error_offline_most_popular" />
 
         <TextView
             android:layout_width="wrap_content"

@@ -13,6 +13,8 @@ import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
 /**
+ * Fragment class for favorite movies' grid.
+ * <p/>
  * Created by Paulina on 2015-10-07.
  */
 public class FavoritesFragment extends BaseMoviesCategoryFragment {

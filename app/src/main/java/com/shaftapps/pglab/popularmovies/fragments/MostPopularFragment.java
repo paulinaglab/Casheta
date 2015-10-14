@@ -16,6 +16,8 @@ import com.shaftapps.pglab.popularmovies.asynctasks.FetchMoviesTask;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
 /**
+ * Fragment class for most popular movies' grid.
+ * <p/>
  * Created by Paulina on 2015-10-08.
  */
 public class MostPopularFragment extends NetworkMoviesCategoryFragment
@@ -60,8 +62,8 @@ public class MostPopularFragment extends NetworkMoviesCategoryFragment
                 getActivity(),
                 MovieContract.MovieEntry.CONTENT_URI,
                 null,
-                MovieContract.MovieEntry.COLUMN_MOST_POPULAR + "<>?",
-                new String[]{"NULL"},
+                MovieContract.MovieEntry.COLUMN_MOST_POPULAR + " IS NOT NULL",
+                null,
                 MovieContract.MovieEntry.COLUMN_MOST_POPULAR + " DESC");
     }
 

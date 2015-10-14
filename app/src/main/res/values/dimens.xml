@@ -11,12 +11,21 @@
 
     <dimen name="reviews_recycler_view_height">-1px</dimen>
     <dimen name="reviews_item_separator_width">1dp</dimen>
-    <dimen name="reviews_item_separator_indent">72dp</dimen>
+    <dimen name="reviews_item_separator_inset">72dp</dimen>
 
     <dimen name="details_video_item_space">4dp</dimen>
 
     <dimen name="detail_content_padding">16dp</dimen>
     <dimen name="detail_toolbar_title_padding">0dp</dimen>
+
+
+    <!-- This dimens help to make my layout for tablets compat with older than Lollipop versions.-->
+    <dimen name="detail_card_elevation">2dp</dimen>
+    <dimen name="detail_max_card_elevation">2dp</dimen>
+    <dimen name="detail_card_corner_radius">2dp</dimen>
+    <!-- maxCardElevation * 1.5 + (1 - cos45) * cornerRadius -->
+    <dimen name="detail_card_vertical_compat_padding_neutralizer">-4dp</dimen>
+
 
     <dimen name="detail_card_gutters">16dp</dimen>
 

@@ -10,6 +10,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
+ * Container for layers which represents state of content.
+ * <p/>
+ * It assumes specific order of children:
+ * 1. Default content view. (Loaded state)
+ * 2. Progress bar. (Loading in progress)
+ * 3. Failed/Error view.
+ * 4. Empty view. (Success, but nothing to show)
+ * <p/>
+ * Views 3 and 4 are optional. By default, normal content view will be shown.
+ * <p/>
  * Created by Paulina on 2015-10-09.
  */
 public class NetworkContentLayout extends RelativeLayout {
@@ -45,6 +55,11 @@ public class NetworkContentLayout extends RelativeLayout {
         emptyStateView = getChildAt(EMPTY_STATE_INDEX);
     }
 
+    /**
+     * Switch state of the content.
+     *
+     * @param contentState content state to be applied.
+     */
     public void setContentState(@ContentState int contentState) {
         if (this.contentState != contentState) {
             this.contentState = contentState;

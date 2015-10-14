@@ -11,13 +11,15 @@ import com.shaftapps.pglab.popularmovies.fragments.HighestRatedFragment;
 import com.shaftapps.pglab.popularmovies.fragments.MostPopularFragment;
 
 /**
+ * PagerAdapter for movie categories (sorting modes).
+ *
  * Created by Paulina on 2015-10-08.
  */
 public class MovieCategoryPagerAdapter extends FragmentPagerAdapter {
 
-    public static final int MOST_POPULAR_INEDX = 0;
-    public static final int HIGHEST_RATED_INEDX = 1;
-    public static final int FAVORITES_INEDX = 2;
+    public static final int MOST_POPULAR_INDEX = 0;
+    public static final int HIGHEST_RATED_INDEX = 1;
+    public static final int FAVORITES_INDEX = 2;
 
     private static final int CATEGORY_COUNT = 3;
 
@@ -32,11 +34,11 @@ public class MovieCategoryPagerAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int position) {
         switch (position) {
-            case MOST_POPULAR_INEDX:
+            case MOST_POPULAR_INDEX:
                 return new MostPopularFragment();
-            case HIGHEST_RATED_INEDX:
+            case HIGHEST_RATED_INDEX:
                 return new HighestRatedFragment();
-            case FAVORITES_INEDX:
+            case FAVORITES_INDEX:
                 return new FavoritesFragment();
             default:
                 throw new UnsupportedOperationException("Undefined Fragment index: " + position);

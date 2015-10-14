@@ -6,6 +6,8 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 /**
+ * Defines table and column names for the themoviedb.org database.
+ *
  * Created by Paulina on 2015-09-11.
  */
 public class MovieContract {

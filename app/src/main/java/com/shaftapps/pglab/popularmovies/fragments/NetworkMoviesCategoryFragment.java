@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.shaftapps.pglab.popularmovies.FetchingState;
+import com.shaftapps.pglab.popularmovies.NetworkContent;
 import com.shaftapps.pglab.popularmovies.asynctasks.BaseMovieDBTask;
 import com.shaftapps.pglab.popularmovies.asynctasks.FetchMoviesTask;
 
@@ -27,7 +27,7 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
 
     private FetchMoviesTask fetchMoviesTask;
 
-    @FetchingState.State
+    @NetworkContent.State
     private int moviesFetchedState;
 
 
@@ -39,9 +39,9 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
-            moviesFetchedState = FetchingState.get(savedInstanceState.getInt(MOVIES_FETCHED_KEY));
+            moviesFetchedState = NetworkContent.get(savedInstanceState.getInt(MOVIES_FETCHED_KEY));
         } else {
-            moviesFetchedState = FetchingState.NOT_FINISHED;
+            moviesFetchedState = NetworkContent.NOT_FINISHED;
         }
     }
 
@@ -54,7 +54,7 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
     @Override
     public void onStart() {
         super.onStart();
-        if (moviesFetchedState == FetchingState.NOT_FINISHED) {
+        if (moviesFetchedState == NetworkContent.NOT_FINISHED) {
             initFetchMovieTask();
             fetchMoviesTask.execute();
         }
@@ -80,7 +80,7 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
 
     @Override
     protected void initMoviesGridLoader() {
-        if (moviesFetchedState == FetchingState.FETCHED)
+        if (moviesFetchedState == NetworkContent.FETCHED)
             super.initMoviesGridLoader();
     }
 
@@ -113,7 +113,7 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
 
     protected void updateEmptyStateVisibility() {
         switch (moviesFetchedState) {
-            case FetchingState.FAILED:
+            case NetworkContent.FAILED:
                 showEmptyStateView();
                 break;
             default:
@@ -140,7 +140,7 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
         if (task.getId() == FETCH_MOVIES_TASK_ID) {
             if (progressBar != null)
                 progressBar.setVisibility(View.VISIBLE);
-            moviesFetchedState = FetchingState.NOT_FINISHED;
+            moviesFetchedState = NetworkContent.NOT_FINISHED;
             updateEmptyStateVisibility();
         }
     }
@@ -151,7 +151,7 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
             if (progressBar != null)
                 progressBar.setVisibility(View.GONE);
 
-            moviesFetchedState = FetchingState.FETCHED;
+            moviesFetchedState = NetworkContent.FETCHED;
             updateEmptyStateVisibility();
 
             getLoaderManager().initLoader(getMoviesGridLoaderId(), null, this);
@@ -163,7 +163,7 @@ public abstract class NetworkMoviesCategoryFragment extends BaseMoviesCategoryFr
         if (task.getId() == FETCH_MOVIES_TASK_ID) {
             if (progressBar != null)
                 progressBar.setVisibility(View.GONE);
-            moviesFetchedState = FetchingState.FAILED;
+            moviesFetchedState = NetworkContent.FAILED;
             updateEmptyStateVisibility();
         }
     }

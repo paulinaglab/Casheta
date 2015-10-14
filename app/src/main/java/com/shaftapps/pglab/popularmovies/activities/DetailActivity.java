@@ -14,12 +14,15 @@ import com.shaftapps.pglab.popularmovies.fragments.DetailFragment;
 import com.shaftapps.pglab.popularmovies.utils.ColorUtils;
 
 /**
- * Activity showing details of specific movie.
+ * Activity showing details of specific movie. Concerns only on phones.
  * <p/>
  * Created by Paulina on 2015-08-30.
  */
 public class DetailActivity extends DetailFragmentActivity {
 
+    /**
+     * Layout which would be use to showing Snackbars.
+     */
     private CoordinatorLayout coordinatorLayout;
 
     //
@@ -59,7 +62,7 @@ public class DetailActivity extends DetailFragmentActivity {
                     .commit();
         }
 
-        //
+        // Preparing to color status bar from 20% black to dynamic, depending on movie bitmaps.
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = getWindow();
             window.setStatusBarColor(ContextCompat.getColor(this, R.color.status_bar_color));
@@ -67,10 +70,17 @@ public class DetailActivity extends DetailFragmentActivity {
         }
     }
 
+
+    //
+    //  BASE CLASS METHODS
+    //
+
     @Override
     public void onActionBarParamsChanged(int wrapperHeight, int color, int scrollPosition) {
         super.onActionBarParamsChanged(wrapperHeight, color, scrollPosition);
 
+        // In this Activity (which is concern only on phones) I upgrade this method and color also
+        // a status bar.
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             float changingDistance = wrapperHeight - getDetailFragmentToolbar().getHeight();
             int currentStatusBarColor = ColorUtils.getProportionalColor(

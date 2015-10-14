@@ -10,6 +10,8 @@ import static com.shaftapps.pglab.popularmovies.data.MovieContract.ReviewEntry;
 import static com.shaftapps.pglab.popularmovies.data.MovieContract.VideoEntry;
 
 /**
+ * Manages a local database for movie data.
+ *
  * Created by Paulina on 2015-09-11.
  */
 public class MovieDbHelper extends SQLiteOpenHelper {
@@ -82,6 +84,6 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Not need for now
+        // Not needed for now
     }
 }

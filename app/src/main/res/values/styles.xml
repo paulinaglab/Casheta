@@ -75,8 +75,8 @@
         <item name="android:alpha">?android:disabledAlpha</item>
         <item name="android:paddingLeft">@dimen/detail_content_padding</item>
         <item name="android:paddingRight">@dimen/detail_content_padding</item>
-        <item name="android:paddingTop">8dp</item>
-        <item name="android:paddingBottom">8dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">16dp</item>
     </style>
 
     <style name="AppTheme.DetailListItem.LeftIcon" parent="AppTheme">

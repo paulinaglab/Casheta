@@ -28,6 +28,14 @@ public class MovieDBResponseParser {
     private static final String BACKDROP_WIDTH = "w780";
 
 
+    /**
+     * Parses JSON containing movies to array of ContentValues.
+     *
+     * @param moviesJsonStr themoviedb.org response.
+     * @param queryType     type of query (sorting mode).
+     * @return array list ready to be saved to database.
+     * @throws JSONException
+     */
     public static ArrayList<ContentValues> getMoviesFromJson(
             String moviesJsonStr, int queryType)
             throws JSONException {
@@ -62,11 +70,25 @@ public class MovieDBResponseParser {
         return movieValues;
     }
 
+    /**
+     * Parses JSON with single movie.
+     *
+     * @param moviesJsonStr themoviedb.org response.
+     * @return single object of ContentValue ready to save to database.
+     * @throws JSONException
+     */
     public static ContentValues getSingleMovieFromJson(String moviesJsonStr)
             throws JSONException {
         return getSingleMovieFromJson(new JSONObject(moviesJsonStr));
     }
 
+    /**
+     * Parses JSON with single movie.
+     *
+     * @param movieObject JSONObject from themoviedb.org response.
+     * @return single object of ContentValue ready to save to database.
+     * @throws JSONException
+     */
     public static ContentValues getSingleMovieFromJson(JSONObject movieObject)
             throws JSONException {
 
@@ -102,6 +124,14 @@ public class MovieDBResponseParser {
         return movie;
     }
 
+    /**
+     * Turns JSONArray of objects containing pairs key-value into String of comma separated values.
+     *
+     * @param jsonArray array of JSONObjects.
+     * @param keyName   name of the key.
+     * @return converted String of comma separated values.
+     * @throws JSONException
+     */
     private static String getListedStringObjects(JSONArray jsonArray, String keyName) throws JSONException {
         StringBuilder listBuilder = new StringBuilder();
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -119,6 +149,13 @@ public class MovieDBResponseParser {
         return listBuilder.toString();
     }
 
+    /**
+     * Converts themoviedb.org response into list of ContentValues.
+     *
+     * @param reviewJsonStr themoviedb.org response
+     * @return list of ContentValues
+     * @throws JSONException
+     */
     public static ArrayList<ContentValues> getReviewsFromJson(String reviewJsonStr)
             throws JSONException {
 
@@ -144,6 +181,13 @@ public class MovieDBResponseParser {
         return reviewValues;
     }
 
+    /**
+     * Converts themoviedb.org response into list of ContentValues.
+     *
+     * @param videoJsonStr themoviedb.org response
+     * @return list of ContentValues
+     * @throws JSONException
+     */
     public static ArrayList<ContentValues> getVideosFromJson(String videoJsonStr)
             throws JSONException {
 

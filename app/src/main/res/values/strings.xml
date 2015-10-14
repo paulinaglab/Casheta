@@ -20,9 +20,10 @@
     <string name="details_reviews_error_label">Can\'t load reviews</string>
     <string name="details_reviews_empty_label">No reviews</string>
     <string name="details_reviews_show_more_label">Show more reviews</string>
-    <string name="details_reviews_more_text">(read more)</string>
 
     <string name="details_video_label">Videos</string>
+    <string name="details_video_error_label">Can\'t load videos</string>
+    <string name="details_video_empty_label">No videos</string>
 
     <!-- Detail Fragment - snackbars -->
     <string name="snackbar_detail_fetching_failed_text">Can\'t reload movie details.</string>

@@ -13,6 +13,8 @@ import com.shaftapps.pglab.popularmovies.R;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
 /**
+ * Adapter class for reviews.
+ * <p/>
  * Created by Paulina on 2015-09-29.
  */
 public class ReviewsCursorAdapter extends CursorAdapter<ReviewsCursorAdapter.ReviewItemViewHolder> {
@@ -20,6 +22,9 @@ public class ReviewsCursorAdapter extends CursorAdapter<ReviewsCursorAdapter.Rev
     private static final String EXPANDED_INDEX_KEY = "expanded_index";
 
     protected Context context;
+    /**
+     * Index of currently expanded item.
+     */
     private int expandedIndex = -1;
     private OnItemSelectListener onItemSelectListener;
 
@@ -111,8 +116,16 @@ public class ReviewsCursorAdapter extends CursorAdapter<ReviewsCursorAdapter.Rev
         }
     }
 
+    /**
+     * Listener for item (review) selection.
+     */
     public interface OnItemSelectListener {
 
+        /**
+         * Triggered when user click an item from list.
+         *
+         * @param adapterPosition item position in adapter.
+         */
         void onItemSelect(int adapterPosition);
     }
 }

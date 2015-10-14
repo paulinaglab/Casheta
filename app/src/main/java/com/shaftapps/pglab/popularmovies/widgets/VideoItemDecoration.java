@@ -5,6 +5,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 /**
+ * Recycler item decoration that adds space between items.
+ * <p/>
  * Created by Paulina on 2015-09-27.
  */
 public class VideoItemDecoration extends RecyclerView.ItemDecoration {

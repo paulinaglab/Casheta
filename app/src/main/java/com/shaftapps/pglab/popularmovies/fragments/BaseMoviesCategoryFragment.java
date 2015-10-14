@@ -17,6 +17,8 @@ import com.shaftapps.pglab.popularmovies.adapters.MoviesCursorAdapter;
 import com.shaftapps.pglab.popularmovies.widgets.AutoFitGridLayoutManager;
 
 /**
+ * Base class for Fragments holding grids of movies.
+ * <p/>
  * Created by Paulina on 2015-10-07.
  */
 public abstract class BaseMoviesCategoryFragment extends Fragment
@@ -53,10 +55,18 @@ public abstract class BaseMoviesCategoryFragment extends Fragment
         initMoviesGridLoader();
     }
 
+    /**
+     * Inits loader of movies.
+     */
     protected void initMoviesGridLoader() {
         getLoaderManager().initLoader(MOVIES_GRID_LOADER_ID, null, this);
     }
 
+    /**
+     * Method attaching RecyclerView and initializes it as grid of movies.
+     *
+     * @param recyclerView recycler to be initialized.
+     */
     protected void setupMoviesGridRecyclerView(RecyclerView recyclerView) {
         // Movies grid's adapter initialization.
         moviesCursorAdapter = new MoviesCursorAdapter(getActivity());
@@ -74,12 +84,13 @@ public abstract class BaseMoviesCategoryFragment extends Fragment
         recyclerView.setLayoutManager(layoutManager);
     }
 
+    /**
+     * Bounds view for empty state.
+     *
+     * @param emptyStateView view to be used as empty state.
+     */
     protected void setupEmptyStateView(View emptyStateView) {
         this.emptyStateView = emptyStateView;
-    }
-
-    protected View getEmptyStateView() {
-        return emptyStateView;
     }
 
     protected void showEmptyStateView() {
@@ -127,9 +138,19 @@ public abstract class BaseMoviesCategoryFragment extends Fragment
         return MOVIES_GRID_LOADER_ID;
     }
 
+    /**
+     * Forces usage of RecyclerView in inheriting Fragments.
+     *
+     * @return Recycler that will be showing movies grid.
+     */
     @NonNull
     protected abstract RecyclerView getMoviesGridRecyclerView();
 
+    /**
+     * Forces creation of CursorLoader to populate the grid.
+     *
+     * @return specific CursorLoader.
+     */
     protected abstract CursorLoader getMoviesCursorLoader();
 
     /**

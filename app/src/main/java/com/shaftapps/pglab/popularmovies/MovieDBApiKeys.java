@@ -1,6 +1,8 @@
 package com.shaftapps.pglab.popularmovies;
 
 /**
+ * Constants from themoviedb.org API.
+ * 
  * Created by Paulina on 2015-10-01.
  */
 public class MovieDBApiKeys {

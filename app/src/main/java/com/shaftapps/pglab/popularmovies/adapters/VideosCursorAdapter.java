@@ -15,6 +15,8 @@ import com.shaftapps.pglab.popularmovies.data.MovieContract;
 import com.shaftapps.pglab.popularmovies.utils.YouTubeUriBuilder;
 
 /**
+ * Adapter class for videos.
+ * <p/>
  * Created by Paulina on 2015-09-25.
  */
 public class VideosCursorAdapter extends CursorAdapter<VideosCursorAdapter.VideoItemViewHolder> {

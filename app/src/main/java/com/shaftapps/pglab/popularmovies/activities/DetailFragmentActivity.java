@@ -2,6 +2,7 @@ package com.shaftapps.pglab.popularmovies.activities;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -14,6 +15,8 @@ import com.shaftapps.pglab.popularmovies.fragments.DetailFragment;
 import com.shaftapps.pglab.popularmovies.utils.ColorUtils;
 
 /**
+ * Base class for Activities including DetailFragment.
+ * <p/>
  * Created by Paulina on 2015-10-02.
  */
 public abstract class DetailFragmentActivity extends AppCompatActivity implements DetailFragment.DetailFragmentListener {
@@ -22,6 +25,54 @@ public abstract class DetailFragmentActivity extends AppCompatActivity implement
     private String toolbarTitle;
     private Snackbar snackbar;
 
+
+    /**
+     * Method to attach arbitrary Toolbar which will be updating by DetailFragment.
+     *
+     * @param toolbar arbitrary Toolbar.
+     */
+    protected void bindToolbarWithDetailFragment(Toolbar toolbar) {
+        this.toolbar = toolbar;
+    }
+
+    /**
+     * @return Toolbar bind with DetailFragment.
+     */
+    protected Toolbar getDetailFragmentToolbar() {
+        return toolbar;
+    }
+
+    /**
+     * This method update Toolbar title showing it only if attached Toolbar is opaque (and not
+     * showing if the Toolbar is translucent/transparent).
+     */
+    public void showTitleIfOpaque() {
+        // Show title on toolbar when background is opaque.
+        if ((toolbar.getBackground() instanceof ColorDrawable) &&
+                Color.alpha(((ColorDrawable) toolbar.getBackground()).getColor()) == 255)
+            toolbar.setTitle(toolbarTitle);
+        else toolbar.setTitle("");
+    }
+
+    @Nullable
+    protected Snackbar getSnackbar() {
+        return snackbar;
+    }
+
+    protected void setSnackbar(Snackbar snackbar) {
+        this.snackbar = snackbar;
+    }
+
+    /**
+     * @return layout on which Snackbars will be shown.
+     */
+    protected abstract CoordinatorLayout getCoordinatorLayout();
+
+
+    //
+    //  INTERFACE METHODS:
+    //  DetailFragmentListener
+    //
 
     @Override
     public void onActionBarParamsChanged(int wrapperHeight, int color, int scrollPosition) {
@@ -42,22 +93,6 @@ public abstract class DetailFragmentActivity extends AppCompatActivity implement
         showTitleIfOpaque();
     }
 
-    protected void bindToolbarWithDetailFragment(Toolbar toolbar) {
-        this.toolbar = toolbar;
-    }
-
-    protected Toolbar getDetailFragmentToolbar() {
-        return toolbar;
-    }
-
-    public void showTitleIfOpaque() {
-        // Show title on toolbar when background is opaque.
-        if ((toolbar.getBackground() instanceof ColorDrawable) &&
-                Color.alpha(((ColorDrawable) toolbar.getBackground()).getColor()) == 255)
-            toolbar.setTitle(toolbarTitle);
-        else toolbar.setTitle("");
-    }
-
     @Override
     public void showFetchingFailedSnackbar() {
         if (snackbar == null) {
@@ -75,31 +110,8 @@ public abstract class DetailFragmentActivity extends AppCompatActivity implement
                             DetailFragmentActivity.this.snackbar = null;
                         }
                     });
-
-            snackbar.setCallback(new Snackbar.Callback() {
-                @Override
-                public void onDismissed(Snackbar snackbar, int event) {
-                    super.onDismissed(snackbar, event);
-                    DetailFragmentActivity.this.snackbar = null;
-                }
-
-                @Override
-                public void onShown(Snackbar snackbar) {
-                    super.onShown(snackbar);
-                }
-            });
             snackbar.getView().setBackgroundColor(ContextCompat.getColor(this, R.color.snackbar_bg));
             snackbar.show();
         }
-    }
-
-    protected abstract CoordinatorLayout getCoordinatorLayout();
-
-    protected Snackbar getSnackbar() {
-        return snackbar;
-    }
-
-    protected void setSnackbar(Snackbar snackbar) {
-        this.snackbar = snackbar;
     }
 }

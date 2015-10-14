@@ -6,6 +6,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import com.shaftapps.pglab.popularmovies.adapters.ReviewsCursorAdapter;
 
 /**
+ * LayoutManager which scrolls to the top of clicked item.
+ *
  * Created by Paulina on 2015-10-06.
  */
 public class ReviewsLinearLayoutManager extends LinearLayoutManager

@@ -16,6 +16,8 @@ import com.shaftapps.pglab.popularmovies.asynctasks.FetchMoviesTask;
 import com.shaftapps.pglab.popularmovies.data.MovieContract;
 
 /**
+ * Fragment class for highest rated movies' grid.
+ *
  * Created by Paulina on 2015-10-08.
  */
 public class HighestRatedFragment extends NetworkMoviesCategoryFragment
@@ -60,8 +62,8 @@ public class HighestRatedFragment extends NetworkMoviesCategoryFragment
                 getActivity(),
                 MovieContract.MovieEntry.CONTENT_URI,
                 null,
-                MovieContract.MovieEntry.COLUMN_HIGHEST_RATED + "<>?",
-                new String[]{"NULL"},
+                MovieContract.MovieEntry.COLUMN_HIGHEST_RATED + " IS NOT NULL",
+                null,
                 MovieContract.MovieEntry.COLUMN_HIGHEST_RATED + " ASC");
     }
 

@@ -13,7 +13,7 @@ import org.json.JSONException;
 import java.util.ArrayList;
 
 /**
- * Class for videos fetching AsyncTasks.
+ * Class for fetching videos.
  * Videos of movie url: http://api.themoviedb.org/3/movie/{id}/videos
  * <p/>
  * Created by Paulina on 2015-09-25.

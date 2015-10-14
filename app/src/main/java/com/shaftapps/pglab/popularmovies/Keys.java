@@ -1,6 +1,8 @@
 package com.shaftapps.pglab.popularmovies;
 
 /**
+ * Constants used across the application.
+ * <p/>
  * Created by Paulina on 2015-09-15.
  */
 public class Keys {

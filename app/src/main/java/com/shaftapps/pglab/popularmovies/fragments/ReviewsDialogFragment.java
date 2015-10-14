@@ -21,6 +21,9 @@ import com.shaftapps.pglab.popularmovies.widgets.ReviewItemSeparator;
 import com.shaftapps.pglab.popularmovies.widgets.ReviewsLinearLayoutManager;
 
 /**
+ * DialogFragment for list of reviews. It can be displayed as a dialog for tablets or inside
+ * a new Activity for phones.
+ * <p/>
  * Created by Paulina on 2015-09-29.
  */
 public class ReviewsDialogFragment extends DialogFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -60,7 +63,7 @@ public class ReviewsDialogFragment extends DialogFragment implements LoaderManag
         recyclerView.addItemDecoration(
                 new ReviewItemSeparator(getResources().getColor(R.color.separator),
                         getResources().getDimensionPixelSize(R.dimen.reviews_item_separator_width),
-                        getResources().getDimensionPixelSize(R.dimen.reviews_item_separator_indent)));
+                        getResources().getDimensionPixelSize(R.dimen.reviews_item_separator_inset)));
 
         RecyclerView.ItemAnimator animator = new DefaultItemAnimator();
         animator.setSupportsChangeAnimations(false);
