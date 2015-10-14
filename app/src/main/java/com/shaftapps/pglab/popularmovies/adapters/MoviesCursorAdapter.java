@@ -47,10 +47,13 @@ public class MoviesCursorAdapter extends CursorAdapter<MoviesCursorAdapter.Movie
      */
     public void itemClicked(int clickedPos) {
         if (onItemClickListener != null) {
-            cursor.moveToPosition(clickedPos);
-            int idColumnIndex = cursor.getColumnIndex(MovieContract.MovieEntry._ID);
-            Uri clickedUri = MovieContract.MovieEntry.buildUri(cursor.getLong(idColumnIndex));
-            onItemClickListener.onItemClicked(clickedUri);
+            if (cursor.moveToPosition(clickedPos)) {
+                int idColumnIndex = cursor.getColumnIndex(MovieContract.MovieEntry._ID);
+                if (idColumnIndex != -1) {
+                    Uri clickedUri = MovieContract.MovieEntry.buildUri(cursor.getLong(idColumnIndex));
+                    onItemClickListener.onItemClicked(clickedUri);
+                }
+            }
         }
     }
 
