@@ -593,7 +593,7 @@ public class DetailFragment extends Fragment
 
                     generatedColor = palette.getVibrantColor(
                             ContextCompat.getColor(getActivity(), R.color.details_rate_not_initialized_bg));
-                    generatedColor = ColorUtils.getProportionalColor(generatedColor, Color.BLACK, 3, 1);
+                    generatedColor = ColorUtils.getProportionalColor(generatedColor, Color.BLACK, 3f, 1f);
 
 
                     int duration = 175;

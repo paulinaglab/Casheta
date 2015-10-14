@@ -43,7 +43,7 @@ public class ColorUtils {
     public static int getColorWithProportionalAlpha(int color, float fullValue, float partValue) {
         float progress = Math.min(Math.max(partValue, 0), fullValue) / fullValue;
         return Color.argb(
-                (int) (Color.alpha(color) * progress),
+                Math.round(Color.alpha(color) * progress),
                 Color.red(color),
                 Color.green(color),
                 Color.blue(color));
@@ -54,19 +54,19 @@ public class ColorUtils {
      * Method returning color between start and end color proportional to given values.
      *
      * @param colorStart start color
-     * @param colorEnd end color
-     * @param fullValue total value
-     * @param partValue part of fullValue. When partValue equals 0, returning color is colorStart,
-     *                  when partValue is fullValue returning color is endColor. Otherwise returning
-     *                  color is from between those, relative to partValue/fullValue ratio.
+     * @param colorEnd   end color
+     * @param fullValue  total value
+     * @param partValue  part of fullValue. When partValue equals 0, returning color is colorStart,
+     *                   when partValue is fullValue returning color is endColor. Otherwise returning
+     *                   color is from between those, relative to partValue/fullValue ratio.
      * @return color from between start and end color relative to partValue/fullValue ratio.
      */
     public static int getProportionalColor(int colorStart, int colorEnd, float fullValue, float partValue) {
-        float progress = Math.min(Math.max(partValue, 0), fullValue) / fullValue;
+        float progress = Math.min(Math.max(partValue, 0f), fullValue) / fullValue;
         return Color.argb(
-                (int) (Color.alpha(colorStart) * (1 - progress) + Color.alpha(colorEnd) * progress),
-                (int) (Color.red(colorStart) * (1 - progress) + Color.red(colorEnd) * progress),
-                (int) (Color.green(colorStart) * (1 - progress) + Color.green(colorEnd) * progress),
-                (int) (Color.blue(colorStart) * (1 - progress) + Color.blue(colorEnd) * progress));
+                Math.round(Color.alpha(colorStart) * (1 - progress) + Color.alpha(colorEnd) * progress),
+                Math.round(Color.red(colorStart) * (1 - progress) + Color.red(colorEnd) * progress),
+                Math.round(Color.green(colorStart) * (1 - progress) + Color.green(colorEnd) * progress),
+                Math.round(Color.blue(colorStart) * (1 - progress) + Color.blue(colorEnd) * progress));
     }
 }
