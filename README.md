@@ -24,11 +24,11 @@ In order to run the application insert your **themoviedb.org API key** in *BaseM
 ![user_reviews](http://shaftapps.com/casheta/empty_states_popular_movies_none_open.png)
 
 #About
-Project created during **Udacity Android Developer Nanodegree** Program co-created by **Google**.
+Project realized during participation in **Udacity Android Developer Nanodegree** Program co-created by **Google**.
 
 ![exceeds_specification](http://shaftapps.com/casheta/exceeds.png)
 
-Project Popular Movies App Stage 1&2 reviewers' selected quotes:
+#####Project Popular Movies App Stage 1&2 reviewers' selected quotes:
 
 ![review1](http://shaftapps.com/casheta/pm1.png)
 
@@ -41,4 +41,4 @@ Project Popular Movies App Stage 1&2 reviewers' selected quotes:
 
 ###Notice
 This product uses the TMDb API but is not endorsed or certified by TMDb.
-![moviedb_logo](http://shaftapps.com/casheta/var_2_1_PoweredByTMDB_Blk_Logo_Bree.png)
+![moviedb_logo](http://shaftapps.com/casheta/moviedb.png)
