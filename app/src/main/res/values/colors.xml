@@ -4,7 +4,7 @@
     <color name="secondary_text">#b2ffffff</color>
     <color name="separator">#1effffff</color>
 
-    <color name="window_bg">#171717</color>
+    <color name="window_bg">#121212</color>
     <color name="accent_color">#ffFFC400</color>
 
     <color name="details_card_view_bg">#303030</color>

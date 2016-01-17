@@ -25,7 +25,8 @@
         <!-- Progress Bar layout -->
         <ProgressBar
             style="@style/AppTheme.Movies.ProgressBar"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:layout_marginBottom="16dp"/>
 
         <!-- Failed loading layout - optional -->
         <TextView

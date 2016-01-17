@@ -6,4 +6,6 @@
     1dp difference looks like divider between translucent status bar and translucent toolbar. -->
     <dimen name="translucent_status_bar_padding">25dp</dimen>
 
+    <dimen name="detail_card_vertical_compat_padding_neutralizer">0dp</dimen>
+
 </resources>

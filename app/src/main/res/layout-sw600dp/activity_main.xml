@@ -61,8 +61,7 @@
                 app:cardBackgroundColor="@color/details_card_view_bg"
                 app:cardCornerRadius="@dimen/detail_card_corner_radius"
                 app:cardElevation="@dimen/detail_card_elevation"
-                app:cardMaxElevation="@dimen/detail_max_card_elevation"
-                app:cardUseCompatPadding="true">
+                app:cardMaxElevation="@dimen/detail_max_card_elevation">
 
                 <FrameLayout
                     android:id="@+id/movie_detail_container"
